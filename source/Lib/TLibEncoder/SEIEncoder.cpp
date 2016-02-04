@@ -651,4 +651,14 @@ Void SEIEncoder::initSEITimeCode(SEITimeCode *seiTimeCode)
   }
 }
 
+#if U0033_ALTERNATIVE_TRANSFER_CHARACTERISTICS_SEI
+Void SEIEncoder::initSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics *seiAltTransCharacteristics)
+{
+  assert (m_isInitialized);
+  assert (seiAltTransCharacteristics!=NULL);
+  //  Set SEI message parameters read from command line options
+  seiAltTransCharacteristics->m_preferredTransferCharacteristics = m_pcCfg->getSEIPreferredTransferCharacteristics();
+}
+#endif
+
 //! \}
