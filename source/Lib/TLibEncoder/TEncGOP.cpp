@@ -1427,10 +1427,17 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
         estimatedCpbFullness -= m_pcRateCtrl->getBufferingRate();
         // prevent underflow
+#if V0078_ADAPTIVE_LOWER_BOUND
+        if (estimatedCpbFullness - estimatedBits < m_pcRateCtrl->getRCPic()->getLowerBound())
+        {
+          estimatedBits = max(200, estimatedCpbFullness - m_pcRateCtrl->getRCPic()->getLowerBound());
+        }
+#else
         if (estimatedCpbFullness - estimatedBits < (Int)(m_pcRateCtrl->getCpbSize()*0.1f))
         {
           estimatedBits = max(200, estimatedCpbFullness - (Int)(m_pcRateCtrl->getCpbSize()*0.1f));
         }
+#endif
 
         m_pcRateCtrl->getRCPic()->setTargetBits(estimatedBits);
       }
@@ -1469,10 +1476,17 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
             estimatedCpbFullness -= m_pcRateCtrl->getBufferingRate();
             // prevent underflow
+#if V0078_ADAPTIVE_LOWER_BOUND
+            if (estimatedCpbFullness - bits < m_pcRateCtrl->getRCPic()->getLowerBound())
+            {
+              bits = estimatedCpbFullness - m_pcRateCtrl->getRCPic()->getLowerBound();
+            }
+#else
             if (estimatedCpbFullness - bits < (Int)(m_pcRateCtrl->getCpbSize()*0.1f))
             {
               bits = estimatedCpbFullness - (Int)(m_pcRateCtrl->getCpbSize()*0.1f);
             }
+#endif
           }
 #endif
 
