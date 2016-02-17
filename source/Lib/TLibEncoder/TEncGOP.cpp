@@ -2534,8 +2534,8 @@ Void TEncGOP::applyDeblockingFilterMetric( TComPic* pcPic, UInt uiNumSlices )
   const UInt noRows = (picHeight>>log2maxTB);
   assert(noCol > 1);
   assert(noRows > 1);
-  std::vector<UInt64> colSAD(noCol, UInt64(0));
-  std::vector<UInt64> rowSAD(noCol, UInt64(0));
+  std::vector<UInt64> colSAD(noCol,  UInt64(0));
+  std::vector<UInt64> rowSAD(noRows, UInt64(0));
   UInt colIdx = 0;
   UInt rowIdx = 0;
   Pel p0, p1, p2, q0, q1, q2;
