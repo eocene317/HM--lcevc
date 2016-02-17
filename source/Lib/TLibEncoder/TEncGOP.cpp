@@ -2534,8 +2534,8 @@ Void TEncGOP::applyDeblockingFilterMetric( TComPic* pcPic, UInt uiNumSlices )
   const UInt noRows = (picHeight>>log2maxTB);
   assert(noCol > 1);
   assert(noRows > 1);
-  UInt64 *colSAD = (UInt64*)malloc(noCol*sizeof(UInt64));
-  UInt64 *rowSAD = (UInt64*)malloc(noRows*sizeof(UInt64));
+  std::vector<UInt64> colSAD(noCol, UInt64(0));
+  std::vector<UInt64> rowSAD(noCol, UInt64(0));
   UInt colIdx = 0;
   UInt rowIdx = 0;
   Pel p0, p1, p2, q0, q1, q2;
@@ -2547,9 +2547,6 @@ Void TEncGOP::applyDeblockingFilterMetric( TComPic* pcPic, UInt uiNumSlices )
   const Int thr2 = (beta>>2);
   const Int thr1 = 2*bitdepthScale;
   UInt a = 0;
-
-  memset(colSAD, 0, noCol*sizeof(UInt64));
-  memset(rowSAD, 0, noRows*sizeof(UInt64));
 
   if (maxTBsize > minBlockArtSize)
   {
@@ -2639,9 +2636,6 @@ Void TEncGOP::applyDeblockingFilterMetric( TComPic* pcPic, UInt uiNumSlices )
       pcPic->getSlice(i)->setDeblockingFilterTcOffsetDiv2(   pcPic->getSlice(i)->getPPS()->getDeblockingFilterTcOffsetDiv2()   );
     }
   }
-
-  free(colSAD);
-  free(rowSAD);
 }
 
 //! \}
