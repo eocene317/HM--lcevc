@@ -109,8 +109,8 @@ Void TEncTop::create ()
 
   if ( m_RCEnableRateControl )
   {
-    m_cRateCtrl.init( m_framesToBeEncoded, m_RCTargetBitrate, m_iFrameRate, m_iGOPSize, m_iSourceWidth, m_iSourceHeight,
-        m_maxCUWidth, m_maxCUHeight, m_RCKeepHierarchicalBit, m_RCUseLCUSeparateModel, m_GOPList );
+    m_cRateCtrl.init( m_framesToBeEncoded, m_RCTargetBitrate, (Int)( (Double)m_iFrameRate/m_temporalSubsampleRatio + 0.5), m_iGOPSize, m_iSourceWidth, m_iSourceHeight,
+                      m_maxCUWidth, m_maxCUHeight,m_RCKeepHierarchicalBit, m_RCUseLCUSeparateModel, m_GOPList );
   }
 
   m_pppcRDSbacCoder = new TEncSbac** [m_maxTotalCUDepth+1];
@@ -754,6 +754,19 @@ Void TEncTop::xInitHrdParameters()
   default:
     timingInfo->setNumUnitsInTick( 1001 );       timingInfo->setTimeScale    ( 60000 );
     break;
+  }
+
+  if (getTemporalSubsampleRatio()>1)
+  {
+    UInt temporalSubsampleRatio = getTemporalSubsampleRatio();
+    if ( Double(timingInfo->getNumUnitsInTick()) * temporalSubsampleRatio > std::numeric_limits<UInt>::max() )
+    {
+      timingInfo->setTimeScale( timingInfo->getTimeScale() / temporalSubsampleRatio );
+    }
+    else
+    {
+      timingInfo->setNumUnitsInTick( timingInfo->getNumUnitsInTick() * temporalSubsampleRatio );
+    }
   }
 
   Bool rateCnt = ( bitRate > 0 );

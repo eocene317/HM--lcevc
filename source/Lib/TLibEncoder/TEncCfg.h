@@ -102,6 +102,7 @@ protected:
   //==== File I/O ========
   Int       m_iFrameRate;
   Int       m_FrameSkip;
+  UInt      m_temporalSubsampleRatio;
   Int       m_iSourceWidth;
   Int       m_iSourceHeight;
   Window    m_conformanceWindow;
@@ -414,7 +415,8 @@ public:
   Void setLevel(Level::Tier tier, Level::Name level) { m_levelTier = tier; m_level = level; }
 
   Void      setFrameRate                    ( Int   i )      { m_iFrameRate = i; }
-  Void      setFrameSkip                    ( UInt i ) { m_FrameSkip = i; }
+  Void      setFrameSkip                    ( UInt  i )      { m_FrameSkip = i; }
+  Void      setTemporalSubsampleRatio       ( UInt  i )      { m_temporalSubsampleRatio = i; }
   Void      setSourceWidth                  ( Int   i )      { m_iSourceWidth = i; }
   Void      setSourceHeight                 ( Int   i )      { m_iSourceHeight = i; }
 
@@ -515,6 +517,7 @@ public:
   //====== Sequence ========
   Int       getFrameRate                    ()      { return  m_iFrameRate; }
   UInt      getFrameSkip                    ()      { return  m_FrameSkip; }
+  UInt      getTemporalSubsampleRatio       ()      { return  m_temporalSubsampleRatio; }
   Int       getSourceWidth                  ()      { return  m_iSourceWidth; }
   Int       getSourceHeight                 ()      { return  m_iSourceHeight; }
   Int       getFramesToBeEncoded            ()      { return  m_framesToBeEncoded; }

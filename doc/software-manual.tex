@@ -759,7 +759,13 @@ Specifies a number of frames to skip at beginning of input video file.
 \Option{FramesToBeEncoded (-f)} &
 %\ShortOption{-f} &
 \Default{0} &
-Specifies the number of frames to be encoded. When 0, all frames are coded.
+Specifies the number of frames to be encoded (see note regarding TemporalSubsampleRatio). When 0, all frames are coded.
+\\
+
+\Option{TemporalSubsampleRatio (-ts)} &
+%\ShortOption{-fs} &
+\Default{1} &
+Temporally subsamples the input video sequence. A value of $N$ will skip $(N-1)$ frames of input video after each coded input video frame. Note the FramesToBeEncoded does not account for the temporal skipping of frames, which will reduce the number of frames encoded accordingly. The reported bit rates will be reduced and VUI information is scaled so as to present the video at the correct speed. The minimum and default value is 1.
 \\
 
 \Option{FieldCoding} &

@@ -695,6 +695,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("AccessUnitDelimiter",                             m_AccessUnitDelimiter,                            false, "Enable Access Unit Delimiter NALUs")
   ("FrameRate,-fr",                                   m_iFrameRate,                                         0, "Frame rate")
   ("FrameSkip,-fs",                                   m_FrameSkip,                                         0u, "Number of frames to skip at start of input YUV")
+  ("TemporalSubsampleRatio,-ts",                      m_temporalSubsampleRatio,                            1u, "Temporal sub-sample ratio when reading input YUV")
   ("FramesToBeEncoded,f",                             m_framesToBeEncoded,                                  0, "Number of frames to be encoded (default=all)")
   ("ClipInputVideoToRec709Range",                     m_bClipInputVideoToRec709Range,                   false, "If true then clip input video to the Rec. 709 Range on loading when InternalBitDepth is less than MSBExtendedBitDepth")
   ("ClipOutputVideoToRec709Range",                    m_bClipOutputVideoToRec709Range,                  false, "If true then clip output video to the Rec. 709 Range on saving when OutputBitDepth is less than InternalBitDepth")
@@ -1075,6 +1076,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
    * Set any derived parameters
    */
 
+  m_framesToBeEncoded = ( m_framesToBeEncoded + m_temporalSubsampleRatio - 1 ) / m_temporalSubsampleRatio;
   m_adIntraLambdaModifier = cfg_adIntraLambdaModifier.values;
   if(m_isField)
   {
@@ -1666,6 +1668,7 @@ Void TAppEncCfg::xCheckParameter()
   xConfirmPara( m_inputColourSpaceConvert >= NUMBER_INPUT_COLOUR_SPACE_CONVERSIONS,         sTempIPCSC.c_str() );
   xConfirmPara( m_InputChromaFormatIDC >= NUM_CHROMA_FORMAT,                                "InputChromaFormatIDC must be either 400, 420, 422 or 444" );
   xConfirmPara( m_iFrameRate <= 0,                                                          "Frame rate must be more than 1" );
+  xConfirmPara( m_temporalSubsampleRatio < 1,                                               "Temporal subsample rate must be no less than 1" );
   xConfirmPara( m_framesToBeEncoded <= 0,                                                   "Total Number Of Frames encoded must be more than 0" );
   xConfirmPara( m_iGOPSize < 1 ,                                                            "GOP Size must be greater or equal to 1" );
   xConfirmPara( m_iGOPSize > 1 &&  m_iGOPSize % 2,                                          "GOP Size must be a multiple of 2, if GOP Size is greater than 1" );
@@ -2339,8 +2342,8 @@ Void TAppEncCfg::xPrintParameter()
   printf("Input          File                    : %s\n", m_inputFileName.c_str()          );
   printf("Bitstream      File                    : %s\n", m_bitstreamFileName.c_str()      );
   printf("Reconstruction File                    : %s\n", m_reconFileName.c_str()          );
-  printf("Real     Format                        : %dx%d %dHz\n", m_iSourceWidth - m_confWinLeft - m_confWinRight, m_iSourceHeight - m_confWinTop - m_confWinBottom, m_iFrameRate );
-  printf("Internal Format                        : %dx%d %dHz\n", m_iSourceWidth, m_iSourceHeight, m_iFrameRate );
+  printf("Real     Format                        : %dx%d %gHz\n", m_iSourceWidth - m_confWinLeft - m_confWinRight, m_iSourceHeight - m_confWinTop - m_confWinBottom, (Double)m_iFrameRate/m_temporalSubsampleRatio );
+  printf("Internal Format                        : %dx%d %gHz\n", m_iSourceWidth, m_iSourceHeight, (Double)m_iFrameRate/m_temporalSubsampleRatio );
   printf("Sequence PSNR output                   : %s\n", (m_printMSEBasedSequencePSNR ? "Linear average, MSE-based" : "Linear average only") );
   printf("Sequence MSE output                    : %s\n", (m_printSequenceMSE ? "Enabled" : "Disabled") );
   printf("Frame MSE output                       : %s\n", (m_printFrameMSE    ? "Enabled" : "Disabled") );

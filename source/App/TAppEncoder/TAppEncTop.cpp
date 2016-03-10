@@ -102,6 +102,7 @@ Void TAppEncTop::xInitLibCfg()
 
   m_cTEncTop.setFrameRate                                         ( m_iFrameRate );
   m_cTEncTop.setFrameSkip                                         ( m_FrameSkip );
+  m_cTEncTop.setTemporalSubsampleRatio                            ( m_temporalSubsampleRatio );
   m_cTEncTop.setSourceWidth                                       ( m_iSourceWidth );
   m_cTEncTop.setSourceHeight                                      ( m_iSourceHeight );
   m_cTEncTop.setConformanceWindow                                 ( m_confWinLeft, m_confWinRight, m_confWinTop, m_confWinBottom );
@@ -536,6 +537,11 @@ Void TAppEncTop::encode()
       xWriteOutput(bitstreamFile, iNumEncoded, outputAccessUnits);
       outputAccessUnits.clear();
     }
+    // temporally skip frames
+    if( m_temporalSubsampleRatio > 1 )
+    {
+      m_cTVideoIOYuvInputFile.skipFrames(m_temporalSubsampleRatio-1, m_iSourceWidth - m_aiPad[0], m_iSourceHeight - m_aiPad[1], m_InputChromaFormatIDC);
+    }
   }
 
   m_cTEncTop.printSummary(m_isField);
@@ -715,7 +721,7 @@ Void TAppEncTop::rateStatsAccum(const AccessUnit& au, const std::vector<UInt>& a
 
 Void TAppEncTop::printRateSummary()
 {
-  Double time = (Double) m_iFrameRcvd / m_iFrameRate;
+  Double time = (Double) m_iFrameRcvd / m_iFrameRate * m_temporalSubsampleRatio;
   printf("Bytes written to file: %u (%.3f kbps)\n", m_totalBytes, 0.008 * m_totalBytes / time);
   if (m_summaryVerboseness > 0)
   {
