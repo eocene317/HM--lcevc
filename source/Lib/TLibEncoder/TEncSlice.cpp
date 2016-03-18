@@ -339,6 +339,27 @@ Void TEncSlice::initEncSlice( TComPic* pcPic, const Int pocLast, const Int pocCu
   const Int temporalId=m_pcCfg->getGOPEntry(iGOPid).m_temporalId;
   const std::vector<Double> &intraLambdaModifiers=m_pcCfg->getIntraLambdaModifier();
 
+#if W0038_CQP_ADJ
+  if(rpcSlice->getPPS()->getSliceChromaQpFlag())
+  {
+    const Bool bUseIntraOrPeriodicOffset = rpcSlice->getSliceType()==I_SLICE || (m_pcCfg->getSliceChromaOffsetQpPeriodicity()!=0 && (rpcSlice->getPOC()%m_pcCfg->getSliceChromaOffsetQpPeriodicity())==0);
+    Int cbQP = bUseIntraOrPeriodicOffset? m_pcCfg->getSliceChromaOffsetQpIntraOrPeriodic(false) : m_pcCfg->getGOPEntry(iGOPid).m_CbQPoffset;
+    Int crQP = bUseIntraOrPeriodicOffset? m_pcCfg->getSliceChromaOffsetQpIntraOrPeriodic(true)  : m_pcCfg->getGOPEntry(iGOPid).m_CrQPoffset;
+
+    cbQP = Clip3( -12, 12, cbQP + rpcSlice->getPPS()->getQpOffset(COMPONENT_Cb) ) - rpcSlice->getPPS()->getQpOffset(COMPONENT_Cb); 
+    crQP = Clip3( -12, 12, crQP + rpcSlice->getPPS()->getQpOffset(COMPONENT_Cr) ) - rpcSlice->getPPS()->getQpOffset(COMPONENT_Cr); 
+    rpcSlice->setSliceChromaQpDelta(COMPONENT_Cb, Clip3( -12, 12, cbQP));
+    assert(rpcSlice->getSliceChromaQpDelta(COMPONENT_Cb)+rpcSlice->getPPS()->getQpOffset(COMPONENT_Cb)<=12 && rpcSlice->getSliceChromaQpDelta(COMPONENT_Cb)+rpcSlice->getPPS()->getQpOffset(COMPONENT_Cb)>=-12);
+    rpcSlice->setSliceChromaQpDelta(COMPONENT_Cr, Clip3( -12, 12, crQP));
+    assert(rpcSlice->getSliceChromaQpDelta(COMPONENT_Cr)+rpcSlice->getPPS()->getQpOffset(COMPONENT_Cr)<=12 && rpcSlice->getSliceChromaQpDelta(COMPONENT_Cr)+rpcSlice->getPPS()->getQpOffset(COMPONENT_Cr)>=-12);
+  }
+  else
+  {
+    rpcSlice->setSliceChromaQpDelta( COMPONENT_Cb, 0 );
+    rpcSlice->setSliceChromaQpDelta( COMPONENT_Cr, 0 );
+  }
+#endif
+
   Double lambdaModifier;
   if( rpcSlice->getSliceType( ) != I_SLICE || intraLambdaModifiers.empty())
   {
@@ -382,8 +403,10 @@ Void TEncSlice::initEncSlice( TComPic* pcPic, const Int pocLast, const Int pocCu
   rpcSlice->setSliceQpBase       ( iQP );
 #endif
   rpcSlice->setSliceQpDelta      ( 0 );
+#if !W0038_CQP_ADJ
   rpcSlice->setSliceChromaQpDelta( COMPONENT_Cb, 0 );
   rpcSlice->setSliceChromaQpDelta( COMPONENT_Cr, 0 );
+#endif
   rpcSlice->setUseChromaQpAdj( rpcSlice->getPPS()->getPpsRangeExtension().getChromaQpOffsetListEnabledFlag() );
   rpcSlice->setNumRefIdx(REF_PIC_LIST_0,m_pcCfg->getGOPEntry(iGOPid).m_numRefPicsActive);
   rpcSlice->setNumRefIdx(REF_PIC_LIST_1,m_pcCfg->getGOPEntry(iGOPid).m_numRefPicsActive);

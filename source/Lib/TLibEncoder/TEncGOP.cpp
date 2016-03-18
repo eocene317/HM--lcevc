@@ -98,6 +98,9 @@ TEncGOP::TEncGOP()
   m_bufferingPeriodSEIPresentInAU = false;
   m_associatedIRAPType = NAL_UNIT_CODED_SLICE_IDR_N_LP;
   m_associatedIRAPPOC  = 0;
+#if W0038_DB_OPT
+  m_pcDeblockingTempPicYuv = NULL;
+#endif
   return;
 }
 
@@ -115,6 +118,14 @@ Void  TEncGOP::create()
 
 Void  TEncGOP::destroy()
 {
+#if W0038_DB_OPT
+  if (m_pcDeblockingTempPicYuv)
+  {
+    m_pcDeblockingTempPicYuv->destroy();
+    delete m_pcDeblockingTempPicYuv;
+    m_pcDeblockingTempPicYuv = NULL;
+  }
+#endif
 }
 
 Void TEncGOP::init ( TEncTop* pcTEncTop )
@@ -1588,7 +1599,18 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     m_pcLoopFilter->setCfg(bLFCrossTileBoundary);
     if ( m_pcCfg->getDeblockingFilterMetric() )
     {
-      applyDeblockingFilterMetric(pcPic, uiNumSliceSegments);
+#if W0038_DB_OPT
+      if ( m_pcCfg->getDeblockingFilterMetric()==2 )
+      {
+        applyDeblockingFilterParameterSelection(pcPic, uiNumSliceSegments, iGOPid);
+      }
+      else
+      {
+#endif
+        applyDeblockingFilterMetric(pcPic, uiNumSliceSegments);
+#if W0038_DB_OPT
+      }
+#endif
     }
     m_pcLoopFilter->loopFilterPic( pcPic );
 
@@ -2642,4 +2664,124 @@ Void TEncGOP::applyDeblockingFilterMetric( TComPic* pcPic, UInt uiNumSlices )
   }
 }
 
+#if W0038_DB_OPT
+Void TEncGOP::applyDeblockingFilterParameterSelection( TComPic* pcPic, const UInt numSlices, const Int gopID )
+{
+  enum DBFltParam
+  {
+    DBFLT_PARAM_AVAILABLE = 0,
+    DBFLT_DISABLE_FLAG,
+    DBFLT_BETA_OFFSETD2,
+    DBFLT_TC_OFFSETD2,
+    //NUM_DBFLT_PARAMS
+  };
+  const Int MAX_BETA_OFFSET = 3;
+  const Int MIN_BETA_OFFSET = -3;
+  const Int MAX_TC_OFFSET = 3;
+  const Int MIN_TC_OFFSET = -3;
+
+  TComPicYuv* pcPicYuvRec = pcPic->getPicYuvRec();
+  TComPicYuv* pcPicYuvOrg = pcPic ->getPicYuvOrg();
+
+  const Int currQualityLayer = (pcPic->getSlice(0)->getSliceType() != I_SLICE) ? m_pcCfg->getGOPEntry(gopID).m_temporalId+1 : 0;
+  assert(currQualityLayer <MAX_ENCODER_DEBLOCKING_QUALITY_LAYERS);
+
+  if(!m_pcDeblockingTempPicYuv)
+  {
+    m_pcDeblockingTempPicYuv         = new TComPicYuv;
+    m_pcDeblockingTempPicYuv->create( m_pcEncTop->getSourceWidth(), m_pcEncTop->getSourceHeight(), m_pcEncTop->getChromaFormatIdc(),  pcPic->getSlice(0)->getSPS()->getMaxCUWidth(), pcPic->getSlice(0)->getSPS()->getMaxCUHeight(), pcPic->getSlice(0)->getSPS()->getMaxTotalCUDepth(),true );
+    memset(m_DBParam, 0, sizeof(m_DBParam));
+  }
+
+  //preserve current reconstruction
+  pcPicYuvRec->copyToPic(m_pcDeblockingTempPicYuv);
+
+  const Bool bNoFiltering      = m_DBParam[currQualityLayer][DBFLT_PARAM_AVAILABLE] && m_DBParam[currQualityLayer][DBFLT_DISABLE_FLAG]==false /*&& pcPic->getTLayer()==0*/;
+  const Int  maxBetaOffsetDiv2 = bNoFiltering? Clip3(MIN_BETA_OFFSET, MAX_BETA_OFFSET, m_DBParam[currQualityLayer][DBFLT_BETA_OFFSETD2]+1) : MAX_BETA_OFFSET;
+  const Int  minBetaOffsetDiv2 = bNoFiltering? Clip3(MIN_BETA_OFFSET, MAX_BETA_OFFSET, m_DBParam[currQualityLayer][DBFLT_BETA_OFFSETD2]-1) : MIN_BETA_OFFSET;
+  const Int  maxTcOffsetDiv2   = bNoFiltering? Clip3(MIN_TC_OFFSET, MAX_TC_OFFSET, m_DBParam[currQualityLayer][DBFLT_TC_OFFSETD2]+2)       : MAX_TC_OFFSET;
+  const Int  minTcOffsetDiv2   = bNoFiltering? Clip3(MIN_TC_OFFSET, MAX_TC_OFFSET, m_DBParam[currQualityLayer][DBFLT_TC_OFFSETD2]-2)       : MIN_TC_OFFSET;
+
+  UInt64 distBetaPrevious      = std::numeric_limits<UInt64>::max();
+  UInt64 distMin               = std::numeric_limits<UInt64>::max();
+  Bool   bDBFilterDisabledBest = true;
+  Int    betaOffsetDiv2Best    = 0;
+  Int    tcOffsetDiv2Best      = 0;
+
+  for(Int betaOffsetDiv2=maxBetaOffsetDiv2; betaOffsetDiv2>=minBetaOffsetDiv2; betaOffsetDiv2--)
+  {
+    UInt64 distTcMin = std::numeric_limits<UInt64>::max();
+    for(Int tcOffsetDiv2=maxTcOffsetDiv2; tcOffsetDiv2 >= minTcOffsetDiv2; tcOffsetDiv2--)
+    {
+      for (Int i=0; i<numSlices; i++)
+      {
+        pcPic->getSlice(i)->setDeblockingFilterOverrideFlag(true);
+        pcPic->getSlice(i)->setDeblockingFilterDisable(false);
+        pcPic->getSlice(i)->setDeblockingFilterBetaOffsetDiv2( betaOffsetDiv2 );
+        pcPic->getSlice(i)->setDeblockingFilterTcOffsetDiv2( tcOffsetDiv2 );
+      }
+      m_pcDeblockingTempPicYuv->copyToPic(pcPicYuvRec); // restore reconstruction
+      m_pcLoopFilter->loopFilterPic( pcPic );
+      const UInt64 dist = xFindDistortionFrame(pcPicYuvOrg, pcPicYuvRec, pcPic->getPicSym()->getSPS().getBitDepths());
+      if(dist < distMin)
+      {
+        distMin = dist;
+        bDBFilterDisabledBest = false;
+        betaOffsetDiv2Best  = betaOffsetDiv2;
+        tcOffsetDiv2Best = tcOffsetDiv2;
+      }
+      if(dist < distTcMin)
+      {
+        distTcMin = dist;
+      }
+      else if(tcOffsetDiv2 <-2)
+      {
+        break;
+      }
+    }
+    if(betaOffsetDiv2<-1 && distTcMin >= distBetaPrevious)
+    {
+      break;
+    }
+    distBetaPrevious = distTcMin;
+  }
+
+  //update:
+  m_DBParam[currQualityLayer][DBFLT_PARAM_AVAILABLE] = 1;
+  m_DBParam[currQualityLayer][DBFLT_DISABLE_FLAG]    = bDBFilterDisabledBest;
+  m_DBParam[currQualityLayer][DBFLT_BETA_OFFSETD2]   = betaOffsetDiv2Best;
+  m_DBParam[currQualityLayer][DBFLT_TC_OFFSETD2]     = tcOffsetDiv2Best;
+
+  m_pcDeblockingTempPicYuv->copyToPic(pcPicYuvRec); //restore reconstruction
+
+  if(bDBFilterDisabledBest)
+  {
+    for (Int i=0; i<numSlices; i++)
+    {
+      pcPic->getSlice(i)->setDeblockingFilterOverrideFlag(true);
+      pcPic->getSlice(i)->setDeblockingFilterDisable(true);
+    }
+  }
+  else if(betaOffsetDiv2Best ==pcPic->getSlice(0)->getPPS()->getDeblockingFilterBetaOffsetDiv2() &&  tcOffsetDiv2Best==pcPic->getSlice(0)->getPPS()->getDeblockingFilterTcOffsetDiv2())
+  {
+    for (Int i=0; i<numSlices; i++)
+    {
+      pcPic->getSlice(i)->setDeblockingFilterOverrideFlag(false);
+      pcPic->getSlice(i)->setDeblockingFilterDisable(        pcPic->getSlice(i)->getPPS()->getPicDisableDeblockingFilterFlag() );
+      pcPic->getSlice(i)->setDeblockingFilterBetaOffsetDiv2( pcPic->getSlice(i)->getPPS()->getDeblockingFilterBetaOffsetDiv2() );
+      pcPic->getSlice(i)->setDeblockingFilterTcOffsetDiv2(   pcPic->getSlice(i)->getPPS()->getDeblockingFilterTcOffsetDiv2()   );
+    }
+  }
+  else
+  {
+    for (Int i=0; i<numSlices; i++)
+    {
+      pcPic->getSlice(i)->setDeblockingFilterOverrideFlag(true);
+      pcPic->getSlice(i)->setDeblockingFilterDisable( false );
+      pcPic->getSlice(i)->setDeblockingFilterBetaOffsetDiv2(betaOffsetDiv2Best);
+      pcPic->getSlice(i)->setDeblockingFilterTcOffsetDiv2(tcOffsetDiv2Best);
+    }
+  }
+}
+#endif
 //! \}

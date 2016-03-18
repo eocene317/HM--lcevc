@@ -148,6 +148,10 @@ std::istringstream &operator>>(std::istringstream &in, GOPEntry &entry)     //in
   in>>entry.m_sliceType;
   in>>entry.m_POC;
   in>>entry.m_QPOffset;
+#if W0038_CQP_ADJ
+  in>>entry.m_CbQPoffset;
+  in>>entry.m_CrQPoffset;
+#endif
   in>>entry.m_QPFactor;
   in>>entry.m_tcOffsetDiv2;
   in>>entry.m_betaOffsetDiv2;
@@ -778,7 +782,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 
   ("CbQpOffset,-cbqpofs",                             m_cbQpOffset,                                         0, "Chroma Cb QP Offset")
   ("CrQpOffset,-crqpofs",                             m_crQpOffset,                                         0, "Chroma Cr QP Offset")
-
+#if W0038_CQP_ADJ
+  ("SliceChromaQPOffsetPeriodicity",                  m_sliceChromaQpOffsetPeriodicity,                    0u, "Used in conjunction with Slice Cb/Cr QpOffsetIntraOrPeriodic. Use 0 (default) to disable periodic nature.")
+  ("SliceCbQpOffsetIntraOrPeriodic",                  m_sliceChromaQpOffsetIntraOrPeriodic[0],              0, "Chroma Cb QP Offset at slice level for I slice or for periodic inter slices as defined by SliceChromaQPOffsetPeriodicity. Replaces offset in the GOP table.")
+  ("SliceCrQpOffsetIntraOrPeriodic",                  m_sliceChromaQpOffsetIntraOrPeriodic[1],              0, "Chroma Cr QP Offset at slice level for I slice or for periodic inter slices as defined by SliceChromaQPOffsetPeriodicity. Replaces offset in the GOP table.")
+#endif
 #if ADAPTIVE_QP_SELECTION
   ("AdaptiveQpSelection,-aqps",                       m_bUseAdaptQpSelect,                              false, "AdaptiveQpSelection")
 #endif
@@ -798,8 +806,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("LoopFilterOffsetInPPS",                           m_loopFilterOffsetInPPS,                           true)
   ("LoopFilterBetaOffset_div2",                       m_loopFilterBetaOffsetDiv2,                           0)
   ("LoopFilterTcOffset_div2",                         m_loopFilterTcOffsetDiv2,                             0)
+#if W0038_DB_OPT
+  ("DeblockingFilterMetric",                          m_deblockingFilterMetric,                             0)
+#else
   ("DeblockingFilterMetric",                          m_DeblockingFilterMetric,                         false)
-
+#endif
   // Coding tools
   ("AMP",                                             m_enableAMP,                                       true, "Enable asymmetric motion partitions")
   ("CrossComponentPrediction",                        m_crossComponentPredictionEnabledFlag,            false, "Enable the use of cross-component prediction (not valid in V1 profiles)")
@@ -1720,7 +1731,11 @@ Void TAppEncCfg::xCheckParameter()
   }
 
   xConfirmPara( m_iQP <  -6 * (m_internalBitDepth[CHANNEL_TYPE_LUMA] - 8) || m_iQP > 51,    "QP exceeds supported range (-QpBDOffsety to 51)" );
+#if W0038_DB_OPT
+  xConfirmPara( m_deblockingFilterMetric!=0 && (m_bLoopFilterDisable || m_loopFilterOffsetInPPS), "If DeblockingFilterMetric is non-zero then both LoopFilterDisable and LoopFilterOffsetInPPS must be 0");
+#else
   xConfirmPara( m_DeblockingFilterMetric && (m_bLoopFilterDisable || m_loopFilterOffsetInPPS), "If DeblockingFilterMetric is true then both LoopFilterDisable and LoopFilterOffsetInPPS must be 0");
+#endif
   xConfirmPara( m_loopFilterBetaOffsetDiv2 < -6 || m_loopFilterBetaOffsetDiv2 > 6,        "Loop Filter Beta Offset div. 2 exceeds supported range (-6 to 6)");
   xConfirmPara( m_loopFilterTcOffsetDiv2 < -6 || m_loopFilterTcOffsetDiv2 > 6,            "Loop Filter Tc Offset div. 2 exceeds supported range (-6 to 6)");
   xConfirmPara( m_iSearchRange < 0 ,                                                        "Search Range must be more than 0" );
@@ -1884,6 +1899,20 @@ Void TAppEncCfg::xCheckParameter()
       xConfirmPara( (m_GOPList[i].m_tcOffsetDiv2 + m_loopFilterTcOffsetDiv2) < -6 || (m_GOPList[i].m_tcOffsetDiv2 + m_loopFilterTcOffsetDiv2) > 6, "Loop Filter Tc Offset div. 2 for one of the GOP entries exceeds supported range (-6 to 6)" );
     }
   }
+
+#if W0038_CQP_ADJ
+  for(Int i=0; i<m_iGOPSize; i++)
+  {
+    xConfirmPara( abs(m_GOPList[i].m_CbQPoffset               ) > 12, "Cb QP Offset for one of the GOP entries exceeds supported range (-12 to 12)" );
+    xConfirmPara( abs(m_GOPList[i].m_CbQPoffset + m_cbQpOffset) > 12, "Cb QP Offset for one of the GOP entries, when combined with the PPS Cb offset, exceeds supported range (-12 to 12)" );
+    xConfirmPara( abs(m_GOPList[i].m_CrQPoffset               ) > 12, "Cr QP Offset for one of the GOP entries exceeds supported range (-12 to 12)" );
+    xConfirmPara( abs(m_GOPList[i].m_CrQPoffset + m_crQpOffset) > 12, "Cr QP Offset for one of the GOP entries, when combined with the PPS Cr offset, exceeds supported range (-12 to 12)" );
+  }
+  xConfirmPara( abs(m_sliceChromaQpOffsetIntraOrPeriodic[0]                 > 12), "Intra/periodic Cb QP Offset exceeds supported range (-12 to 12)" );
+  xConfirmPara( abs(m_sliceChromaQpOffsetIntraOrPeriodic[0]  + m_cbQpOffset > 12), "Intra/periodic Cb QP Offset, when combined with the PPS Cb offset, exceeds supported range (-12 to 12)" );
+  xConfirmPara( abs(m_sliceChromaQpOffsetIntraOrPeriodic[1]                 > 12), "Intra/periodic Cr QP Offset exceeds supported range (-12 to 12)" );
+  xConfirmPara( abs(m_sliceChromaQpOffsetIntraOrPeriodic[1]  + m_crQpOffset > 12), "Intra/periodic Cr QP Offset, when combined with the PPS Cr offset, exceeds supported range (-12 to 12)" );
+#endif
 
   m_extraRPSs=0;
   //start looping through frames in coding order until we can verify that the GOP structure is correct.

@@ -50,6 +50,10 @@ struct GOPEntry
 {
   Int m_POC;
   Int m_QPOffset;
+#if W0038_CQP_ADJ
+  Int m_CbQPoffset;
+  Int m_CrQPoffset;
+#endif
   Double m_QPFactor;
   Int m_tcOffsetDiv2;
   Int m_betaOffsetDiv2;
@@ -68,6 +72,10 @@ struct GOPEntry
   GOPEntry()
   : m_POC(-1)
   , m_QPOffset(0)
+#if W0038_CQP_ADJ
+  , m_CbQPoffset(0)
+  , m_CrQPoffset(0)
+#endif
   , m_QPFactor(0)
   , m_tcOffsetDiv2(0)
   , m_betaOffsetDiv2(0)
@@ -131,7 +139,7 @@ protected:
   Bool              m_lowerBitRateConstraintFlag;
 
   //====== Coding Structure ========
-  UInt      m_uiIntraPeriod;
+  UInt      m_uiIntraPeriod;                    // TODO: make this an Int - it can be -1!
   UInt      m_uiDecodingRefreshType;            ///< the type of decoding refresh employed for the random access.
   Int       m_iGOPSize;
   GOPEntry  m_GOPList[MAX_GOP];
@@ -166,7 +174,11 @@ protected:
   Bool      m_loopFilterOffsetInPPS;
   Int       m_loopFilterBetaOffsetDiv2;
   Int       m_loopFilterTcOffsetDiv2;
+#if W0038_DB_OPT
+  Int       m_deblockingFilterMetric;
+#else
   Bool      m_DeblockingFilterMetric;
+#endif
   Bool      m_bUseSAO;
   Bool      m_bTestSAODisableAtPictureLevel;
   Double    m_saoEncodingRate;       // When non-0 SAO early picture termination is enabled for luma and chroma
@@ -191,6 +203,11 @@ protected:
 
   Int       m_chromaCbQpOffset;                 //  Chroma Cb QP Offset (0:default)
   Int       m_chromaCrQpOffset;                 //  Chroma Cr Qp Offset (0:default)
+#if W0038_CQP_ADJ
+  UInt      m_sliceChromaQpOffsetPeriodicity;                 ///< Used in conjunction with Slice Cb/Cr QpOffsetIntraOrPeriodic. Use 0 (default) to disable periodic nature.
+  Int       m_sliceChromaQpOffsetIntraOrPeriodic[2/*Cb,Cr*/]; ///< Chroma Cb QP Offset at slice level for I slice or for periodic inter slices as defined by SliceChromaQPOffsetPeriodicity. Replaces offset in the GOP table.
+#endif
+
   ChromaFormat m_chromaFormatIDC;
 
 #if ADAPTIVE_QP_SELECTION
@@ -475,8 +492,11 @@ public:
   Void      setLoopFilterOffsetInPPS        ( Bool  b )      { m_loopFilterOffsetInPPS      = b; }
   Void      setLoopFilterBetaOffset         ( Int   i )      { m_loopFilterBetaOffsetDiv2  = i; }
   Void      setLoopFilterTcOffset           ( Int   i )      { m_loopFilterTcOffsetDiv2    = i; }
+#if W0038_DB_OPT
+  Void      setDeblockingFilterMetric       ( Int   i )      { m_deblockingFilterMetric = i; }
+#else
   Void      setDeblockingFilterMetric       ( Bool  b )      { m_DeblockingFilterMetric = b; }
-
+#endif
   //====== Motion search ========
   Void      setDisableIntraPUsInInterSlices ( Bool  b )      { m_bDisableIntraPUsInInterSlices = b; }
   Void      setMotionEstimationSearchMethod ( MESearchMethod e ) { m_motionEstimationSearchMethod = e; }
@@ -496,6 +516,11 @@ public:
 
   Void      setChromaCbQpOffset             ( Int   i )      { m_chromaCbQpOffset = i; }
   Void      setChromaCrQpOffset             ( Int   i )      { m_chromaCrQpOffset = i; }
+#if W0038_CQP_ADJ
+  Void      setSliceChromaOffsetQpIntraOrPeriodic( UInt periodicity, Int sliceChromaQpOffsetIntraOrPeriodic[2]) { m_sliceChromaQpOffsetPeriodicity = periodicity; memcpy(m_sliceChromaQpOffsetIntraOrPeriodic, sliceChromaQpOffsetIntraOrPeriodic, sizeof(m_sliceChromaQpOffsetIntraOrPeriodic)); }
+  Int       getSliceChromaOffsetQpIntraOrPeriodic( Bool bIsCr) const                                            { return m_sliceChromaQpOffsetIntraOrPeriodic[bIsCr?1:0]; }
+  UInt      getSliceChromaOffsetQpPeriodicity() const                                                           { return m_sliceChromaQpOffsetPeriodicity; }
+#endif
 
   Void      setChromaFormatIdc              ( ChromaFormat cf ) { m_chromaFormatIDC = cf; }
   ChromaFormat  getChromaFormatIdc          ( )              { return m_chromaFormatIDC; }
@@ -554,7 +579,11 @@ public:
   Bool      getLoopFilterOffsetInPPS        ()      { return m_loopFilterOffsetInPPS; }
   Int       getLoopFilterBetaOffset         ()      { return m_loopFilterBetaOffsetDiv2; }
   Int       getLoopFilterTcOffset           ()      { return m_loopFilterTcOffsetDiv2; }
+#if W0038_DB_OPT
+  Int       getDeblockingFilterMetric       ()      { return m_deblockingFilterMetric; }
+#else
   Bool      getDeblockingFilterMetric       ()      { return m_DeblockingFilterMetric; }
+#endif
 
   //==== Motion search ========
   Bool      getDisableIntraPUsInInterSlices    () const { return m_bDisableIntraPUsInInterSlices; }

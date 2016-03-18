@@ -142,7 +142,11 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setLoopFilterOffsetInPPS                             ( m_loopFilterOffsetInPPS );
   m_cTEncTop.setLoopFilterBetaOffset                              ( m_loopFilterBetaOffsetDiv2  );
   m_cTEncTop.setLoopFilterTcOffset                                ( m_loopFilterTcOffsetDiv2    );
+#if W0038_DB_OPT
+  m_cTEncTop.setDeblockingFilterMetric                            ( m_deblockingFilterMetric );
+#else
   m_cTEncTop.setDeblockingFilterMetric                            ( m_DeblockingFilterMetric );
+#endif
 
   //====== Motion search ========
   m_cTEncTop.setDisableIntraPUsInInterSlices                      ( m_bDisableIntraPUsInInterSlices );
@@ -160,7 +164,9 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setDiffCuChromaQpOffsetDepth                         ( m_diffCuChromaQpOffsetDepth );
   m_cTEncTop.setChromaCbQpOffset                                  ( m_cbQpOffset     );
   m_cTEncTop.setChromaCrQpOffset                                  ( m_crQpOffset  );
-
+#if W0038_CQP_ADJ
+  m_cTEncTop.setSliceChromaOffsetQpIntraOrPeriodic                ( m_sliceChromaQpOffsetPeriodicity, m_sliceChromaQpOffsetIntraOrPeriodic );
+#endif
   m_cTEncTop.setChromaFormatIdc                                   ( m_chromaFormatIDC  );
 
 #if ADAPTIVE_QP_SELECTION

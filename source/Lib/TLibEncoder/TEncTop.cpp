@@ -919,6 +919,24 @@ Void TEncTop::xInitPPS()
 
   m_cPPS.setQpOffset(COMPONENT_Cb, m_chromaCbQpOffset );
   m_cPPS.setQpOffset(COMPONENT_Cr, m_chromaCrQpOffset );
+#if W0038_CQP_ADJ
+  Bool bChromaDeltaQPEnabled = false;
+  {
+    bChromaDeltaQPEnabled = ( m_sliceChromaQpOffsetIntraOrPeriodic[0] || m_sliceChromaQpOffsetIntraOrPeriodic[1] );
+    if( !bChromaDeltaQPEnabled )
+    {
+      for( Int i=0; i<m_iGOPSize; i++ )
+      {
+        if( m_GOPList[i].m_CbQPoffset || m_GOPList[i].m_CrQPoffset )
+        {
+          bChromaDeltaQPEnabled = true;
+          break;
+        }
+      }
+    }
+  }
+  m_cPPS.setSliceChromaQpFlag(bChromaDeltaQPEnabled);
+#endif
 
   m_cPPS.setEntropyCodingSyncEnabledFlag( m_entropyCodingSyncEnabledFlag );
   m_cPPS.setTilesEnabledFlag( (m_iNumColumnsMinus1 > 0 || m_iNumRowsMinus1 > 0) );
