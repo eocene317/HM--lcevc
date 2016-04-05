@@ -2317,6 +2317,15 @@ Void TAppEncCfg::xCheckParameter()
   {
     xConfirmPara( m_RCCpbSaturationEnabled != 0, "Target bits saturation cannot be processed without Rate control" );
   }
+  if (m_vuiParametersPresentFlag)
+  {
+    xConfirmPara(m_RCTargetBitrate == 0, "A target bit rate is required to be set for VUI/HRD parameters.");
+    if (m_RCCpbSize == 0)
+    {
+      printf ("Warning: CPB size is set equal to zero. Adjusting value to be equal to TargetBitrate!\n");
+      m_RCCpbSize = m_RCTargetBitrate;
+    }
+  }
 #endif
 
   xConfirmPara(!m_TransquantBypassEnableFlag && m_CUTransquantBypassFlagForce, "CUTransquantBypassFlagForce cannot be 1 when TransquantBypassEnableFlag is 0");

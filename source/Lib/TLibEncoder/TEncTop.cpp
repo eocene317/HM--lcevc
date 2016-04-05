@@ -701,6 +701,10 @@ Void TEncTop::xInitSPS()
 // calculate scale value of bitrate and initial delay
 Int calcScale(Int x)
 {
+  if (x==0)
+  {
+    return 0;
+  }
   UInt iMask = 0xffffffff;
   Int ScaleValue = 32;
 
