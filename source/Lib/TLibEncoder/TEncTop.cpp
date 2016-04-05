@@ -724,7 +724,7 @@ Void TEncTop::xInitHrdParameters()
   Bool isRandomAccess  = getIntraPeriod() > 0;
 # if U0132_TARGET_BITS_SATURATION
   Int cpbSize          = getCpbSize();
-
+  assert (cpbSize!=0);  // CPB size may not be equal to zero. ToDo: have a better default and check for level constraints
   if( !getVuiParametersPresentFlag() && !getCpbSaturationEnabled() )
 #else
   if( !getVuiParametersPresentFlag() )
