@@ -1909,11 +1909,7 @@ Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool pr
   if(isField)
   {
     //-- interlaced summary
-#if TEMPORAL_SUBSAMPLE
     m_gcAnalyzeAll_in.setFrmRate( m_pcCfg->getFrameRate() / (Double)m_pcCfg->getTemporalSubsampleRatio());
-#else
-    m_gcAnalyzeAll_in.setFrmRate( m_pcCfg->getFrameRate());
-#endif
     m_gcAnalyzeAll_in.setBits(m_gcAnalyzeAll.getBits());
     // prior to the above statement, the interlace analyser does not contain the correct total number of bits.
 
