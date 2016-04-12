@@ -222,8 +222,8 @@ Void TEncCavlc::codePPS( const TComPPS* pcPPS )
   if(pcPPS->getDeblockingFilterControlPresentFlag())
   {
     WRITE_FLAG( pcPPS->getDeblockingFilterOverrideEnabledFlag() ? 1 : 0,  "deblocking_filter_override_enabled_flag" );
-    WRITE_FLAG( pcPPS->getPicDisableDeblockingFilterFlag() ? 1 : 0,       "pps_disable_deblocking_filter_flag" );
-    if(!pcPPS->getPicDisableDeblockingFilterFlag())
+    WRITE_FLAG( pcPPS->getPPSDeblockingFilterDisabledFlag() ? 1 : 0,      "pps_deblocking_filter_disabled_flag" );
+    if(!pcPPS->getPPSDeblockingFilterDisabledFlag())
     {
       WRITE_SVLC( pcPPS->getDeblockingFilterBetaOffsetDiv2(),             "pps_beta_offset_div2" );
       WRITE_SVLC( pcPPS->getDeblockingFilterTcOffsetDiv2(),               "pps_tc_offset_div2" );

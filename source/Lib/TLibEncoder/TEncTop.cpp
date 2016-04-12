@@ -952,15 +952,15 @@ Void TEncTop::xInitPPS()
   if ( getDeblockingFilterMetric() )
   {
     m_cPPS.setDeblockingFilterOverrideEnabledFlag(true);
-    m_cPPS.setPicDisableDeblockingFilterFlag(false);
+    m_cPPS.setPPSDeblockingFilterDisabledFlag(false);
   }
   else
   {
     m_cPPS.setDeblockingFilterOverrideEnabledFlag( !getLoopFilterOffsetInPPS() );
-    m_cPPS.setPicDisableDeblockingFilterFlag( getLoopFilterDisable() );
+    m_cPPS.setPPSDeblockingFilterDisabledFlag( getLoopFilterDisable() );
   }
 
-  if (! m_cPPS.getPicDisableDeblockingFilterFlag())
+  if (! m_cPPS.getPPSDeblockingFilterDisabledFlag())
   {
     m_cPPS.setDeblockingFilterBetaOffsetDiv2( getLoopFilterBetaOffset() );
     m_cPPS.setDeblockingFilterTcOffsetDiv2( getLoopFilterTcOffset() );
@@ -973,7 +973,7 @@ Void TEncTop::xInitPPS()
 
   // deblockingFilterControlPresentFlag is true if any of the settings differ from the inferred values:
   const Bool deblockingFilterControlPresentFlag = m_cPPS.getDeblockingFilterOverrideEnabledFlag() ||
-                                                  m_cPPS.getPicDisableDeblockingFilterFlag()      ||
+                                                  m_cPPS.getPPSDeblockingFilterDisabledFlag()      ||
                                                   m_cPPS.getDeblockingFilterBetaOffsetDiv2() != 0 ||
                                                   m_cPPS.getDeblockingFilterTcOffsetDiv2() != 0;
 

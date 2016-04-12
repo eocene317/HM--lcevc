@@ -1112,7 +1112,7 @@ private:
   Bool             m_loopFilterAcrossSlicesEnabledFlag;
   Bool             m_deblockingFilterControlPresentFlag;
   Bool             m_deblockingFilterOverrideEnabledFlag;
-  Bool             m_picDisableDeblockingFilterFlag;
+  Bool             m_ppsDeblockingFilterDisabledFlag;
   Int              m_deblockingFilterBetaOffsetDiv2;    //< beta offset for deblocking filter
   Int              m_deblockingFilterTcOffsetDiv2;      //< tc offset for deblocking filter
   Bool             m_scalingListPresentFlag;
@@ -1211,8 +1211,8 @@ public:
   Bool                   getDeblockingFilterControlPresentFlag() const                    { return m_deblockingFilterControlPresentFlag;  }
   Void                   setDeblockingFilterOverrideEnabledFlag( Bool val )               { m_deblockingFilterOverrideEnabledFlag = val;  }
   Bool                   getDeblockingFilterOverrideEnabledFlag() const                   { return m_deblockingFilterOverrideEnabledFlag; }
-  Void                   setPicDisableDeblockingFilterFlag(Bool val)                      { m_picDisableDeblockingFilterFlag = val;       } //!< set offset for deblocking filter disabled
-  Bool                   getPicDisableDeblockingFilterFlag() const                        { return m_picDisableDeblockingFilterFlag;      } //!< get offset for deblocking filter disabled
+  Void                   setPPSDeblockingFilterDisabledFlag(Bool val)                     { m_ppsDeblockingFilterDisabledFlag = val;      } //!< set offset for deblocking filter disabled
+  Bool                   getPPSDeblockingFilterDisabledFlag() const                       { return m_ppsDeblockingFilterDisabledFlag;     } //!< get offset for deblocking filter disabled
   Void                   setDeblockingFilterBetaOffsetDiv2(Int val)                       { m_deblockingFilterBetaOffsetDiv2 = val;       } //!< set beta offset for deblocking filter
   Int                    getDeblockingFilterBetaOffsetDiv2() const                        { return m_deblockingFilterBetaOffsetDiv2;      } //!< get beta offset for deblocking filter
   Void                   setDeblockingFilterTcOffsetDiv2(Int val)                         { m_deblockingFilterTcOffsetDiv2 = val;         } //!< set tc offset for deblocking filter
