@@ -379,7 +379,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setCpbSize                                           ( m_RCCpbSize );
   m_cTEncTop.setInitialCpbFullness                                ( m_RCInitialCpbFullness );
 #endif
-  m_cTEncTop.setTransquantBypassEnableFlag                        ( m_TransquantBypassEnableFlag );
+  m_cTEncTop.setTransquantBypassEnabledFlag                       ( m_TransquantBypassEnabledFlag );
   m_cTEncTop.setCUTransquantBypassFlagForceValue                  ( m_CUTransquantBypassFlagForce );
   m_cTEncTop.setCostMode                                          ( m_costMode );
   m_cTEncTop.setUseRecalculateQPAccordingToLambda                 ( m_recalculateQPAccordingToLambda );

@@ -1091,7 +1091,7 @@ private:
   Bool             m_bUseWeightPred;                    //!< Use of Weighting Prediction (P_SLICE)
   Bool             m_useWeightedBiPred;                 //!< Use of Weighting Bi-Prediction (B_SLICE)
   Bool             m_OutputFlagPresentFlag;             //!< Indicates the presence of output_flag in slice header
-  Bool             m_TransquantBypassEnableFlag;        //!< Indicates presence of cu_transquant_bypass_flag in CUs.
+  Bool             m_TransquantBypassEnabledFlag;       //!< Indicates presence of cu_transquant_bypass_flag in CUs.
   Bool             m_useTransformSkip;
   Bool             m_dependentSliceSegmentsEnabledFlag; //!< Indicates the presence of dependent slices
   Bool             m_tilesEnabledFlag;                  //!< Indicates the presence of tiles
@@ -1176,8 +1176,8 @@ public:
 
   Void                   setOutputFlagPresentFlag( Bool b )                               { m_OutputFlagPresentFlag = b;                  }
   Bool                   getOutputFlagPresentFlag() const                                 { return m_OutputFlagPresentFlag;               }
-  Void                   setTransquantBypassEnableFlag( Bool b )                          { m_TransquantBypassEnableFlag = b;             }
-  Bool                   getTransquantBypassEnableFlag() const                            { return m_TransquantBypassEnableFlag;          }
+  Void                   setTransquantBypassEnabledFlag( Bool b )                         { m_TransquantBypassEnabledFlag = b;            }
+  Bool                   getTransquantBypassEnabledFlag() const                           { return m_TransquantBypassEnabledFlag;         }
 
   Bool                   getUseTransformSkip() const                                      { return m_useTransformSkip;                    }
   Void                   setUseTransformSkip( Bool b )                                    { m_useTransformSkip  = b;                      }

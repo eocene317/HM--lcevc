@@ -1360,7 +1360,7 @@ SChar TComDataCU::getLastCodedQP( UInt uiAbsPartIdx ) const
  */
 Bool TComDataCU::isLosslessCoded(UInt absPartIdx) const
 {
-  return (getSlice()->getPPS()->getTransquantBypassEnableFlag() && getCUTransquantBypass (absPartIdx));
+  return (getSlice()->getPPS()->getTransquantBypassEnabledFlag() && getCUTransquantBypass (absPartIdx));
 }
 
 

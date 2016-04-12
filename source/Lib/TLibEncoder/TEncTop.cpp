@@ -1008,7 +1008,7 @@ Void TEncTop::xInitPPS()
   assert(bestPos <= 15);
   m_cPPS.setNumRefIdxL0DefaultActive(bestPos);
   m_cPPS.setNumRefIdxL1DefaultActive(bestPos);
-  m_cPPS.setTransquantBypassEnableFlag(getTransquantBypassEnableFlag());
+  m_cPPS.setTransquantBypassEnabledFlag(getTransquantBypassEnabledFlag());
   m_cPPS.setUseTransformSkip( m_useTransformSkip );
   m_cPPS.getPpsRangeExtension().setLog2MaxTransformSkipBlockSize( m_log2MaxTransformSkipBlockSize  );
 
