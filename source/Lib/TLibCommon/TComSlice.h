@@ -1104,7 +1104,7 @@ private:
   std::vector<Int> m_tileColumnWidth;
   std::vector<Int> m_tileRowHeight;
 
-  Bool             m_signHideFlag;
+  Bool             m_signDataHidingEnabledFlag;
 
   Bool             m_cabacInitPresentFlag;
 
@@ -1202,8 +1202,8 @@ public:
   Void                   setTileRowHeight(const std::vector<Int>& rowHeight)              { m_tileRowHeight = rowHeight;                  }
   UInt                   getTileRowHeight(UInt rowIdx) const                              { return m_tileRowHeight[rowIdx];               }
 
-  Void                   setSignHideFlag( Bool signHideFlag )                             { m_signHideFlag = signHideFlag;                }
-  Bool                   getSignHideFlag() const                                          { return m_signHideFlag;                        }
+  Void                   setSignDataHidingEnabledFlag( Bool b )                           { m_signDataHidingEnabledFlag = b;              }
+  Bool                   getSignDataHidingEnabledFlag() const                             { return m_signDataHidingEnabledFlag;           }
 
   Void                   setCabacInitPresentFlag( Bool flag )                             { m_cabacInitPresentFlag = flag;                }
   Bool                   getCabacInitPresentFlag() const                                  { return m_cabacInitPresentFlag;                }

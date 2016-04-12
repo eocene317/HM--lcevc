@@ -947,7 +947,7 @@ Void TEncTop::xInitPPS()
   m_cPPS.setUseWP( m_useWeightedPred );
   m_cPPS.setWPBiPred( m_useWeightedBiPred );
   m_cPPS.setOutputFlagPresentFlag( false );
-  m_cPPS.setSignHideFlag(getSignHideFlag());
+  m_cPPS.setSignDataHidingEnabledFlag(getSignDataHidingEnabledFlag());
 
   if ( getDeblockingFilterMetric() )
   {

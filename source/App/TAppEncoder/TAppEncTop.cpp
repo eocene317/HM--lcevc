@@ -366,7 +366,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setTMVPModeId                                        ( m_TMVPModeId );
   m_cTEncTop.setUseScalingListId                                  ( m_useScalingListId  );
   m_cTEncTop.setScalingListFileName                               ( m_scalingListFileName );
-  m_cTEncTop.setSignHideFlag                                      ( m_signHideFlag);
+  m_cTEncTop.setSignDataHidingEnabledFlag                         ( m_signDataHidingEnabledFlag);
   m_cTEncTop.setUseRateCtrl                                       ( m_RCEnableRateControl );
   m_cTEncTop.setTargetBitrate                                     ( m_RCTargetBitrate );
   m_cTEncTop.setKeepHierBit                                       ( m_RCKeepHierarchicalBit );

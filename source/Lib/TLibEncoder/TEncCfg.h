@@ -356,7 +356,7 @@ protected:
   ScalingListMode m_useScalingListId;             ///< Using quantization matrix i.e. 0=off, 1=default, 2=file.
   std::string m_scalingListFileName;              ///< quantization matrix file name
   Int       m_TMVPModeId;
-  Bool      m_signHideFlag;
+  Bool      m_SignDataHidingEnabledFlag;
   Bool      m_RCEnableRateControl;
   Int       m_RCTargetBitrate;
   Int       m_RCKeepHierarchicalBit;
@@ -880,8 +880,8 @@ public:
   Int          getTMVPModeId ()                                      { return m_TMVPModeId; }
   WeightedPredictionMethod getWeightedPredictionMethod() const       { return m_weightedPredictionMethod; }
   Void         setWeightedPredictionMethod( WeightedPredictionMethod m ) { m_weightedPredictionMethod = m; }
-  Void         setSignHideFlag( Bool signHideFlag )                  { m_signHideFlag = signHideFlag; }
-  Bool         getSignHideFlag()                                     { return m_signHideFlag; }
+  Void         setSignDataHidingEnabledFlag( Bool b )                { m_SignDataHidingEnabledFlag = b;    }
+  Bool         getSignDataHidingEnabledFlag()                        { return m_SignDataHidingEnabledFlag; }
   Bool         getUseRateCtrl         ()                             { return m_RCEnableRateControl;   }
   Void         setUseRateCtrl         ( Bool b )                     { m_RCEnableRateControl = b;      }
   Int          getTargetBitrate       ()                             { return m_RCTargetBitrate;       }

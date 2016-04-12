@@ -206,7 +206,7 @@ Void TDecCavlc::parsePPS(TComPPS* pcPPS)
 
   READ_CODE(3, uiCode, "num_extra_slice_header_bits");                pcPPS->setNumExtraSliceHeaderBits(uiCode);
 
-  READ_FLAG ( uiCode, "sign_data_hiding_flag" ); pcPPS->setSignHideFlag( uiCode );
+  READ_FLAG ( uiCode, "sign_data_hiding_enabled_flag" );              pcPPS->setSignDataHidingEnabledFlag( uiCode );
 
   READ_FLAG( uiCode,   "cabac_init_present_flag" );            pcPPS->setCabacInitPresentFlag( uiCode ? true : false );
 
