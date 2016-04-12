@@ -291,11 +291,8 @@ Void TDecCavlc::parsePPS(TComPPS* pcPPS)
         pcPPS->setTileRowHeight(rowHeight);
       }
     }
-
-    if ((tileColumnsMinus1 + tileRowsMinus1) != 0)
-    {
-      READ_FLAG ( uiCode, "loop_filter_across_tiles_enabled_flag" );   pcPPS->setLoopFilterAcrossTilesEnabledFlag( uiCode ? true : false );
-    }
+    assert ((tileColumnsMinus1 + tileRowsMinus1) != 0);
+    READ_FLAG ( uiCode, "loop_filter_across_tiles_enabled_flag" );     pcPPS->setLoopFilterAcrossTilesEnabledFlag( uiCode ? true : false );
   }
   READ_FLAG( uiCode, "pps_loop_filter_across_slices_enabled_flag" );   pcPPS->setLoopFilterAcrossSlicesEnabledFlag( uiCode ? true : false );
   READ_FLAG( uiCode, "deblocking_filter_control_present_flag" );       pcPPS->setDeblockingFilterControlPresentFlag( uiCode ? true : false );
