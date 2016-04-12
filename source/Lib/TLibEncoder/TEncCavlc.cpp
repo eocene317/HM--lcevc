@@ -570,7 +570,7 @@ Void TEncCavlc::codeSPS( const TComSPS* pcSPS )
       WRITE_FLAG( pcSPS->getUsedByCurrPicLtSPSFlag(k), "used_by_curr_pic_lt_sps_flag[i]");
     }
   }
-  WRITE_FLAG( pcSPS->getTMVPFlagsPresent()  ? 1 : 0,           "sps_temporal_mvp_enable_flag" );
+  WRITE_FLAG( pcSPS->getSPSTemporalMVPEnabledFlag()  ? 1 : 0,  "sps_temporal_mvp_enabled_flag" );
 
   WRITE_FLAG( pcSPS->getUseStrongIntraSmoothing(),             "strong_intra_smoothing_enable_flag" );
 
@@ -887,7 +887,7 @@ Void TEncCavlc::codeSliceHeader         ( TComSlice* pcSlice )
           }
         }
       }
-      if (pcSlice->getSPS()->getTMVPFlagsPresent())
+      if (pcSlice->getSPS()->getSPSTemporalMVPEnabledFlag())
       {
         WRITE_FLAG( pcSlice->getEnableTMVPFlag() ? 1 : 0, "slice_temporal_mvp_enabled_flag" );
       }

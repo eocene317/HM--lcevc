@@ -798,7 +798,7 @@ private:
 
   TComRPSList      m_RPSList;
   Bool             m_bLongTermRefsPresent;
-  Bool             m_TMVPFlagsPresent;
+  Bool             m_SPSTemporalMVPEnabledFlag;
   Int              m_numReorderPics[MAX_TLAYER];
 
   // Tool list
@@ -922,8 +922,8 @@ public:
   TComRPSList*           getRPSList()                                                                    { return &m_RPSList;                                                   }
   Bool                   getLongTermRefsPresent() const                                                  { return m_bLongTermRefsPresent;                                       }
   Void                   setLongTermRefsPresent(Bool b)                                                  { m_bLongTermRefsPresent=b;                                            }
-  Bool                   getTMVPFlagsPresent() const                                                     { return m_TMVPFlagsPresent;                                           }
-  Void                   setTMVPFlagsPresent(Bool b)                                                     { m_TMVPFlagsPresent=b;                                                }
+  Bool                   getSPSTemporalMVPEnabledFlag() const                                            { return m_SPSTemporalMVPEnabledFlag;                                  }
+  Void                   setSPSTemporalMVPEnabledFlag(Bool b)                                            { m_SPSTemporalMVPEnabledFlag=b;                                       }
   // physical transform
   Void                   setMaxTrSize( UInt u )                                                          { m_uiMaxTrSize = u;                                                   }
   UInt                   getMaxTrSize() const                                                            { return  m_uiMaxTrSize;                                               }
