@@ -1405,7 +1405,7 @@ Void TDecCavlc::parseSliceHeader (TComSlice* pcSlice, ParameterSetManager *param
       }
       if(pcSlice->getDeblockingFilterOverrideFlag())
       {
-        READ_FLAG ( uiCode, "slice_disable_deblocking_filter_flag" );   pcSlice->setDeblockingFilterDisable(uiCode ? 1 : 0);
+        READ_FLAG ( uiCode, "slice_deblocking_filter_disabled_flag" );   pcSlice->setDeblockingFilterDisable(uiCode ? 1 : 0);
         if(!pcSlice->getDeblockingFilterDisable())
         {
           READ_SVLC( iCode, "slice_beta_offset_div2" );                       pcSlice->setDeblockingFilterBetaOffsetDiv2(iCode);

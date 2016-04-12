@@ -1041,7 +1041,7 @@ Void TEncCavlc::codeSliceHeader         ( TComSlice* pcSlice )
       }
       if (pcSlice->getDeblockingFilterOverrideFlag())
       {
-        WRITE_FLAG(pcSlice->getDeblockingFilterDisable(), "slice_disable_deblocking_filter_flag");
+        WRITE_FLAG(pcSlice->getDeblockingFilterDisable(), "slice_deblocking_filter_disabled_flag");
         if(!pcSlice->getDeblockingFilterDisable())
         {
           WRITE_SVLC (pcSlice->getDeblockingFilterBetaOffsetDiv2(), "slice_beta_offset_div2");
