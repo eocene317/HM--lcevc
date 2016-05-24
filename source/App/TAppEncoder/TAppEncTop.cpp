@@ -346,9 +346,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setSEIAlternativeTransferCharacteristicsSEIEnable    ( m_preferredTransferCharacteristics>=0     );
   m_cTEncTop.setSEIPreferredTransferCharacteristics               ( UChar(m_preferredTransferCharacteristics) );
 #endif
-  m_cTEncTop.setSEIGreenMetadataInfoSEIEnable                     ( m_greenMetadataType > 0 );
-  m_cTEncTop.setSEIGreenMetadataType                              ( UChar(m_greenMetadataType) );
-  m_cTEncTop.setSEIXSDMetricType                                  ( UChar(m_xsdMetricType) );
 
   m_cTEncTop.setTileUniformSpacingFlag                            ( m_tileUniformSpacingFlag );
   m_cTEncTop.setNumColumnsMinus1                                  ( m_numTileColumnsMinus1 );

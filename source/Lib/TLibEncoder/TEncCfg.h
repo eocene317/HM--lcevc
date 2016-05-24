@@ -347,9 +347,6 @@ protected:
   Bool      m_alternativeTransferCharacteristicsSEIEnabled;
   UChar     m_preferredTransferCharacteristics;
 #endif
-  Bool      m_greenMetadataInfoSEIEnabled;
-  UChar     m_greenMetadataType;
-  UChar     m_xsdMetricType;
   //====== Weighted Prediction ========
   Bool      m_useWeightedPred;       //< Use of Weighting Prediction (P_SLICE)
   Bool      m_useWeightedBiPred;    //< Use of Bi-directional Weighting Prediction (B_SLICE)
@@ -866,13 +863,6 @@ public:
   Void  setSEIPreferredTransferCharacteristics(UChar v)              { m_preferredTransferCharacteristics = v;    }
   UChar getSEIPreferredTransferCharacteristics() const               { return m_preferredTransferCharacteristics; }
 #endif
-  Void  setSEIGreenMetadataInfoSEIEnable( Bool b)                    { m_greenMetadataInfoSEIEnabled = b;    }
-  Bool  getSEIGreenMetadataInfoSEIEnable( ) const                    { return m_greenMetadataInfoSEIEnabled; }
-  Void  setSEIGreenMetadataType(UChar v)                             { m_greenMetadataType = v;    }
-  UChar getSEIGreenMetadataType() const                              { return m_greenMetadataType; }
-  Void  setSEIXSDMetricType(UChar v)                                 { m_xsdMetricType = v;    }
-  UChar getSEIXSDMetricType() const                                  { return m_xsdMetricType; }
-
   const TComSEIMasteringDisplay &getMasteringDisplaySEI() const      { return m_masteringDisplay; }
   Void         setUseWP               ( Bool b )                     { m_useWeightedPred   = b;    }
   Void         setWPBiPred            ( Bool b )                     { m_useWeightedBiPred = b;    }

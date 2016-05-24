@@ -327,25 +327,24 @@ Void TComCUMvField::setAllMvField( TComMvField const & mvField, PartSize eCUMode
  * \param pePredMode Pointer to prediction modes
  * \param scale      Factor by which to subsample motion information
  */
-Void TComCUMvField::compress(SChar *pePredMode, const SChar* pePredModeSource, const Int scale, const TComCUMvField &source)
+Void TComCUMvField::compress(SChar* pePredMode, Int scale)
 {
-  const Int numSubpartsWithIdenticalMotion = scale * scale;
-  assert( numSubpartsWithIdenticalMotion > 0 && numSubpartsWithIdenticalMotion <= m_uiNumPartition);
-  assert(source.m_uiNumPartition == m_uiNumPartition);
+  Int N = scale * scale;
+  assert( N > 0 && N <= m_uiNumPartition);
 
-  for ( Int partIdx = 0; partIdx < m_uiNumPartition; partIdx += numSubpartsWithIdenticalMotion )
+  for ( Int uiPartIdx = 0; uiPartIdx < m_uiNumPartition; uiPartIdx += N )
   {
     TComMv cMv(0,0);
     Int iRefIdx = 0;
 
-    cMv = source.m_pcMv[ partIdx ];
-    PredMode predMode = static_cast<PredMode>( pePredModeSource[ partIdx ] );
-    iRefIdx = source.m_piRefIdx[ partIdx ];
-    for ( Int i = 0; i < numSubpartsWithIdenticalMotion; i++ )
+    cMv = m_pcMv[ uiPartIdx ];
+    PredMode predMode = static_cast<PredMode>( pePredMode[ uiPartIdx ] );
+    iRefIdx = m_piRefIdx[ uiPartIdx ];
+    for ( Int i = 0; i < N; i++ )
     {
-      m_pcMv[ partIdx + i ] = cMv;
-      pePredMode[ partIdx + i ] = predMode;
-      m_piRefIdx[ partIdx + i ] = iRefIdx;
+      m_pcMv[ uiPartIdx + i ] = cMv;
+      pePredMode[ uiPartIdx + i ] = predMode;
+      m_piRefIdx[ uiPartIdx + i ] = iRefIdx;
     }
   }
 }

@@ -70,7 +70,6 @@ public:
     TONE_MAPPING_INFO                    = 23,
     FRAME_PACKING                        = 45,
     DISPLAY_ORIENTATION                  = 47,
-    GREEN_METADATA                       = 56,
     SOP_DESCRIPTION                      = 128,
     ACTIVE_PARAMETER_SETS                = 129,
     DECODING_UNIT_INFO                   = 130,
@@ -607,19 +606,6 @@ public:
   UInt m_preferredTransferCharacteristics;
 };
 #endif
-
-class SEIGreenMetadataInfo : public SEI
-{
-public:
-    PayloadType payloadType() const { return GREEN_METADATA; }
-    SEIGreenMetadataInfo() {}
-    
-    virtual ~SEIGreenMetadataInfo() {}
-    
-    UInt m_greenMetadataType;
-    UInt m_xsdMetricType;
-    UInt m_xsdMetricValue;
-};
 
 #endif
 

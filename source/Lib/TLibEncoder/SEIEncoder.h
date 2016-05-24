@@ -88,7 +88,6 @@ public:
   // trailing SEIs
   Void initDecodedPictureHashSEI(SEIDecodedPictureHash *sei, TComPic *pcPic, std::string &rHashString, const BitDepths &bitDepths);
   Void initTemporalLevel0IndexSEI(SEITemporalLevel0Index *sei, TComSlice *slice);
-  Void initSEIGreenMetadataInfo(SEIGreenMetadataInfo *sei, UInt u);
 
 private:
   TEncCfg* m_pcCfg;
