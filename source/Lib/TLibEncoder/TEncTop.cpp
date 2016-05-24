@@ -491,19 +491,21 @@ Void TEncTop::xGetNewPicBuffer ( TComPic*& rpcPic )
         break;
       }
     }
+    rpcPic->releaseAllReconstructionData();
+    rpcPic->prepareForEncoderSourcePicYuv();
   }
   else
   {
     if ( getUseAdaptiveQP() )
     {
       TEncPic* pcEPic = new TEncPic;
-      pcEPic->create( m_cSPS, m_cPPS, m_cPPS.getMaxCuDQPDepth()+1, false);
+      pcEPic->create( m_cSPS, m_cPPS, m_cPPS.getMaxCuDQPDepth()+1);
       rpcPic = pcEPic;
     }
     else
     {
       rpcPic = new TComPic;
-      rpcPic->create( m_cSPS, m_cPPS, false );
+      rpcPic->create( m_cSPS, m_cPPS, true, false );
     }
 
     m_cListPic.pushBack( rpcPic );
@@ -514,8 +516,6 @@ Void TEncTop::xGetNewPicBuffer ( TComPic*& rpcPic )
   m_iNumPicRcvd++;
 
   rpcPic->getSlice(0)->setPOC( m_iPOCLast );
-  // mark it should be extended
-  rpcPic->getPicYuvRec()->setBorderExtension(false);
 }
 
 Void TEncTop::xInitVPS()

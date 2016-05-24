@@ -152,7 +152,7 @@ public:
     m_piRefIdx = src->m_piRefIdx + offset;
   }
 
-  Void compress(SChar* pePredMode, Int scale);
+  Void compress(SChar *pePredMode, const SChar* pePredModeSource, const Int scale, const TComCUMvField &source);
 };
 
 //! \}

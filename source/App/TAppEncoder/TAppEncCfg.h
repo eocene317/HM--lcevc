@@ -325,6 +325,8 @@ protected:
 #if U0033_ALTERNATIVE_TRANSFER_CHARACTERISTICS_SEI
   Int       m_preferredTransferCharacteristics;
 #endif
+  UInt      m_greenMetadataType;
+  UInt      m_xsdMetricType;
 
   // weighted prediction
   Bool      m_useWeightedPred;                    ///< Use of weighted prediction in P slices
