@@ -1159,6 +1159,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     AccessUnit& accessUnit = accessUnitsInGOP.back();
     xGetBuffer( rcListPic, rcListPicYuvRecOut, iNumPicRcvd, iTimeOffset, pcPic, pcPicYuvRecOut, pocCurr, isField );
 
+#if REDUCED_ENCODER_MEMORY
+    pcPic->prepareForReconstruction();
+
+#endif
     //  Slice data initialization
     pcPic->clearSliceBuffer();
     pcPic->allocateNewSlice();
@@ -1871,6 +1875,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       iGOPid=effFieldIRAPMap.restoreGOPid(iGOPid);
     }
+#if REDUCED_ENCODER_MEMORY
+
+    pcPic->releaseReconstructionIntermediateData();
+    pcPic->releaseEncoderSourceImageData();
+
+#endif
   } // iGOPid-loop
 
   delete pcBitstreamRedirect;
