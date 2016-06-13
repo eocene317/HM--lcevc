@@ -1878,7 +1878,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 #if REDUCED_ENCODER_MEMORY
 
     pcPic->releaseReconstructionIntermediateData();
-    pcPic->releaseEncoderSourceImageData();
+    if (!isField) // don't release the source data for field-coding because the fields are dealt with in pairs. // TODO: release source data for interlace simulations.
+    {
+      pcPic->releaseEncoderSourceImageData();
+    }
 
 #endif
   } // iGOPid-loop
