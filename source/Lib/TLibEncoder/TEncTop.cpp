@@ -1072,7 +1072,7 @@ Void TEncTop::xInitRPS(TComSPS &sps, Bool isFieldCoding)
 
   for( Int i = 0; i < getGOPSize()+m_extraRPSs; i++)
   {
-    GOPEntry ge = getGOPEntry(i);
+    const GOPEntry &ge = getGOPEntry(i);
     rps = rpsList->getReferencePictureSet(i);
     rps->setNumberOfPictures(ge.m_numRefPics);
     rps->setNumRefIdc(ge.m_numRefIdc);
