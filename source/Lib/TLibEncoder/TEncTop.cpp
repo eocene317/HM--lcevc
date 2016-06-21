@@ -479,7 +479,16 @@ Void TEncTop::encode(Bool flush, TComPicYuv* pcPicYuvOrg, TComPicYuv* pcPicYuvTr
  */
 Void TEncTop::xGetNewPicBuffer ( TComPic*& rpcPic, Int ppsId )
 {
+  rpcPic=0;
+
   // At this point, the SPS and PPS can be considered activated - they are copied to the new TComPic.
+  const TComPPS *pPPS=(ppsId<0) ? m_ppsMap.getFirstPS() : m_ppsMap.getPS(ppsId);
+  assert (pPPS!=0);
+  const TComPPS &pps=*pPPS;
+
+  const TComSPS *pSPS=m_spsMap.getPS(pps.getSPSId());
+  assert (pSPS!=0);
+  const TComSPS &sps=*pSPS;
 
   TComSlice::sortPicList(m_cListPic);
 
@@ -500,28 +509,23 @@ Void TEncTop::xGetNewPicBuffer ( TComPic*& rpcPic, Int ppsId )
 
     // If PPS ID is the same, we will assume that it has not changed since it was last used
     // and return the old object.
-    if (ppsId == rpcPic->getPicSym()->getPPS().getPPSId())
+    if (pps.getPPSId() == rpcPic->getPicSym()->getPPS().getPPSId())
     {
 #if REDUCED_ENCODER_MEMORY
       rpcPic->releaseAllReconstructionData();
       rpcPic->prepareForEncoderSourcePicYuv();
 #endif
-      return;
     }
-
-    // the IDs differ - free up an entry in the list, and then create a new one, as with the case where the max buffering state has not been reached.
-    delete rpcPic;
-    m_cListPic.erase(iterPic);
+    else
+    {
+      // the IDs differ - free up an entry in the list, and then create a new one, as with the case where the max buffering state has not been reached.
+      delete rpcPic;
+      m_cListPic.erase(iterPic);
+      rpcPic=0;
+    }
   }
 
-  const TComPPS *pPPS=(ppsId<0) ? m_ppsMap.getFirstPS() : m_ppsMap.getPS(ppsId);
-  assert (pPPS!=0);
-  const TComPPS &pps=*pPPS;
-
-  const TComSPS *pSPS=m_spsMap.getPS(pps.getSPSId());
-  assert (pSPS!=0);
-  const TComSPS &sps=*pSPS;
-
+  if (rpcPic==0)
   {
     if ( getUseAdaptiveQP() )
     {
