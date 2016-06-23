@@ -200,6 +200,16 @@ Void TEncTop::init(Bool isFieldCoding)
   xInitPPS(pps0, sps0);
   xInitRPS(sps0, isFieldCoding);
 
+#if ER_CHROMA_QP_WCG_PPS
+  xInitScalingLists(sps0, pps0);
+
+  if (m_wcgChromaQpControl.isEnabled())
+  {
+    TComPPS &pps1=*(m_ppsMap.allocatePS(1));
+    xInitPPS(pps1, sps0);
+    xInitScalingLists(sps0, pps1);
+  }
+#endif
 
   // initialize processing unit classes
   m_cGOPEncoder.  init( this );
@@ -229,8 +239,10 @@ Void TEncTop::init(Bool isFieldCoding)
   m_cSearch.init( this, &m_cTrQuant, m_iSearchRange, m_bipredSearchRange, m_motionEstimationSearchMethod, m_maxCUWidth, m_maxCUHeight, m_maxTotalCUDepth, &m_cEntropyCoder, &m_cRdCost, getRDSbacCoder(), getRDGoOnSbacCoder() );
 
   m_iMaxRefPicNum = 0;
+#if !ER_CHROMA_QP_WCG_PPS
 
   xInitScalingLists(sps0, pps0);
+#endif
 }
 
 Void TEncTop::xInitScalingLists(TComSPS &sps, TComPPS &pps)
@@ -333,7 +345,16 @@ Void TEncTop::encode( Bool flush, TComPicYuv* pcPicYuvOrg, TComPicYuv* pcPicYuvT
     // get original YUV
     TComPic* pcPicCurr = NULL;
 
+#if ER_CHROMA_QP_WCG_PPS
+    Int ppsID=-1; // Use default PPS ID
+    if (getWCGChromaQPControl().isEnabled())
+    {
+      ppsID=getdQPs()[ m_iPOCLast+1 ];
+    }
+    xGetNewPicBuffer( pcPicCurr, ppsID );
+#else
     xGetNewPicBuffer( pcPicCurr, -1 ); // Uses default PPS ID. However, could be modified, for example, to use a PPS ID as a function of POC (m_iPOCLast+1)
+#endif
     pcPicYuvOrg->copyToPic( pcPicCurr->getPicYuvOrg() );
     pcPicYuvTrueOrg->copyToPic( pcPicCurr->getPicYuvTrueOrg() );
 
@@ -977,8 +998,26 @@ Void TEncTop::xInitPPS(TComPPS &pps, const TComSPS &sps)
   pps.getPpsRangeExtension().setLog2SaoOffsetScale(CHANNEL_TYPE_LUMA,   m_log2SaoOffsetScale[CHANNEL_TYPE_LUMA  ]);
   pps.getPpsRangeExtension().setLog2SaoOffsetScale(CHANNEL_TYPE_CHROMA, m_log2SaoOffsetScale[CHANNEL_TYPE_CHROMA]);
 
+#if ER_CHROMA_QP_WCG_PPS
+  if (getWCGChromaQPControl().isEnabled())
+  {
+    const Int baseQp=m_iQP+pps.getPPSId();
+    const Double chromaQp = m_wcgChromaQpControl.chromaQpScale * baseQp + m_wcgChromaQpControl.chromaQpOffset;
+    const Double dcbQP = m_wcgChromaQpControl.chromaCbQpScale * chromaQp;
+    const Double dcrQP = m_wcgChromaQpControl.chromaCrQpScale * chromaQp;
+    const Int cbQP =(Int)(dcbQP + ( dcbQP < 0 ? -0.5 : 0.5) );
+    const Int crQP =(Int)(dcrQP + ( dcrQP < 0 ? -0.5 : 0.5) );
+    pps.setQpOffset(COMPONENT_Cb, Clip3( -12, 12, min(0, cbQP) + m_chromaCbQpOffset ));
+    pps.setQpOffset(COMPONENT_Cr, Clip3( -12, 12, min(0, crQP) + m_chromaCrQpOffset));
+  }
+  else
+  {
+#endif
   pps.setQpOffset(COMPONENT_Cb, m_chromaCbQpOffset );
   pps.setQpOffset(COMPONENT_Cr, m_chromaCrQpOffset );
+#if ER_CHROMA_QP_WCG_PPS
+  }
+#endif
 #if W0038_CQP_ADJ
   Bool bChromaDeltaQPEnabled = false;
   {
