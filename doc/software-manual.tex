@@ -1232,6 +1232,32 @@ and cr_qp_offset, that are transmitted in the PPS.  Valid values are in
 the range $[-12, 12]$.
 \\
 
+\Option{LumaLevelToDeltaQPMode} &
+\Default{0} &
+Luma-level based Delta QP modulation.
+\par
+\begin{tabular}{cp{0.45\textwidth}}
+ 0 & not used \\
+ 1 & Based on CTU average \\
+ 2 & Based on Max luma in CTU\\
+\end{tabular}
+\\
+
+\Option{LumaLevelToDeltaQPMaxValWeight} &
+\Default{1.0} &
+Weight of per block maximum luma value when LumaLevelToDeltaQPMode=2.
+\\
+
+\Option{LumaLevelToDeltaQPMappingLuma} &
+\Default{\NotSet} &
+Specify luma values to use for the luma to delta QP mapping instead of using default values. Default values are: 0, 301, 367, 434, 501, 567, 634, 701, 767, 834.
+\\
+
+\Option{LumaLevelToDeltaQPMappingDQP} &
+\Default{\NotSet} &
+Specify DQP values to use for the luma to delta QP mapping instead of using default values. Default values are: -3, -2, -1, 0, 1, 2, 3, 4, 5, 6.
+\\
+
 \Option{SliceChromaQPOffsetPeriodicity} &
 \Default{0} &
 Defines the periodicity for inter slices that use the slice-level chroma QP offsets, as defined by SliceCbQpOffsetIntraOrPeriodic and SliceCrQpOffsetIntraOrPeriodic. A value of 0 disables the periodicity. It is intended to be used in low-delay configurations where an regular intra period is not defined.

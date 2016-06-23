@@ -181,6 +181,9 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setWeightedPredictionMethod( m_weightedPredictionMethod );
 
   //====== Tool list ========
+#if SHARP_LUMA_DELTA_QP
+  m_cTEncTop.setLumaLevelToDeltaQPControls                        ( m_lumaLevelToDeltaQPMapping );
+#endif
   m_cTEncTop.setDeltaQpRD                                         ( m_uiDeltaQpRD  );
   m_cTEncTop.setFastDeltaQp                                       ( m_bFastDeltaQP  );
   m_cTEncTop.setUseASR                                            ( m_bUseASR      );

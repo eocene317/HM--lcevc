@@ -1407,6 +1407,7 @@ public:
 
   Int                         getNumRefIdx( RefPicList e ) const                     { return m_aiNumRefIdx[e];                                      }
   TComPic*                    getPic()                                               { return m_pcPic;                                               }
+  const TComPic*              getPic() const                                         { return m_pcPic;                                               }
   TComPic*                    getRefPic( RefPicList e, Int iRefIdx)                  { return m_apcRefPicList[e][iRefIdx];                           }
   const TComPic*              getRefPic( RefPicList e, Int iRefIdx) const            { return m_apcRefPicList[e][iRefIdx];                           }
   Int                         getRefPOC( RefPicList e, Int iRefIdx) const            { return m_aiRefPOCList[e][iRefIdx];                            }

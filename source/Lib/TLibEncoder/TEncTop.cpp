@@ -205,6 +205,9 @@ Void TEncTop::init(Bool isFieldCoding)
   m_cGOPEncoder.  init( this );
   m_cSliceEncoder.init( this );
   m_cCuEncoder.   init( this );
+#if SHARP_LUMA_DELTA_QP
+  m_cCuEncoder.setSliceEncoder(&m_cSliceEncoder);
+#endif
 
   // initialize transform & quantization class
   m_pcCavlcCoder = getCavlcCoder();
@@ -928,6 +931,13 @@ Void TEncTop::xInitPPS(TComPPS &pps, const TComSPS &sps)
   {
     bUseDQP = true;
   }
+
+#if SHARP_LUMA_DELTA_QP
+  if ( getLumaLevelToDeltaQPMapping().isEnabled() )
+  {
+    bUseDQP = true;
+  }
+#endif
 
   if (m_costMode==COST_SEQUENCE_LEVEL_LOSSLESS || m_costMode==COST_LOSSLESS_CODING)
   {
