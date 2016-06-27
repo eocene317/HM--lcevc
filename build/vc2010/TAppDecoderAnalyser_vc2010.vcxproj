@@ -185,7 +185,7 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="TLibDecoderAnalyser_vc2010.vcxproj">
-      <Project>{f8b77a48-af6c-4746-a89f-b706aba6ad94}</Project>
+      <Project>{68C1251A-55D8-47C9-9052-62F785BD437A}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="TLibVideoIO_vc2010.vcxproj">
