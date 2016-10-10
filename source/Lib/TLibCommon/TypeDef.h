@@ -87,6 +87,7 @@
                                                             // To use this capability enable config parameter LambdaFromQpEnable
 #define OPTIONAL_RESET_SAO_ENCODING_AFTER_IRAP            1 ///< Adds command line option to reset SAO parameters after each IRAP.
 #define REDUCED_ENCODER_MEMORY                            1 ///< When 1, the encoder will allocate TComPic memory when required and release it when no longer required.
+#define FIX_RDOQ_BIT_ESTIMATE                             1 ///< Correct RDOQ initialisation of costs for configurations where a TU width!=height; this does not occur in current HEVC profiles but is included for future-proofing (eg JVET).
 
 // ====================================================================================================================
 // Tool Switches
