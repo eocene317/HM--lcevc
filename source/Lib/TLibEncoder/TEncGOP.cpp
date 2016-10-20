@@ -1193,8 +1193,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
     m_pcSliceEncoder->initEncSlice ( pcPic, iPOCLast, pocCurr, iGOPid, pcSlice, isField );
 
+#if !SHARP_LUMA_DELTA_QP
     //Set Frame/Field coding
     pcSlice->getPic()->setField(isField);
+#endif
 
     pcSlice->setLastIDR(m_iLastIDR);
     pcSlice->setSliceIdx(0);

@@ -173,6 +173,7 @@ Void TEncSlice::initEncSlice( TComPic* pcPic, const Int pocLast, const Int pocCu
   rpcSlice->setPOC( pocCurr );
 
 #if SHARP_LUMA_DELTA_QP
+  pcPic->setField(isField);
   m_gopID = iGOPid;
 #endif
 
