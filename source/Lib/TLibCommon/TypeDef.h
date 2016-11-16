@@ -117,7 +117,6 @@
 #define RExt__HIGH_BIT_DEPTH_SUPPORT                      0 ///< 0 (default) use data type definitions for 8-10 bit video, 1 = use larger data types to allow for up to 16-bit video (originally developed as part of N0188)
 #endif
 
-#define SHARP_LUMA_DELTA_QP                               1 ///< inculde non-normative LCU deltaQP and normative chromaQP change
 #define ER_CHROMA_QP_WCG_PPS                              1 ///< Chroma QP model for WCG used in Anchor 3.2
 
 
@@ -721,7 +720,6 @@ enum NalUnitType
   NAL_UNIT_INVALID,
 };
 
-#if SHARP_LUMA_DELTA_QP
 enum LumaLevelToDQPMode
 {
   LUMALVL_TO_DQP_DISABLED   = 0,
@@ -729,7 +727,6 @@ enum LumaLevelToDQPMode
   LUMALVL_TO_DQP_MAX_METHOD = 2,  // use maximum value of CTU to determine luma level
   LUMALVL_TO_DQP_NUM_MODES  = 3
 };
-#endif
 
 // ====================================================================================================================
 // Type definition
@@ -870,7 +867,6 @@ struct TComSEIMasteringDisplay
   UShort    whitePoint[2];
 };
 
-#if SHARP_LUMA_DELTA_QP
 struct LumaLevelToDeltaQPMapping
 {
   LumaLevelToDQPMode                 mode;             ///< use deltaQP determined by block luma level
@@ -878,7 +874,6 @@ struct LumaLevelToDeltaQPMapping
   std::vector< std::pair<Int, Int> > mapping;          ///< first=luma level, second=delta QP.
   Bool isEnabled() const { return mode!=LUMALVL_TO_DQP_DISABLED; }
 };
-#endif
 
 #if ER_CHROMA_QP_WCG_PPS
 struct WCGChromaQPControl

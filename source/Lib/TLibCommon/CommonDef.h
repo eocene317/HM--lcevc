@@ -243,9 +243,7 @@ static const Int LAST_SIGNIFICANT_GROUPS =                        10 ;
 
 static const Int MAX_ENCODER_DEBLOCKING_QUALITY_LAYERS =           8 ;
 
-#if SHARP_LUMA_DELTA_QP
 static const UInt LUMA_LEVEL_TO_DQP_LUT_MAXSIZE =                1024; ///< max LUT size for QP offset based on luma
-#endif
 
 // ====================================================================================================================
 // Macro functions
