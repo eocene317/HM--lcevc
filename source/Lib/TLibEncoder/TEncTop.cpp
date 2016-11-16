@@ -188,12 +188,11 @@ Void TEncTop::init(Bool isFieldCoding)
   xInitSPS(sps0);
   xInitVPS(m_cVPS, sps0);
 
-#if U0132_TARGET_BITS_SATURATION
   if (m_RCCpbSaturationEnabled)
   {
     m_cRateCtrl.initHrdParam(sps0.getVuiParameters()->getHrdParameters(), m_iFrameRate, m_RCInitialCpbFullness);
   }
-#endif
+
   m_cRdCost.setCostMode(m_costMode);
 
   // initialize PPS
@@ -737,11 +736,7 @@ Void TEncTop::xInitSPS(TComSPS &sps)
     sps.setUsedByCurrPicLtSPSFlag(k, 0);
   }
 
-#if U0132_TARGET_BITS_SATURATION
   if( getPictureTimingSEIEnabled() || getDecodingUnitInfoSEIEnabled() || getCpbSaturationEnabled() )
-#else
-  if( getPictureTimingSEIEnabled() || getDecodingUnitInfoSEIEnabled() )
-#endif
   {
     xInitHrdParameters(sps);
   }
@@ -764,7 +759,6 @@ Void TEncTop::xInitSPS(TComSPS &sps)
   sps.getSpsRangeExtension().setCabacBypassAlignmentEnabledFlag(m_cabacBypassAlignmentEnabledFlag);
 }
 
-#if U0132_TARGET_BITS_SATURATION
 // calculate scale value of bitrate and initial delay
 Int calcScale(Int x)
 {
@@ -783,19 +777,15 @@ Int calcScale(Int x)
 
   return ScaleValue;
 }
-#endif
+
 Void TEncTop::xInitHrdParameters(TComSPS &sps)
 {
   Bool useSubCpbParams = (getSliceMode() > 0) || (getSliceSegmentMode() > 0);
   Int  bitRate         = getTargetBitrate();
   Bool isRandomAccess  = getIntraPeriod() > 0;
-# if U0132_TARGET_BITS_SATURATION
   Int cpbSize          = getCpbSize();
   assert (cpbSize!=0);  // CPB size may not be equal to zero. ToDo: have a better default and check for level constraints
   if( !getVuiParametersPresentFlag() && !getCpbSaturationEnabled() )
-#else
-  if( !getVuiParametersPresentFlag() )
-#endif
   {
     return;
   }
@@ -857,7 +847,6 @@ Void TEncTop::xInitHrdParameters(TComSPS &sps)
     hrd->setSubPicCpbParamsInPicTimingSEIFlag( false );
   }
 
-#if U0132_TARGET_BITS_SATURATION
   if (calcScale(bitRate) <= 6)
   {
     hrd->setBitRateScale(0);
@@ -875,10 +864,6 @@ Void TEncTop::xInitHrdParameters(TComSPS &sps)
   {
     hrd->setCpbSizeScale(calcScale(cpbSize) - 4);
   }
-#else
-  hrd->setBitRateScale( 4 );                                       // in units of 2^( 6 + 4 ) = 1,024 bps
-  hrd->setCpbSizeScale( 6 );                                       // in units of 2^( 4 + 6 ) = 1,024 bit
-#endif
 
   hrd->setDuCpbSizeScale( 6 );                                     // in units of 2^( 4 + 6 ) = 1,024 bit
 
@@ -911,12 +896,7 @@ Void TEncTop::xInitHrdParameters(TComSPS &sps)
     // BitRate[ i ] = ( bit_rate_value_minus1[ i ] + 1 ) * 2^( 6 + bit_rate_scale )
     bitrateValue = bitRate / (1 << (6 + hrd->getBitRateScale()) );      // bitRate is in bits, so it needs to be scaled down
     // CpbSize[ i ] = ( cpb_size_value_minus1[ i ] + 1 ) * 2^( 4 + cpb_size_scale )
-#if U0132_TARGET_BITS_SATURATION
     cpbSizeValue = cpbSize / (1 << (4 + hrd->getCpbSizeScale()) );      // using bitRate results in 1 second CPB size
-#else
-    cpbSizeValue = bitRate / (1 << (4 + hrd->getCpbSizeScale()) );      // using bitRate results in 1 second CPB size
-#endif
-
 
     // DU CPB size could be smaller (i.e. bitrateValue / number of DUs), but we don't know 
     // in how many DUs the slice segment settings will result 

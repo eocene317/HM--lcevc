@@ -380,11 +380,9 @@ protected:
   Bool      m_RCUseLCUSeparateModel;
   Int       m_RCInitialQP;
   Bool      m_RCForceIntraQP;
-#if U0132_TARGET_BITS_SATURATION
-  Bool      m_RCCpbSaturationEnabled;                   
+  Bool      m_RCCpbSaturationEnabled;
   UInt      m_RCCpbSize;
   Double    m_RCInitialCpbFullness;
-#endif
   Bool      m_TransquantBypassEnabledFlag;                    ///< transquant_bypass_enabled_flag setting in PPS.
   Bool      m_CUTransquantBypassFlagForce;                    ///< if transquant_bypass_enabled_flag, then, if true, all CU transquant bypass flags will be set to true.
 
@@ -935,14 +933,12 @@ public:
   Void         setInitialQP           ( Int QP )                     { m_RCInitialQP = QP;             }
   Bool         getForceIntraQP        ()                             { return m_RCForceIntraQP;        }
   Void         setForceIntraQP        ( Bool b )                     { m_RCForceIntraQP = b;           }
-#if U0132_TARGET_BITS_SATURATION
   Bool         getCpbSaturationEnabled()                             { return m_RCCpbSaturationEnabled;}
   Void         setCpbSaturationEnabled( Bool b )                     { m_RCCpbSaturationEnabled = b;   }
   UInt         getCpbSize             ()                             { return m_RCCpbSize;}
   Void         setCpbSize             ( UInt ui )                    { m_RCCpbSize = ui;   }
   Double       getInitialCpbFullness  ()                             { return m_RCInitialCpbFullness;  }
   Void         setInitialCpbFullness  (Double f)                     { m_RCInitialCpbFullness = f;     }
-#endif
   Bool         getTransquantBypassEnabledFlag()                      { return m_TransquantBypassEnabledFlag; }
   Void         setTransquantBypassEnabledFlag(Bool flag)             { m_TransquantBypassEnabledFlag = flag; }
   Bool         getCUTransquantBypassFlagForceValue()                 { return m_CUTransquantBypassFlagForce; }
