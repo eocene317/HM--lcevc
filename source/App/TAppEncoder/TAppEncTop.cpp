@@ -164,9 +164,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setDiffCuChromaQpOffsetDepth                         ( m_diffCuChromaQpOffsetDepth );
   m_cTEncTop.setChromaCbQpOffset                                  ( m_cbQpOffset     );
   m_cTEncTop.setChromaCrQpOffset                                  ( m_crQpOffset  );
-#if ER_CHROMA_QP_WCG_PPS
   m_cTEncTop.setWCGChromaQpControl                                ( m_wcgChromaQpControl );
-#endif
   m_cTEncTop.setSliceChromaOffsetQpIntraOrPeriodic                ( m_sliceChromaQpOffsetPeriodicity, m_sliceChromaQpOffsetIntraOrPeriodic );
   m_cTEncTop.setChromaFormatIdc                                   ( m_chromaFormatIDC  );
 

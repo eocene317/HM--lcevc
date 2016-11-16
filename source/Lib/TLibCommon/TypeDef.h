@@ -117,9 +117,6 @@
 #define RExt__HIGH_BIT_DEPTH_SUPPORT                      0 ///< 0 (default) use data type definitions for 8-10 bit video, 1 = use larger data types to allow for up to 16-bit video (originally developed as part of N0188)
 #endif
 
-#define ER_CHROMA_QP_WCG_PPS                              1 ///< Chroma QP model for WCG used in Anchor 3.2
-
-
 #if defined __SSE2__ || defined __AVX2__ || defined __AVX__ || defined _M_AMD64 || defined _M_X64
 #define VECTOR_CODING__INTERPOLATION_FILTER               1 ///< enable vector coding for the interpolation filter. 1 (default if SSE possible) disable SSE vector coding. Should not affect RD costs/decisions. Code back-ported from JEM2.0.
 #define VECTOR_CODING__DISTORTION_CALCULATIONS            1 ///< enable vector coding for distortion calculations   1 (default if SSE possible) disable SSE vector coding. Should not affect RD costs/decisions. Code back-ported from JEM2.0.
@@ -875,7 +872,6 @@ struct LumaLevelToDeltaQPMapping
   Bool isEnabled() const { return mode!=LUMALVL_TO_DQP_DISABLED; }
 };
 
-#if ER_CHROMA_QP_WCG_PPS
 struct WCGChromaQPControl
 {
   Bool isEnabled() const { return enabled; }
@@ -885,7 +881,6 @@ struct WCGChromaQPControl
   Double chromaQpScale;   ///< Chroma QP Scale (0.0:default)
   Double chromaQpOffset;  ///< Chroma QP Offset (0.0:default)
 };
-#endif
 
 //! \}
 
