@@ -185,11 +185,7 @@ protected:
   Bool      m_loopFilterOffsetInPPS;
   Int       m_loopFilterBetaOffsetDiv2;
   Int       m_loopFilterTcOffsetDiv2;
-#if W0038_DB_OPT
   Int       m_deblockingFilterMetric;
-#else
-  Bool      m_DeblockingFilterMetric;
-#endif
   Bool      m_bUseSAO;
   Bool      m_bTestSAODisableAtPictureLevel;
   Double    m_saoEncodingRate;       // When non-0 SAO early picture termination is enabled for luma and chroma
@@ -508,15 +504,12 @@ public:
   Void setUseAMP( Bool b ) { m_useAMP = b; }
 
   //====== Loop/Deblock Filter ========
-  Void      setLoopFilterDisable            ( Bool  b )      { m_bLoopFilterDisable       = b; }
-  Void      setLoopFilterOffsetInPPS        ( Bool  b )      { m_loopFilterOffsetInPPS      = b; }
+  Void      setLoopFilterDisable            ( Bool  b )      { m_bLoopFilterDisable        = b; }
+  Void      setLoopFilterOffsetInPPS        ( Bool  b )      { m_loopFilterOffsetInPPS     = b; }
   Void      setLoopFilterBetaOffset         ( Int   i )      { m_loopFilterBetaOffsetDiv2  = i; }
   Void      setLoopFilterTcOffset           ( Int   i )      { m_loopFilterTcOffsetDiv2    = i; }
-#if W0038_DB_OPT
-  Void      setDeblockingFilterMetric       ( Int   i )      { m_deblockingFilterMetric = i; }
-#else
-  Void      setDeblockingFilterMetric       ( Bool  b )      { m_DeblockingFilterMetric = b; }
-#endif
+  Void      setDeblockingFilterMetric       ( Int   i )      { m_deblockingFilterMetric    = i; }
+
   //====== Motion search ========
   Void      setDisableIntraPUsInInterSlices ( Bool  b )      { m_bDisableIntraPUsInInterSlices = b; }
   Void      setMotionEstimationSearchMethod ( MESearchMethod e ) { m_motionEstimationSearchMethod = e; }
@@ -616,11 +609,7 @@ public:
   Bool      getLoopFilterOffsetInPPS        ()      { return m_loopFilterOffsetInPPS; }
   Int       getLoopFilterBetaOffset         ()      { return m_loopFilterBetaOffsetDiv2; }
   Int       getLoopFilterTcOffset           ()      { return m_loopFilterTcOffsetDiv2; }
-#if W0038_DB_OPT
   Int       getDeblockingFilterMetric       ()      { return m_deblockingFilterMetric; }
-#else
-  Bool      getDeblockingFilterMetric       ()      { return m_DeblockingFilterMetric; }
-#endif
 
   //==== Motion search ========
   Bool      getDisableIntraPUsInInterSlices    () const { return m_bDisableIntraPUsInInterSlices; }

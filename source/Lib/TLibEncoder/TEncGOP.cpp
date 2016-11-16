@@ -98,10 +98,7 @@ TEncGOP::TEncGOP()
   m_bufferingPeriodSEIPresentInAU = false;
   m_associatedIRAPType = NAL_UNIT_CODED_SLICE_IDR_N_LP;
   m_associatedIRAPPOC  = 0;
-#if W0038_DB_OPT
   m_pcDeblockingTempPicYuv = NULL;
-#endif
-  return;
 }
 
 TEncGOP::~TEncGOP()
@@ -118,14 +115,12 @@ Void  TEncGOP::create()
 
 Void  TEncGOP::destroy()
 {
-#if W0038_DB_OPT
   if (m_pcDeblockingTempPicYuv)
   {
     m_pcDeblockingTempPicYuv->destroy();
     delete m_pcDeblockingTempPicYuv;
     m_pcDeblockingTempPicYuv = NULL;
   }
-#endif
 }
 
 Void TEncGOP::init ( TEncTop* pcTEncTop )
@@ -1614,18 +1609,14 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     m_pcLoopFilter->setCfg(bLFCrossTileBoundary);
     if ( m_pcCfg->getDeblockingFilterMetric() )
     {
-#if W0038_DB_OPT
       if ( m_pcCfg->getDeblockingFilterMetric()==2 )
       {
         applyDeblockingFilterParameterSelection(pcPic, uiNumSliceSegments, iGOPid);
       }
       else
       {
-#endif
         applyDeblockingFilterMetric(pcPic, uiNumSliceSegments);
-#if W0038_DB_OPT
       }
-#endif
     }
     m_pcLoopFilter->loopFilterPic( pcPic );
 
@@ -2703,7 +2694,6 @@ Void TEncGOP::applyDeblockingFilterMetric( TComPic* pcPic, UInt uiNumSlices )
   }
 }
 
-#if W0038_DB_OPT
 Void TEncGOP::applyDeblockingFilterParameterSelection( TComPic* pcPic, const UInt numSlices, const Int gopID )
 {
   enum DBFltParam
@@ -2822,5 +2812,5 @@ Void TEncGOP::applyDeblockingFilterParameterSelection( TComPic* pcPic, const UIn
     }
   }
 }
-#endif
+
 //! \}

@@ -209,14 +209,10 @@ protected:
   Bool      m_saoResetEncoderStateAfterIRAP;                  ///< When true, SAO encoder state will be reset following an IRAP.
   // coding tools (loop filter)
   Bool      m_bLoopFilterDisable;                             ///< flag for using deblocking filter
-  Bool      m_loopFilterOffsetInPPS;                         ///< offset for deblocking filter in 0 = slice header, 1 = PPS
-  Int       m_loopFilterBetaOffsetDiv2;                     ///< beta offset for deblocking filter
-  Int       m_loopFilterTcOffsetDiv2;                       ///< tc offset for deblocking filter
-#if W0038_DB_OPT
+  Bool      m_loopFilterOffsetInPPS;                          ///< offset for deblocking filter in 0 = slice header, 1 = PPS
+  Int       m_loopFilterBetaOffsetDiv2;                       ///< beta offset for deblocking filter
+  Int       m_loopFilterTcOffsetDiv2;                         ///< tc offset for deblocking filter
   Int       m_deblockingFilterMetric;                         ///< blockiness metric in encoder
-#else
-  Bool      m_DeblockingFilterMetric;                         ///< blockiness metric in encoder
-#endif
   // coding tools (PCM)
   Bool      m_usePCM;                                         ///< flag for using IPCM
   UInt      m_pcmLog2MaxSize;                                 ///< log2 of maximum PCM block size
@@ -227,8 +223,8 @@ protected:
   // coding tools (encoder-only parameters)
   Bool      m_bUseASR;                                        ///< flag for using adaptive motion search range
   Bool      m_bUseHADME;                                      ///< flag for using HAD in sub-pel ME
-  Bool      m_useRDOQ;                                       ///< flag for using RD optimized quantization
-  Bool      m_useRDOQTS;                                     ///< flag for using RD optimized quantization for transform skip
+  Bool      m_useRDOQ;                                        ///< flag for using RD optimized quantization
+  Bool      m_useRDOQTS;                                      ///< flag for using RD optimized quantization for transform skip
 #if T0196_SELECTIVE_RDOQ
   Bool      m_useSelectiveRDOQ;                               ///< flag for using selective RDOQ
 #endif
