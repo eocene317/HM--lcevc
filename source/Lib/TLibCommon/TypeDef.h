@@ -81,7 +81,6 @@
 
 #define DECODER_CHECK_SUBSTREAM_AND_SLICE_TRAILING_BYTES  1 ///< TODO: integrate this macro into a broader conformance checking system.
 #define T0196_SELECTIVE_RDOQ                              1 ///< selective RDOQ
-#define U0033_ALTERNATIVE_TRANSFER_CHARACTERISTICS_SEI    1 ///< Alternative transfer characteristics SEI message (JCTVC-U0033, with syntax naming from V1005)
 #define X0038_LAMBDA_FROM_QP_CAPABILITY                   1 ///< This approach derives lambda from QP+QPoffset+QPoffset2. QPoffset2 is derived from QP+QPoffset using a linear model that is clipped between 0 and 3.
                                                             // To use this capability enable config parameter LambdaFromQpEnable
 #define OPTIONAL_RESET_SAO_ENCODING_AFTER_IRAP            1 ///< Adds command line option to reset SAO parameters after each IRAP.

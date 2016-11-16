@@ -360,10 +360,8 @@ protected:
   Int*      m_kneeSEIOutputKneePoint;
   std::string m_colourRemapSEIFileRoot;          ///< SEI Colour Remapping File (initialized from external file)
   TComSEIMasteringDisplay m_masteringDisplay;
-#if U0033_ALTERNATIVE_TRANSFER_CHARACTERISTICS_SEI
   Bool      m_alternativeTransferCharacteristicsSEIEnabled;
   UChar     m_preferredTransferCharacteristics;
-#endif
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
@@ -897,12 +895,10 @@ public:
   Void  setColourRemapInfoSEIFileRoot( const std::string &s )        { m_colourRemapSEIFileRoot = s; }
   const std::string &getColourRemapInfoSEIFileRoot() const           { return m_colourRemapSEIFileRoot; }
   Void  setMasteringDisplaySEI(const TComSEIMasteringDisplay &src)   { m_masteringDisplay = src; }
-#if U0033_ALTERNATIVE_TRANSFER_CHARACTERISTICS_SEI
   Void  setSEIAlternativeTransferCharacteristicsSEIEnable( Bool b)   { m_alternativeTransferCharacteristicsSEIEnabled = b;    }
   Bool  getSEIAlternativeTransferCharacteristicsSEIEnable( ) const   { return m_alternativeTransferCharacteristicsSEIEnabled; }
   Void  setSEIPreferredTransferCharacteristics(UChar v)              { m_preferredTransferCharacteristics = v;    }
   UChar getSEIPreferredTransferCharacteristics() const               { return m_preferredTransferCharacteristics; }
-#endif
   Void  setSEIGreenMetadataInfoSEIEnable( Bool b)                    { m_greenMetadataInfoSEIEnabled = b;    }
   Bool  getSEIGreenMetadataInfoSEIEnable( ) const                    { return m_greenMetadataInfoSEIEnabled; }
   Void  setSEIGreenMetadataType(UChar v)                             { m_greenMetadataType = v;    }

@@ -332,9 +332,7 @@ protected:
   Int       m_kneeSEINumKneePointsMinus1;
   Int*      m_kneeSEIInputKneePoint;
   Int*      m_kneeSEIOutputKneePoint;
-#if U0033_ALTERNATIVE_TRANSFER_CHARACTERISTICS_SEI
   Int       m_preferredTransferCharacteristics;
-#endif
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;
 
