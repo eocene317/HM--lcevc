@@ -407,7 +407,6 @@ Void TEncSlice::initEncSlice( TComPic* pcPic, const Int pocLast, const Int pocCu
   const std::vector<Double> &intraLambdaModifiers=m_pcCfg->getIntraLambdaModifier();
 #endif
 
-#if W0038_CQP_ADJ
   if(rpcSlice->getPPS()->getSliceChromaQpFlag())
   {
     const Bool bUseIntraOrPeriodicOffset = rpcSlice->getSliceType()==I_SLICE || (m_pcCfg->getSliceChromaOffsetQpPeriodicity()!=0 && (rpcSlice->getPOC()%m_pcCfg->getSliceChromaOffsetQpPeriodicity())==0);
@@ -426,7 +425,6 @@ Void TEncSlice::initEncSlice( TComPic* pcPic, const Int pocLast, const Int pocCu
     rpcSlice->setSliceChromaQpDelta( COMPONENT_Cb, 0 );
     rpcSlice->setSliceChromaQpDelta( COMPONENT_Cr, 0 );
   }
-#endif
 
 #if !X0038_LAMBDA_FROM_QP_CAPABILITY
   Double lambdaModifier;
@@ -474,10 +472,6 @@ Void TEncSlice::initEncSlice( TComPic* pcPic, const Int pocLast, const Int pocCu
   rpcSlice->setSliceQpBase       ( iQP );
 #endif
   rpcSlice->setSliceQpDelta      ( 0 );
-#if !W0038_CQP_ADJ
-  rpcSlice->setSliceChromaQpDelta( COMPONENT_Cb, 0 );
-  rpcSlice->setSliceChromaQpDelta( COMPONENT_Cr, 0 );
-#endif
   rpcSlice->setUseChromaQpAdj( rpcSlice->getPPS()->getPpsRangeExtension().getChromaQpOffsetListEnabledFlag() );
   rpcSlice->setNumRefIdx(REF_PIC_LIST_0,m_pcCfg->getGOPEntry(iGOPid).m_numRefPicsActive);
   rpcSlice->setNumRefIdx(REF_PIC_LIST_1,m_pcCfg->getGOPEntry(iGOPid).m_numRefPicsActive);

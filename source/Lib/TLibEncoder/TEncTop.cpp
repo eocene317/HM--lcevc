@@ -998,7 +998,6 @@ Void TEncTop::xInitPPS(TComPPS &pps, const TComSPS &sps)
 #if ER_CHROMA_QP_WCG_PPS
   }
 #endif
-#if W0038_CQP_ADJ
   Bool bChromaDeltaQPEnabled = false;
   {
     bChromaDeltaQPEnabled = ( m_sliceChromaQpOffsetIntraOrPeriodic[0] || m_sliceChromaQpOffsetIntraOrPeriodic[1] );
@@ -1015,7 +1014,6 @@ Void TEncTop::xInitPPS(TComPPS &pps, const TComSPS &sps)
     }
   }
   pps.setSliceChromaQpFlag(bChromaDeltaQPEnabled);
-#endif
 
   pps.setEntropyCodingSyncEnabledFlag( m_entropyCodingSyncEnabledFlag );
   pps.setTilesEnabledFlag( (m_iNumColumnsMinus1 > 0 || m_iNumRowsMinus1 > 0) );

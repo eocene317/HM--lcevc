@@ -54,10 +54,8 @@ struct GOPEntry
   Double m_QPOffsetModelOffset;
   Double m_QPOffsetModelScale;
 #endif
-#if W0038_CQP_ADJ
   Int m_CbQPoffset;
   Int m_CrQPoffset;
-#endif
   Double m_QPFactor;
   Int m_tcOffsetDiv2;
   Int m_betaOffsetDiv2;
@@ -80,10 +78,8 @@ struct GOPEntry
   , m_QPOffsetModelOffset(0)
   , m_QPOffsetModelScale(0)
 #endif
-#if W0038_CQP_ADJ
   , m_CbQPoffset(0)
   , m_CrQPoffset(0)
-#endif
   , m_QPFactor(0)
   , m_tcOffsetDiv2(0)
   , m_betaOffsetDiv2(0)
@@ -214,10 +210,8 @@ protected:
 #if ER_CHROMA_QP_WCG_PPS
   WCGChromaQPControl m_wcgChromaQpControl;                    ///< Wide-colour-gamut chroma QP control.
 #endif
-#if W0038_CQP_ADJ
   UInt      m_sliceChromaQpOffsetPeriodicity;                 ///< Used in conjunction with Slice Cb/Cr QpOffsetIntraOrPeriodic. Use 0 (default) to disable periodic nature.
   Int       m_sliceChromaQpOffsetIntraOrPeriodic[2/*Cb,Cr*/]; ///< Chroma Cb QP Offset at slice level for I slice or for periodic inter slices as defined by SliceChromaQPOffsetPeriodicity. Replaces offset in the GOP table.
-#endif
 
   ChromaFormat m_chromaFormatIDC;
 
@@ -533,11 +527,9 @@ public:
   Void      setWCGChromaQpControl           ( const WCGChromaQPControl &ctrl )     { m_wcgChromaQpControl = ctrl; }
   const WCGChromaQPControl &getWCGChromaQPControl () const { return m_wcgChromaQpControl; }
 #endif
-#if W0038_CQP_ADJ
   Void      setSliceChromaOffsetQpIntraOrPeriodic( UInt periodicity, Int sliceChromaQpOffsetIntraOrPeriodic[2]) { m_sliceChromaQpOffsetPeriodicity = periodicity; memcpy(m_sliceChromaQpOffsetIntraOrPeriodic, sliceChromaQpOffsetIntraOrPeriodic, sizeof(m_sliceChromaQpOffsetIntraOrPeriodic)); }
   Int       getSliceChromaOffsetQpIntraOrPeriodic( Bool bIsCr) const                                            { return m_sliceChromaQpOffsetIntraOrPeriodic[bIsCr?1:0]; }
   UInt      getSliceChromaOffsetQpPeriodicity() const                                                           { return m_sliceChromaQpOffsetPeriodicity; }
-#endif
 
   Void      setChromaFormatIdc              ( ChromaFormat cf ) { m_chromaFormatIDC = cf; }
   ChromaFormat  getChromaFormatIdc          ( )              { return m_chromaFormatIDC; }

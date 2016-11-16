@@ -167,9 +167,7 @@ Void TAppEncTop::xInitLibCfg()
 #if ER_CHROMA_QP_WCG_PPS
   m_cTEncTop.setWCGChromaQpControl                                ( m_wcgChromaQpControl );
 #endif
-#if W0038_CQP_ADJ
   m_cTEncTop.setSliceChromaOffsetQpIntraOrPeriodic                ( m_sliceChromaQpOffsetPeriodicity, m_sliceChromaQpOffsetIntraOrPeriodic );
-#endif
   m_cTEncTop.setChromaFormatIdc                                   ( m_chromaFormatIDC  );
 
 #if ADAPTIVE_QP_SELECTION
