@@ -223,9 +223,7 @@ protected:
   Bool      m_bUseHADME;                                      ///< flag for using HAD in sub-pel ME
   Bool      m_useRDOQ;                                        ///< flag for using RD optimized quantization
   Bool      m_useRDOQTS;                                      ///< flag for using RD optimized quantization for transform skip
-#if T0196_SELECTIVE_RDOQ
   Bool      m_useSelectiveRDOQ;                               ///< flag for using selective RDOQ
-#endif
   Int       m_rdPenalty;                                      ///< RD-penalty for 32x32 TU for intra in non-intra slices (0: no RD-penalty, 1: RD-penalty, 2: maximum RD-penalty)
   Bool      m_bDisableIntraPUsInInterSlices;                  ///< Flag for disabling intra predicted PUs in inter slices.
   MESearchMethod m_motionEstimationSearchMethod;

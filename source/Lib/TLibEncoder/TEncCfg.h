@@ -229,9 +229,7 @@ protected:
   Bool      m_bUseHADME;
   Bool      m_useRDOQ;
   Bool      m_useRDOQTS;
-#if T0196_SELECTIVE_RDOQ
   Bool      m_useSelectiveRDOQ;
-#endif
   UInt      m_rdPenalty;
   FastInterSearchMode m_fastInterSearchMode;
   Bool      m_bUseEarlyCU;
@@ -624,9 +622,7 @@ public:
   Void      setUseHADME                     ( Bool  b )     { m_bUseHADME   = b; }
   Void      setUseRDOQ                      ( Bool  b )     { m_useRDOQ    = b; }
   Void      setUseRDOQTS                    ( Bool  b )     { m_useRDOQTS  = b; }
-#if T0196_SELECTIVE_RDOQ
   Void      setUseSelectiveRDOQ             ( Bool b )      { m_useSelectiveRDOQ = b; }
-#endif
   Void      setRDpenalty                    ( UInt  u )     { m_rdPenalty  = u; }
   Void      setFastInterSearchMode          ( FastInterSearchMode m ) { m_fastInterSearchMode = m; }
   Void      setUseEarlyCU                   ( Bool  b )     { m_bUseEarlyCU = b; }
@@ -651,9 +647,7 @@ public:
   Bool      getUseHADME                     ()      { return m_bUseHADME;   }
   Bool      getUseRDOQ                      ()      { return m_useRDOQ;    }
   Bool      getUseRDOQTS                    ()      { return m_useRDOQTS;  }
-#if T0196_SELECTIVE_RDOQ
   Bool      getUseSelectiveRDOQ             ()      { return m_useSelectiveRDOQ; }
-#endif
   Int       getRDpenalty                    ()      { return m_rdPenalty;  }
   FastInterSearchMode getFastInterSearchMode() const{ return m_fastInterSearchMode;  }
   Bool      getUseEarlyCU                   ()      { return m_bUseEarlyCU; }
