@@ -112,6 +112,9 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setIntraPeriod                                       ( m_iIntraPeriod );
   m_cTEncTop.setDecodingRefreshType                               ( m_iDecodingRefreshType );
   m_cTEncTop.setGOPSize                                           ( m_iGOPSize );
+#if JCTVC_Y0038_PARAMS
+  m_cTEncTop.setReWriteParamSetsFlag                              ( m_bReWriteParamSetsFlag );
+#endif
   m_cTEncTop.setGopList                                           ( m_GOPList );
   m_cTEncTop.setExtraRPSs                                         ( m_extraRPSs );
   for(Int i = 0; i < MAX_TLAYER; i++)

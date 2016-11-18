@@ -1367,6 +1367,14 @@ Void  TEncCfg::xCheckGSParameters()
   }
 }
 
+#if JCTVC_Y0038_PARAMS
+Void TEncTop::setParamSetChanged(Int spsId, Int ppsId)
+{
+  m_ppsMap.setChangedFlag(ppsId);
+  m_spsMap.setChangedFlag(spsId);
+}
+#endif
+
 Bool TEncTop::PPSNeedsWriting(Int ppsId)
 {
   Bool bChanged=m_ppsMap.getChangedFlag(ppsId);
