@@ -1438,7 +1438,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       pcSlice->setMvdL1ZeroFlag(false);
     }
-    pcPic->getSlice(pcSlice->getSliceIdx())->setMvdL1ZeroFlag(pcSlice->getMvdL1ZeroFlag());
 
 
     Double lambda            = 0.0;
