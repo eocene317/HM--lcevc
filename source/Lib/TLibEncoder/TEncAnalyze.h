@@ -48,6 +48,9 @@
 #include "TLibCommon/CommonDef.h"
 #include "TLibCommon/TComChromaFormat.h"
 #include "math.h"
+#if EXTENSION_360_VIDEO
+#include "TAppEncHelper360/TExt360EncAnalyze.h"
+#endif
 
 //! \ingroup TLibEncoder
 //! \{
@@ -65,6 +68,10 @@ private:
   UInt      m_uiNumPic;
   Double    m_dFrmRate; //--CFG_KDY
   Double    m_MSEyuvframe[MAX_NUM_COMPONENT]; // sum of MSEs
+
+#if EXTENSION_360_VIDEO
+  TExt360EncAnalyze ext360;
+#endif
 
 public:
   virtual ~TEncAnalyze()  {}
@@ -86,6 +93,9 @@ public:
   Double  getBits()                   const { return  m_dAddBits;   }
   Void    setBits(Double numBits)     { m_dAddBits=numBits; }
   UInt    getNumPic()                 const { return  m_uiNumPic;   }
+#if EXTENSION_360_VIDEO
+  TExt360EncAnalyze& getExt360Info() { return ext360; }
+#endif
 
   Void    setFrmRate  (Double dFrameRate) { m_dFrmRate = dFrameRate; } //--CFG_KDY
   Void    clear()
@@ -97,6 +107,9 @@ public:
       m_MSEyuvframe[i] = 0;
     }
     m_uiNumPic = 0;
+#if EXTENSION_360_VIDEO
+    ext360.clear();
+#endif
   }
 
 
@@ -284,6 +297,10 @@ public:
           {
             printf( "\tTotal Frames |   "   "Bitrate     "  "Y-PSNR    "  "U-PSNR    "  "V-PSNR    "  "YUV-PSNR " );
             
+#if EXTENSION_360_VIDEO
+            ext360.printHeader();
+#endif
+
             if (printSequenceMSE)
             {
               printf( " Y-MSE     "  "U-MSE     "  "V-MSE    "  "YUV-MSE \n" );
@@ -301,6 +318,10 @@ public:
                    getPsnr(COMPONENT_Cb) / (Double)getNumPic(),
                    getPsnr(COMPONENT_Cr) / (Double)getNumPic(),
                    PSNRyuv );
+
+#if EXTENSION_360_VIDEO
+            ext360.printPSNRs(getNumPic());
+#endif
 
             if (printSequenceMSE)
             {

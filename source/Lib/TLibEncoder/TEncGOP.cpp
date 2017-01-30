@@ -2175,6 +2175,9 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     dPSNR[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
     MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize);
   }
+#if EXTENSION_360_VIDEO
+  m_ext360.calculatePSNRs(pcPic);
+#endif
 
 
   /* calculate the size of the access unit, excluding:
@@ -2200,20 +2203,33 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
   //===== add PSNR =====
   m_gcAnalyzeAll.addResult (dPSNR, (Double)uibits, MSEyuvframe);
+#if EXTENSION_360_VIDEO
+  m_ext360.addResult(m_gcAnalyzeAll);
+#endif
+
   TComSlice*  pcSlice = pcPic->getSlice(0);
   if (pcSlice->isIntra())
   {
     m_gcAnalyzeI.addResult (dPSNR, (Double)uibits, MSEyuvframe);
+#if EXTENSION_360_VIDEO
+    m_ext360.addResult(m_gcAnalyzeI);
+#endif
     *PSNR_Y = dPSNR[COMPONENT_Y];
   }
   if (pcSlice->isInterP())
   {
     m_gcAnalyzeP.addResult (dPSNR, (Double)uibits, MSEyuvframe);
+#if EXTENSION_360_VIDEO
+    m_ext360.addResult(m_gcAnalyzeP);
+#endif
     *PSNR_Y = dPSNR[COMPONENT_Y];
   }
   if (pcSlice->isInterB())
   {
     m_gcAnalyzeB.addResult (dPSNR, (Double)uibits, MSEyuvframe);
+#if EXTENSION_360_VIDEO
+    m_ext360.addResult(m_gcAnalyzeB);
+#endif
     *PSNR_Y = dPSNR[COMPONENT_Y];
   }
 
@@ -2245,6 +2261,9 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   {
     printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", MSEyuvframe[COMPONENT_Y], MSEyuvframe[COMPONENT_Cb], MSEyuvframe[COMPONENT_Cr] );
   }
+#if EXTENSION_360_VIDEO
+  m_ext360.printPerPOCInfo();
+#endif
   printf(" [ET %5.0f ]", dEncTime );
 
   // printf(" [WP %d]", pcSlice->getUseWeightedPrediction());
