@@ -170,7 +170,9 @@
     <ClCompile Include="..\..\source\Lib\TLibCommon\TComRom.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibCommon\TComSampleAdaptiveOffset.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibCommon\TComSlice.cpp" />
-    <ClCompile Include="..\..\source\Lib\TLibCommon\TComTrQuant.cpp" />
+    <ClCompile Include="..\..\source\Lib\TLibCommon\TComTrQuant.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/d2Qvec-sse2only %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="..\..\source\Lib\TLibCommon\TComTU.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibCommon\TComWeightPrediction.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibCommon\TComYuv.cpp" />
