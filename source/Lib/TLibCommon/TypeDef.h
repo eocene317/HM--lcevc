@@ -84,6 +84,8 @@
                                                             // To use this capability enable config parameter LambdaFromQpEnable
 #define JCTVC_Y0038_PARAMS                                1
 
+#define JVET_E0059_FLOATING_POINT_QP_FIX                  1 ///< Replace floating point QP with a source-file frame number.
+
 #ifndef EXTENSION_360_VIDEO
 #define EXTENSION_360_VIDEO                               0   ///< extension for 360/spherical video coding support; this macro should be controlled by makefile, as it would be used to control whether the library is built and linked
 #endif
