@@ -70,7 +70,7 @@ private:
   Double    m_MSEyuvframe[MAX_NUM_COMPONENT]; // sum of MSEs
 
 #if EXTENSION_360_VIDEO
-  TExt360EncAnalyze ext360;
+  TExt360EncAnalyze m_ext360;
 #endif
 
 public:
@@ -94,7 +94,7 @@ public:
   Void    setBits(Double numBits)     { m_dAddBits=numBits; }
   UInt    getNumPic()                 const { return  m_uiNumPic;   }
 #if EXTENSION_360_VIDEO
-  TExt360EncAnalyze& getExt360Info() { return ext360; }
+  TExt360EncAnalyze& getExt360Info() { return m_ext360; }
 #endif
 
   Void    setFrmRate  (Double dFrameRate) { m_dFrmRate = dFrameRate; } //--CFG_KDY
@@ -108,7 +108,7 @@ public:
     }
     m_uiNumPic = 0;
 #if EXTENSION_360_VIDEO
-    ext360.clear();
+    m_ext360.clear();
 #endif
   }
 
@@ -298,7 +298,7 @@ public:
             printf( "\tTotal Frames |   "   "Bitrate     "  "Y-PSNR    "  "U-PSNR    "  "V-PSNR    "  "YUV-PSNR " );
             
 #if EXTENSION_360_VIDEO
-            ext360.printHeader();
+            m_ext360.printHeader();
 #endif
 
             if (printSequenceMSE)
@@ -320,7 +320,7 @@ public:
                    PSNRyuv );
 
 #if EXTENSION_360_VIDEO
-            ext360.printPSNRs(getNumPic());
+            m_ext360.printPSNRs(getNumPic());
 #endif
 
             if (printSequenceMSE)
