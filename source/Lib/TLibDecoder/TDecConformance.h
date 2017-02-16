@@ -147,7 +147,7 @@ class ProfileLevelTierFeatures
 
     const ProfileFeatures     *getProfileFeatures()   const { return m_pProfile; }
     const LevelTierFeatures   *getLevelTierFeatures() const { return m_pLevelTier; }
-    const Level::Tier          getTier() const { return m_tier; }
+    Level::Tier                getTier() const { return m_tier; }
     UInt64 getCpbSizeInBits()            const { return (m_pLevelTier!=0 && m_pProfile!=0) ? UInt64(m_pProfile->cpbVclFactor) * m_pLevelTier->maxCpb[m_tier?1:0] : UInt64(0); }
     Double getMinCr()                    const { return (m_pLevelTier!=0 && m_pProfile!=0) ? (m_pProfile->minCrScaleFactorx10 * m_pLevelTier->minCrBase[m_tier?1:0])/10.0 : 0.0 ; }   // currently not used for checking
     UInt getMaxRawCtuBits()              const { return m_maxRawCtuBits; }
