@@ -66,9 +66,11 @@ clean: clean_highbitdepth
 	$(MAKE) -C lib/TLibDecoder              clean MM32=$(M32)
 	$(MAKE) -C lib/TLibEncoder              clean MM32=$(M32)
 	$(MAKE) -C lib/TAppCommon               clean MM32=$(M32)
-	$(MAKE) -C lib/TLib360                  clean MM32=$(M32)
-	$(MAKE) -C lib/TAppEncHelper360         clean MM32=$(M32)
-	$(MAKE) -C app/TApp360Convert           clean MM32=$(M32)
+	@if [ $(EXTENSION_360_VIDEO) -eq 1 ] ; then \
+	  $(MAKE) -C lib/TLib360                  clean MM32=$(M32) ; \
+	  $(MAKE) -C lib/TAppEncHelper360         clean MM32=$(M32) ; \
+	  $(MAKE) -C app/TApp360Convert           clean MM32=$(M32) ; \
+	fi
 	$(MAKE) -C app/TAppDecoder              clean MM32=$(M32)
 	$(MAKE) -C app/TAppEncoder              clean MM32=$(M32)
 	$(MAKE) -C utils/annexBbytecount        clean MM32=$(M32)
@@ -130,9 +132,11 @@ clean_highbitdepth:
 	$(MAKE) -C lib/TLibDecoder              clean MM32=$(M32) HIGHBITDEPTH=1
 	$(MAKE) -C lib/TLibEncoder              clean MM32=$(M32) HIGHBITDEPTH=1
 	$(MAKE) -C lib/TAppCommon               clean MM32=$(M32) HIGHBITDEPTH=1
-	$(MAKE) -C lib/TLib360                  clean MM32=$(M32) HIGHBITDEPTH=1
-	$(MAKE) -C lib/TAppEncHelper360         clean MM32=$(M32) HIGHBITDEPTH=1
-	$(MAKE) -C app/TApp360Convert           clean MM32=$(M32) HIGHBITDEPTH=1
+	@if [ $(EXTENSION_360_VIDEO) -eq 1 ] ; then \
+	  $(MAKE) -C lib/TLib360                  clean MM32=$(M32) HIGHBITDEPTH=1 ; \
+	  $(MAKE) -C lib/TAppEncHelper360         clean MM32=$(M32) HIGHBITDEPTH=1 ; \
+	  $(MAKE) -C app/TApp360Convert           clean MM32=$(M32) HIGHBITDEPTH=1 ; \
+	fi
 	$(MAKE) -C app/TAppDecoder              clean MM32=$(M32) HIGHBITDEPTH=1
 	$(MAKE) -C app/TAppEncoder              clean MM32=$(M32) HIGHBITDEPTH=1
 	$(MAKE) -C lib/TLibDecoderAnalyser      clean MM32=$(M32) HIGHBITDEPTH=1
