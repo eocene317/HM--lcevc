@@ -51,6 +51,7 @@
 #include "TDecSbac.h"
 #include "TDecCAVLC.h"
 #include "SEIread.h"
+#include "TDecConformance.h"
 
 class InputNALUnit;
 
@@ -90,6 +91,7 @@ private:
   SEIReader               m_seiReader;
   TComLoopFilter          m_cLoopFilter;
   TComSampleAdaptiveOffset m_cSAO;
+  TDecConformanceCheck    m_conformanceCheck;
 
   Bool isSkipPictureForBLA(Int& iPOCLastDisplay);
   Bool isRandomAccessSkipPicture(Int& iSkipFrame,  Int& iPOCLastDisplay);

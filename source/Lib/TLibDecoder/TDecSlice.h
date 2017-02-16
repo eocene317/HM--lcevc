@@ -57,6 +57,8 @@
 // Class definition
 // ====================================================================================================================
 
+class TDecConformanceCheck;
+
 /// slice decoder class
 class TDecSlice
 {
@@ -64,15 +66,15 @@ private:
   // access channel
   TDecEntropy*    m_pcEntropyDecoder;
   TDecCu*         m_pcCuDecoder;
+  TDecConformanceCheck *m_pDecConformanceCheck;
 
   TDecSbac        m_lastSliceSegmentEndContextState;    ///< context storage for state at the end of the previous slice-segment (used for dependent slices only).
   TDecSbac        m_entropyCodingSyncContextState;      ///< context storate for state of contexts at the wavefront/WPP/entropy-coding-sync second CTU of tile-row
-
 public:
   TDecSlice();
   virtual ~TDecSlice();
 
-  Void  init              ( TDecEntropy* pcEntropyDecoder, TDecCu* pcMbDecoder );
+  Void  init              ( TDecEntropy* pcEntropyDecoder, TDecCu* pcMbDecoder, TDecConformanceCheck *pDecConformanceCheck );
   Void  create            ();
   Void  destroy           ();
 
