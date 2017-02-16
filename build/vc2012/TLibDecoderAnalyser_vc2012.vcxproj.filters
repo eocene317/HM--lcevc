@@ -37,6 +37,9 @@
     <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecSlice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecConformance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\Lib\TLibDecoder\AnnexBread.h">
@@ -78,13 +81,18 @@
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecTop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecConformance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
       <UniqueIdentifier>{a5214d8c-1011-4ba6-a7a8-636f1748895c}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{66740226-f793-4905-a9b1-120c1c15e160}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
 </Project>

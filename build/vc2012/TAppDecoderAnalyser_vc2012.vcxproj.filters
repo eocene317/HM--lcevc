@@ -22,9 +22,11 @@
   <ItemGroup>
     <Filter Include="Header Files">
       <UniqueIdentifier>{400c04e5-8a2d-4e65-8d57-f59c30e78110}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{8fc5970e-5673-47ba-999b-aada746c9b46}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
 </Project>

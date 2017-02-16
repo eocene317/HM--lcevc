@@ -153,6 +153,7 @@
     <ClCompile Include="..\..\source\Lib\TLibDecoder\SyntaxElementParser.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecBinCoderCABAC.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecCAVLC.cpp" />
+    <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecConformance.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecCu.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecEntropy.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibDecoder\TDecGop.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecBinCoder.h" />
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecBinCoderCABAC.h" />
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecCAVLC.h" />
+    <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecConformance.h" />
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecCu.h" />
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecEntropy.h" />
     <ClInclude Include="..\..\source\Lib\TLibDecoder\TDecGop.h" />
