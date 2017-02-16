@@ -72,8 +72,10 @@ TDecConformanceCheck::getMaxLog2CtbSize(const TComPTL &/*ptl*/,
 
 
 TDecConformanceCheck::TDecConformanceCheck()
+#if DECODER_PARTIAL_CONFORMANCE_CHECK
   : m_numberOfSlicesInPicture(0),
     m_bytesInPicture(0)
+#endif
 {
 }
 

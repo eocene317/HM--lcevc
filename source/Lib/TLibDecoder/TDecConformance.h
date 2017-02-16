@@ -157,8 +157,10 @@ class ProfileLevelTierFeatures
 class TDecConformanceCheck
 {
 private:
+#if DECODER_PARTIAL_CONFORMANCE_CHECK
   UInt  m_numberOfSlicesInPicture;
   UInt64 m_bytesInPicture;
+#endif
   ProfileLevelTierFeatures m_activatedFeatures;
 
 public:
