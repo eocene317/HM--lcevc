@@ -1137,6 +1137,14 @@ Void TEncCavlc::codeProfileTier( const ProfileTierLevel* ptl, const Bool /*bIsSu
     WRITE_CODE(0 , 16, PTL_TRACE_TEXT("reserved_zero_34bits[16..31]"    ));
     WRITE_CODE(0 ,  2, PTL_TRACE_TEXT("reserved_zero_34bits[32..33]"    ));
   }
+  else if (ptl->getProfileIdc() == Profile::MAIN10)
+  {
+    WRITE_CODE(0x00   ,  7, PTL_TRACE_TEXT("reserved_zero_7bits"     ));
+    WRITE_FLAG(ptl->getOnePictureOnlyConstraintFlag(), PTL_TRACE_TEXT("one_picture_only_constraint_flag"));
+    WRITE_CODE(0x0000 , 16, PTL_TRACE_TEXT("reserved_zero_35bits[0..15]"     ));
+    WRITE_CODE(0x0000 , 16, PTL_TRACE_TEXT("reserved_zero_35bits[16..31]"    ));
+    WRITE_CODE(0x0    ,  3, PTL_TRACE_TEXT("reserved_zero_35bits[32..34]"    ));
+  }
   else
   {
     WRITE_CODE(0x0000 , 16, PTL_TRACE_TEXT("reserved_zero_43bits[0..15]"     ));

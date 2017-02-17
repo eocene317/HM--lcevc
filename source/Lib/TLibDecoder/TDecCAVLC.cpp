@@ -1631,9 +1631,20 @@ Void TDecCavlc::parseProfileTier(ProfileTierLevel *ptl, const Bool /*bIsSubLayer
     ptl->setChromaFormatConstraint(CHROMA_420);
     ptl->setIntraConstraintFlag(false);
     ptl->setLowerBitRateConstraintFlag(true);
-    READ_CODE(16, uiCode, PTL_TRACE_TEXT("reserved_zero_43bits[0..15]"     ));
-    READ_CODE(16, uiCode, PTL_TRACE_TEXT("reserved_zero_43bits[16..31]"    ));
-    READ_CODE(11, uiCode, PTL_TRACE_TEXT("reserved_zero_43bits[32..42]"    ));
+    if (ptl->getProfileIdc() == Profile::MAIN10           || ptl->getProfileCompatibilityFlag(Profile::MAIN10))
+    {
+      READ_CODE(7, uiCode, PTL_TRACE_TEXT("reserved_zero_7bits"     ));
+      READ_FLAG(    uiCode, PTL_TRACE_TEXT("one_picture_only_constraint_flag")); ptl->setOnePictureOnlyConstraintFlag(uiCode != 0);
+      READ_CODE(16, uiCode, PTL_TRACE_TEXT("reserved_zero_35bits[0..15]"     ));
+      READ_CODE(16, uiCode, PTL_TRACE_TEXT("reserved_zero_35bits[16..31]"    ));
+      READ_CODE(3,  uiCode, PTL_TRACE_TEXT("reserved_zero_35bits[32..34]"    ));
+    }
+    else
+    {
+      READ_CODE(16, uiCode, PTL_TRACE_TEXT("reserved_zero_43bits[0..15]"     ));
+      READ_CODE(16, uiCode, PTL_TRACE_TEXT("reserved_zero_43bits[16..31]"    ));
+      READ_CODE(11, uiCode, PTL_TRACE_TEXT("reserved_zero_43bits[32..42]"    ));
+    }
   }
 
   if ((ptl->getProfileIdc() >= Profile::MAIN && ptl->getProfileIdc() <= Profile::HIGHTHROUGHPUTREXT) ||

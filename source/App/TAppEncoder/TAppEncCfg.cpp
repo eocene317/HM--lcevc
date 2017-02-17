@@ -62,6 +62,7 @@ enum ExtendedProfileName // this is used for determining profile strings, where 
   NONE = 0,
   MAIN = 1,
   MAIN10 = 2,
+  MAIN10_STILL_PICTURE=10002,
   MAINSTILLPICTURE = 3,
   MAINREXT = 4,
   HIGHTHROUGHPUTREXT = 5, // Placeholder profile for development
@@ -209,6 +210,7 @@ strToProfile[] =
   {"main",                 Profile::MAIN               },
   {"main10",               Profile::MAIN10             },
   {"main-still-picture",   Profile::MAINSTILLPICTURE   },
+  {"main10-still-picture", Profile::MAIN10             },
   {"main-RExt",            Profile::MAINREXT           },
   {"high-throughput-RExt", Profile::HIGHTHROUGHPUTREXT }
 };
@@ -223,6 +225,8 @@ strToExtendedProfile[] =
     {"none",                      NONE             },
     {"main",                      MAIN             },
     {"main10",                    MAIN10           },
+    {"main10_still_picture",      MAIN10_STILL_PICTURE },
+    {"main10-still-picture",      MAIN10_STILL_PICTURE },
     {"main_still_picture",        MAINSTILLPICTURE },
     {"main-still-picture",        MAINSTILLPICTURE },
     {"main_RExt",                 MAINREXT         },
@@ -1252,7 +1256,12 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   }
   m_motionEstimationSearchMethod=MESearchMethod(tmpMotionEstimationSearchMethod);
 
-  if (extendedProfile >= 1000 && extendedProfile <= 12316)
+  if (extendedProfile == MAIN10_STILL_PICTURE)
+  {
+    m_profile = Profile::MAIN10;
+    m_onePictureOnlyConstraintFlag = true;
+  }
+  else if (extendedProfile >= 1000 && extendedProfile <= 12316)
   {
     m_profile = Profile::MAINREXT;
     if (m_bitDepthConstraint != 0 || tmpConstraintChromaFormat != 0)
@@ -1274,6 +1283,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   else
   {
     m_profile = Profile::Name(extendedProfile);
+    m_onePictureOnlyConstraintFlag = false;
   }
 
   if (m_profile == Profile::HIGHTHROUGHPUTREXT )
