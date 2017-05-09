@@ -484,7 +484,7 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, const 
       // keep using the same m_QP_LUMA_OFFSET in the same CTU
       m_lumaQPOffset = calculateLumaDQP(rpcTempCU, 0, m_ppcOrigYuv[uiDepth]);
     }
-    iMinQP = iBaseQP - m_lumaQPOffset;
+    iMinQP = Clip3(-sps.getQpBDOffset(CHANNEL_TYPE_LUMA), MAX_QP, iBaseQP - m_lumaQPOffset);
     iMaxQP = iMinQP; // force encode choose the modified QO
   }
 
@@ -812,7 +812,7 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, const 
 
   if ( m_pcEncCfg->getLumaLevelToDeltaQPMapping().isEnabled() )
   {
-    iMinQP = iBaseQP - m_lumaQPOffset;
+    iMinQP = Clip3(-sps.getQpBDOffset(CHANNEL_TYPE_LUMA), MAX_QP, iBaseQP - m_lumaQPOffset);
     iMaxQP = iMinQP;
   }
 
