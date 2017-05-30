@@ -56,17 +56,17 @@ public:
   {
     BUFFERING_PERIOD                     = 0,
     PICTURE_TIMING                       = 1,
-    PAN_SCAN_RECT                        = 2,
-    FILLER_PAYLOAD                       = 3,
-    USER_DATA_REGISTERED_ITU_T_T35       = 4,
-    USER_DATA_UNREGISTERED               = 5,
+    PAN_SCAN_RECT                        = 2,   // TODO: add encoder command line control to create these messages
+    FILLER_PAYLOAD                       = 3,   // TODO: add encoder command line control to create these messages
+    USER_DATA_REGISTERED_ITU_T_T35       = 4,   // TODO: add encoder command line control to create these messages
+    USER_DATA_UNREGISTERED               = 5,   // TODO: add encoder command line control to create these messages
     RECOVERY_POINT                       = 6,
-    SCENE_INFO                           = 9,
-    FULL_FRAME_SNAPSHOT                  = 15,
-    PROGRESSIVE_REFINEMENT_SEGMENT_START = 16,
-    PROGRESSIVE_REFINEMENT_SEGMENT_END   = 17,
-    FILM_GRAIN_CHARACTERISTICS           = 19,
-    POST_FILTER_HINT                     = 22,
+    SCENE_INFO                           = 9,   // TODO: add encoder command line control to create these messages
+    PICTURE_SNAPSHOT                     = 15,  // TODO: add encoder command line control to create these messages
+    PROGRESSIVE_REFINEMENT_SEGMENT_START = 16,  // TODO: add encoder command line control to create these messages
+    PROGRESSIVE_REFINEMENT_SEGMENT_END   = 17,  // TODO: add encoder command line control to create these messages
+    FILM_GRAIN_CHARACTERISTICS           = 19,  // TODO: add encoder command line control to create these messages
+    POST_FILTER_HINT                     = 22,  // TODO: add encoder command line control to create these messages
     TONE_MAPPING_INFO                    = 23,
     FRAME_PACKING                        = 45,
     DISPLAY_ORIENTATION                  = 47,
@@ -86,7 +86,12 @@ public:
     CHROMA_RESAMPLING_FILTER_HINT        = 140,
     KNEE_FUNCTION_INFO                   = 141,
     COLOUR_REMAPPING_INFO                = 142,
+    DEINTERLACE_FIELD_IDENTIFICATION     = 143, // TODO: add encoder command line control to create these messages
+    CONTENT_LIGHT_LEVEL_INFO             = 144, // TODO: add encoder command line control to create these messages
+    DEPENDENT_RAP_INDICATION             = 145, // TODO: add encoder command line control to create these messages
+    CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
+    AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
   };
 
   SEI() {}
@@ -97,59 +102,19 @@ public:
   virtual PayloadType payloadType() const = 0;
 };
 
-static const UInt ISO_IEC_11578_LEN=16;
 
-class SEIuserDataUnregistered : public SEI
-{
-public:
-  PayloadType payloadType() const { return USER_DATA_UNREGISTERED; }
+typedef std::list<SEI*> SEIMessages;
 
-  SEIuserDataUnregistered()
-    : userData(0)
-    {}
+/// output a selection of SEI messages by payload type. Ownership stays in original message list.
+SEIMessages getSeisByType(SEIMessages &seiList, SEI::PayloadType seiType);
 
-  virtual ~SEIuserDataUnregistered()
-  {
-    delete userData;
-  }
+/// remove a selection of SEI messages by payload type from the original list and return them in a new list.
+SEIMessages extractSeisByType(SEIMessages &seiList, SEI::PayloadType seiType);
 
-  UChar uuid_iso_iec_11578[ISO_IEC_11578_LEN];
-  UInt  userDataLength;
-  UChar *userData;
-};
+/// delete list of SEI messages (freeing the referenced objects)
+Void deleteSEIs (SEIMessages &seiList);
 
-class SEIDecodedPictureHash : public SEI
-{
-public:
-  PayloadType payloadType() const { return DECODED_PICTURE_HASH; }
 
-  SEIDecodedPictureHash() {}
-  virtual ~SEIDecodedPictureHash() {}
-
-  HashType method;
-
-  TComPictureHash m_pictureHash;
-};
-
-class SEIActiveParameterSets : public SEI
-{
-public:
-  PayloadType payloadType() const { return ACTIVE_PARAMETER_SETS; }
-
-  SEIActiveParameterSets()
-    : activeVPSId            (0)
-    , m_selfContainedCvsFlag (false)
-    , m_noParameterSetUpdateFlag (false)
-    , numSpsIdsMinus1        (0)
-  {}
-  virtual ~SEIActiveParameterSets() {}
-
-  Int activeVPSId;
-  Bool m_selfContainedCvsFlag;
-  Bool m_noParameterSetUpdateFlag;
-  Int numSpsIdsMinus1;
-  std::vector<Int> activeSeqParameterSetId; 
-};
 
 class SEIBufferingPeriod : public SEI
 {
@@ -181,6 +146,8 @@ public:
   Bool m_concatenationFlag;
   UInt m_auCpbRemovalDelayDelta;
 };
+
+
 class SEIPictureTiming : public SEI
 {
 public:
@@ -211,23 +178,69 @@ public:
   std::vector<UInt> m_duCpbRemovalDelayMinus1;
 };
 
-class SEIDecodingUnitInfo : public SEI
+
+class SEIPanScanRect : public SEI
 {
 public:
-  PayloadType payloadType() const { return DECODING_UNIT_INFO; }
+  PayloadType payloadType() const { return PAN_SCAN_RECT; }
 
-  SEIDecodingUnitInfo()
-    : m_decodingUnitIdx(0)
-    , m_duSptCpbRemovalDelay(0)
-    , m_dpbOutputDuDelayPresentFlag(false)
-    , m_picSptDpbOutputDuDelay(0)
-  {}
-  virtual ~SEIDecodingUnitInfo() {}
-  Int m_decodingUnitIdx;
-  Int m_duSptCpbRemovalDelay;
-  Bool m_dpbOutputDuDelayPresentFlag;
-  Int m_picSptDpbOutputDuDelay;
+  SEIPanScanRect() {}
+  virtual ~SEIPanScanRect() {}
+
+  struct PanScanRect
+  {
+    Int leftOffset;
+    Int rightOffset;
+    Int topOffset;
+    Int bottomOffset;
+  };
+
+  UInt m_panScanRectId;
+  Bool m_panScanRectCancelFlag;
+  std::vector<PanScanRect> m_panScanRectRegions;
+  Bool m_panScanRectPersistenceFlag;
 };
+
+
+class SEIFillerPayload : public SEI
+{
+public:
+  PayloadType payloadType() const { return FILLER_PAYLOAD; }
+
+  SEIFillerPayload() {}
+  virtual ~SEIFillerPayload() {}
+
+  UInt m_numFillerFFBytes;
+};
+
+
+class SEIUserDataRegistered : public SEI
+{
+public:
+  PayloadType payloadType() const { return USER_DATA_REGISTERED_ITU_T_T35; }
+
+  SEIUserDataRegistered() {}
+  virtual ~SEIUserDataRegistered() {}
+
+  UShort m_ituCountryCode;
+  std::vector<UChar> m_userData;
+};
+
+
+static const UInt ISO_IEC_11578_LEN=16;
+
+class SEIUserDataUnregistered : public SEI
+{
+public:
+  PayloadType payloadType() const { return USER_DATA_UNREGISTERED; }
+
+  SEIUserDataUnregistered() {}
+  virtual ~SEIUserDataUnregistered() { }
+
+  UChar m_uuid_iso_iec_11578[ISO_IEC_11578_LEN];
+  std::vector<UChar> m_userData;
+};
+
 
 class SEIRecoveryPoint : public SEI
 {
@@ -242,125 +255,114 @@ public:
   Bool m_brokenLinkFlag;
 };
 
-class SEIFramePacking : public SEI
+
+class SEISceneInfo : public SEI
 {
 public:
-  PayloadType payloadType() const { return FRAME_PACKING; }
+  PayloadType payloadType() const { return SCENE_INFO; }
 
-  SEIFramePacking() {}
-  virtual ~SEIFramePacking() {}
+  SEISceneInfo() {}
+  virtual ~SEISceneInfo() {}
 
-  Int  m_arrangementId;
-  Bool m_arrangementCancelFlag;
-  Int  m_arrangementType;
-  Bool m_quincunxSamplingFlag;
-  Int  m_contentInterpretationType;
-  Bool m_spatialFlippingFlag;
-  Bool m_frame0FlippedFlag;
-  Bool m_fieldViewsFlag;
-  Bool m_currentFrameIsFrame0Flag;
-  Bool m_frame0SelfContainedFlag;
-  Bool m_frame1SelfContainedFlag;
-  Int  m_frame0GridPositionX;
-  Int  m_frame0GridPositionY;
-  Int  m_frame1GridPositionX;
-  Int  m_frame1GridPositionY;
-  Int  m_arrangementReservedByte;
-  Bool m_arrangementPersistenceFlag;
-  Bool m_upsampledAspectRatio;
+  Bool m_bSceneInfoPresentFlag;
+  Bool m_bPrevSceneIdValidFlag;
+  UInt m_sceneId;
+  UInt m_sceneTransitionType;
+  UInt m_secondSceneId;
 };
 
-class SEISegmentedRectFramePacking : public SEI
+
+class SEIPictureSnapshot : public SEI
 {
 public:
-  PayloadType payloadType() const { return SEGM_RECT_FRAME_PACKING; }
+  PayloadType payloadType() const { return PICTURE_SNAPSHOT; }
 
-  SEISegmentedRectFramePacking() {}
-  virtual ~SEISegmentedRectFramePacking() {}
+  SEIPictureSnapshot() {}
+  virtual ~SEIPictureSnapshot() {}
 
-  Bool m_arrangementCancelFlag;
-  Int  m_contentInterpretationType;
-  Bool m_arrangementPersistenceFlag;
+  UInt m_snapshotId;
 };
 
-class SEIDisplayOrientation : public SEI
+
+class SEIProgressiveRefinementSegmentStart : public SEI
 {
 public:
-  PayloadType payloadType() const { return DISPLAY_ORIENTATION; }
+  PayloadType payloadType() const { return PROGRESSIVE_REFINEMENT_SEGMENT_START; }
 
-  SEIDisplayOrientation()
-    : cancelFlag(true)
-    , persistenceFlag(0)
-    , extensionFlag(false)
-    {}
-  virtual ~SEIDisplayOrientation() {}
+  SEIProgressiveRefinementSegmentStart() {}
+  virtual ~SEIProgressiveRefinementSegmentStart() {}
 
-  Bool cancelFlag;
-  Bool horFlip;
-  Bool verFlip;
-
-  UInt anticlockwiseRotation;
-  Bool persistenceFlag;
-  Bool extensionFlag;
+  UInt m_progressiveRefinementId;
+  UInt m_picOrderCntDelta;
 };
 
-class SEITemporalLevel0Index : public SEI
+
+class SEIProgressiveRefinementSegmentEnd: public SEI
 {
 public:
-  PayloadType payloadType() const { return TEMPORAL_LEVEL0_INDEX; }
+  PayloadType payloadType() const { return PROGRESSIVE_REFINEMENT_SEGMENT_END; }
 
-  SEITemporalLevel0Index()
-    : tl0Idx(0)
-    , rapIdx(0)
-    {}
-  virtual ~SEITemporalLevel0Index() {}
+  SEIProgressiveRefinementSegmentEnd() {}
+  virtual ~SEIProgressiveRefinementSegmentEnd() {}
 
-  UInt tl0Idx;
-  UInt rapIdx;
+  UInt m_progressiveRefinementId;
 };
 
-class SEIGradualDecodingRefreshInfo : public SEI
+
+class SEIFilmGrainCharacteristics: public SEI
 {
 public:
-  PayloadType payloadType() const { return REGION_REFRESH_INFO; }
+  PayloadType payloadType() const { return FILM_GRAIN_CHARACTERISTICS; }
 
-  SEIGradualDecodingRefreshInfo()
-    : m_gdrForegroundFlag(0)
-  {}
-  virtual ~SEIGradualDecodingRefreshInfo() {}
+  SEIFilmGrainCharacteristics() {}
+  virtual ~SEIFilmGrainCharacteristics() {}
 
-  Bool m_gdrForegroundFlag;
+  Bool      m_filmGrainCharacteristicsCancelFlag;
+  UChar     m_filmGrainModelId;
+  Bool      m_separateColourDescriptionPresentFlag;
+  UChar     m_filmGrainBitDepthLumaMinus8;
+  UChar     m_filmGrainBitDepthChromaMinus8;
+  Bool      m_filmGrainFullRangeFlag;
+  UChar     m_filmGrainColourPrimaries;
+  UChar     m_filmGrainTransferCharacteristics;
+  UChar     m_filmGrainMatrixCoeffs;
+  UChar     m_blendingModeId;
+  UChar     m_log2ScaleFactor;
+
+  struct CompModelIntensityValues
+  {
+    UChar intensityIntervalLowerBound;
+    UChar intensityIntervalUpperBound;
+    std::vector<Int> compModelValue;
+  };
+
+  struct CompModel
+  {
+    Bool  bPresentFlag;
+    UChar numModelValues; // this must be the same as intensityValues[*].compModelValue.size()
+    std::vector<CompModelIntensityValues> intensityValues;
+  };
+
+  CompModel m_compModel[MAX_NUM_COMPONENT];
+  Bool      m_filmGrainCharacteristicsPersistenceFlag;
 };
 
-class SEINoDisplay : public SEI
+
+class SEIPostFilterHint: public SEI
 {
 public:
-  PayloadType payloadType() const { return NO_DISPLAY; }
+  PayloadType payloadType() const { return POST_FILTER_HINT; }
 
-  SEINoDisplay()
-    : m_noDisplay(false)
-  {}
-  virtual ~SEINoDisplay() {}
+  SEIPostFilterHint() {}
+  virtual ~SEIPostFilterHint() {}
 
-  Bool m_noDisplay;
+  UInt             m_filterHintSizeY;
+  UInt             m_filterHintSizeX;
+  UInt             m_filterHintType;
+  Bool             m_bIsMonochrome;
+  std::vector<Int> m_filterHintValues; // values stored in linear array, [ ( ( component * sizeY + y ) * SizeX ) + x ]
 };
 
-class SEISOPDescription : public SEI
-{
-public:
-  PayloadType payloadType() const { return SOP_DESCRIPTION; }
-
-  SEISOPDescription() {}
-  virtual ~SEISOPDescription() {}
-
-  UInt m_sopSeqParameterSetId;
-  UInt m_numPicsInSopMinus1;
-
-  UInt m_sopDescVclNaluType[MAX_NUM_PICS_IN_SOP];
-  UInt m_sopDescTemporalId[MAX_NUM_PICS_IN_SOP];
-  UInt m_sopDescStRpsIdx[MAX_NUM_PICS_IN_SOP];
-  Int m_sopDescPocDelta[MAX_NUM_PICS_IN_SOP];
-};
 
 class SEIToneMappingInfo : public SEI
 {
@@ -397,103 +399,159 @@ public:
   Int    m_extendedWhiteLevelLumaCodeValue;
 };
 
-class SEIKneeFunctionInfo : public SEI
+
+class SEIFramePacking : public SEI
 {
 public:
-  PayloadType payloadType() const { return KNEE_FUNCTION_INFO; }
-  SEIKneeFunctionInfo() {}
-  virtual ~SEIKneeFunctionInfo() {}
+  PayloadType payloadType() const { return FRAME_PACKING; }
 
-  Int   m_kneeId;
-  Bool  m_kneeCancelFlag;
-  Bool  m_kneePersistenceFlag;
-  Int   m_kneeInputDrange;
-  Int   m_kneeInputDispLuminance;
-  Int   m_kneeOutputDrange;
-  Int   m_kneeOutputDispLuminance;
-  Int   m_kneeNumKneePointsMinus1;
-  std::vector<Int> m_kneeInputKneePoint;
-  std::vector<Int> m_kneeOutputKneePoint;
+  SEIFramePacking() {}
+  virtual ~SEIFramePacking() {}
+
+  Int  m_arrangementId;
+  Bool m_arrangementCancelFlag;
+  Int  m_arrangementType;
+  Bool m_quincunxSamplingFlag;
+  Int  m_contentInterpretationType;
+  Bool m_spatialFlippingFlag;
+  Bool m_frame0FlippedFlag;
+  Bool m_fieldViewsFlag;
+  Bool m_currentFrameIsFrame0Flag;
+  Bool m_frame0SelfContainedFlag;
+  Bool m_frame1SelfContainedFlag;
+  Int  m_frame0GridPositionX;
+  Int  m_frame0GridPositionY;
+  Int  m_frame1GridPositionX;
+  Int  m_frame1GridPositionY;
+  Int  m_arrangementReservedByte;
+  Bool m_arrangementPersistenceFlag;
+  Bool m_upsampledAspectRatio;
 };
 
-class SEIColourRemappingInfo : public SEI
+
+class SEIDisplayOrientation : public SEI
 {
 public:
+  PayloadType payloadType() const { return DISPLAY_ORIENTATION; }
 
-  struct CRIlut
-  {
-    Int codedValue;
-    Int targetValue;
-    bool operator < (const CRIlut& a) const
-    {
-      return codedValue < a.codedValue;
-    }
-  };
+  SEIDisplayOrientation()
+    : cancelFlag(true)
+    , persistenceFlag(0)
+    , extensionFlag(false)
+    {}
+  virtual ~SEIDisplayOrientation() {}
 
-  PayloadType payloadType() const { return COLOUR_REMAPPING_INFO; }
-  SEIColourRemappingInfo() {}
-  ~SEIColourRemappingInfo() {}
+  Bool cancelFlag;
+  Bool horFlip;
+  Bool verFlip;
 
-  Void copyFrom( const SEIColourRemappingInfo &seiCriInput)
-  {
-    (*this) = seiCriInput;
-  }
-
-  UInt                m_colourRemapId;
-  Bool                m_colourRemapCancelFlag;
-  Bool                m_colourRemapPersistenceFlag;
-  Bool                m_colourRemapVideoSignalInfoPresentFlag;
-  Bool                m_colourRemapFullRangeFlag;
-  Int                 m_colourRemapPrimaries;
-  Int                 m_colourRemapTransferFunction;
-  Int                 m_colourRemapMatrixCoefficients;
-  Int                 m_colourRemapInputBitDepth;
-  Int                 m_colourRemapBitDepth;
-  Int                 m_preLutNumValMinus1[3];
-  std::vector<CRIlut> m_preLut[3];
-  Bool                m_colourRemapMatrixPresentFlag;
-  Int                 m_log2MatrixDenom;
-  Int                 m_colourRemapCoeffs[3][3];
-  Int                 m_postLutNumValMinus1[3];
-  std::vector<CRIlut> m_postLut[3];
+  UInt anticlockwiseRotation;
+  Bool persistenceFlag;
+  Bool extensionFlag;
 };
 
-class SEIChromaResamplingFilterHint : public SEI
+
+class SEIGreenMetadataInfo : public SEI
 {
 public:
-  PayloadType payloadType() const {return CHROMA_RESAMPLING_FILTER_HINT;}
-  SEIChromaResamplingFilterHint() {}
-  virtual ~SEIChromaResamplingFilterHint() {}
+    PayloadType payloadType() const { return GREEN_METADATA; }
+    SEIGreenMetadataInfo() {}
 
-  Int                            m_verChromaFilterIdc;
-  Int                            m_horChromaFilterIdc;
-  Bool                           m_verFilteringFieldProcessingFlag;
-  Int                            m_targetFormatIdc;
-  Bool                           m_perfectReconstructionFlag;
-  std::vector<std::vector<Int> > m_verFilterCoeff;
-  std::vector<std::vector<Int> > m_horFilterCoeff;
+    virtual ~SEIGreenMetadataInfo() {}
+
+    UInt m_greenMetadataType;
+    UInt m_xsdMetricType;
+    UInt m_xsdMetricValue;
 };
 
-class SEIMasteringDisplayColourVolume : public SEI
+
+class SEISOPDescription : public SEI
 {
 public:
-    PayloadType payloadType() const { return MASTERING_DISPLAY_COLOUR_VOLUME; }
-    SEIMasteringDisplayColourVolume() {}
-    virtual ~SEIMasteringDisplayColourVolume(){}
-    
-    TComSEIMasteringDisplay values;
+  PayloadType payloadType() const { return SOP_DESCRIPTION; }
+
+  SEISOPDescription() {}
+  virtual ~SEISOPDescription() {}
+
+  UInt m_sopSeqParameterSetId;
+  UInt m_numPicsInSopMinus1;
+
+  UInt m_sopDescVclNaluType[MAX_NUM_PICS_IN_SOP];
+  UInt m_sopDescTemporalId[MAX_NUM_PICS_IN_SOP];
+  UInt m_sopDescStRpsIdx[MAX_NUM_PICS_IN_SOP];
+  Int m_sopDescPocDelta[MAX_NUM_PICS_IN_SOP];
 };
 
-typedef std::list<SEI*> SEIMessages;
 
-/// output a selection of SEI messages by payload type. Ownership stays in original message list.
-SEIMessages getSeisByType(SEIMessages &seiList, SEI::PayloadType seiType);
+class SEIActiveParameterSets : public SEI
+{
+public:
+  PayloadType payloadType() const { return ACTIVE_PARAMETER_SETS; }
 
-/// remove a selection of SEI messages by payload type from the original list and return them in a new list.
-SEIMessages extractSeisByType(SEIMessages &seiList, SEI::PayloadType seiType);
+  SEIActiveParameterSets()
+    : activeVPSId            (0)
+    , m_selfContainedCvsFlag (false)
+    , m_noParameterSetUpdateFlag (false)
+    , numSpsIdsMinus1        (0)
+  {}
+  virtual ~SEIActiveParameterSets() {}
 
-/// delete list of SEI messages (freeing the referenced objects)
-Void deleteSEIs (SEIMessages &seiList);
+  Int activeVPSId;
+  Bool m_selfContainedCvsFlag;
+  Bool m_noParameterSetUpdateFlag;
+  Int numSpsIdsMinus1;
+  std::vector<Int> activeSeqParameterSetId;
+};
+
+
+class SEIDecodingUnitInfo : public SEI
+{
+public:
+  PayloadType payloadType() const { return DECODING_UNIT_INFO; }
+
+  SEIDecodingUnitInfo()
+    : m_decodingUnitIdx(0)
+    , m_duSptCpbRemovalDelay(0)
+    , m_dpbOutputDuDelayPresentFlag(false)
+    , m_picSptDpbOutputDuDelay(0)
+  {}
+  virtual ~SEIDecodingUnitInfo() {}
+  Int m_decodingUnitIdx;
+  Int m_duSptCpbRemovalDelay;
+  Bool m_dpbOutputDuDelayPresentFlag;
+  Int m_picSptDpbOutputDuDelay;
+};
+
+
+class SEITemporalLevel0Index : public SEI
+{
+public:
+  PayloadType payloadType() const { return TEMPORAL_LEVEL0_INDEX; }
+
+  SEITemporalLevel0Index()
+    : tl0Idx(0)
+    , rapIdx(0)
+    {}
+  virtual ~SEITemporalLevel0Index() {}
+
+  UInt tl0Idx;
+  UInt rapIdx;
+};
+
+
+class SEIDecodedPictureHash : public SEI
+{
+public:
+  PayloadType payloadType() const { return DECODED_PICTURE_HASH; }
+
+  SEIDecodedPictureHash() {}
+  virtual ~SEIDecodedPictureHash() {}
+
+  HashType method;
+
+  TComPictureHash m_pictureHash;
+};
+
 
 class SEIScalableNesting : public SEI
 {
@@ -522,6 +580,35 @@ public:
   SEIMessages m_nestedSEIs;
 };
 
+
+class SEIRegionRefreshInfo : public SEI
+{
+public:
+  PayloadType payloadType() const { return REGION_REFRESH_INFO; }
+
+  SEIRegionRefreshInfo()
+    : m_gdrForegroundFlag(0)
+  {}
+  virtual ~SEIRegionRefreshInfo() {}
+
+  Bool m_gdrForegroundFlag;
+};
+
+
+class SEINoDisplay : public SEI
+{
+public:
+  PayloadType payloadType() const { return NO_DISPLAY; }
+
+  SEINoDisplay()
+    : m_noDisplay(false)
+  {}
+  virtual ~SEINoDisplay() {}
+
+  Bool m_noDisplay;
+};
+
+
 class SEITimeCode : public SEI
 {
 public:
@@ -532,6 +619,32 @@ public:
   UInt numClockTs;
   TComSEITimeSet timeSetArray[MAX_TIMECODE_SEI_SETS];
 };
+
+
+class SEIMasteringDisplayColourVolume : public SEI
+{
+public:
+    PayloadType payloadType() const { return MASTERING_DISPLAY_COLOUR_VOLUME; }
+    SEIMasteringDisplayColourVolume() {}
+    virtual ~SEIMasteringDisplayColourVolume(){}
+
+    TComSEIMasteringDisplay values;
+};
+
+
+class SEISegmentedRectFramePacking : public SEI
+{
+public:
+  PayloadType payloadType() const { return SEGM_RECT_FRAME_PACKING; }
+
+  SEISegmentedRectFramePacking() {}
+  virtual ~SEISegmentedRectFramePacking() {}
+
+  Bool m_arrangementCancelFlag;
+  Int  m_contentInterpretationType;
+  Bool m_arrangementPersistenceFlag;
+};
+
 
 //definition according to P1005_v1;
 class SEITempMotionConstrainedTileSets: public SEI
@@ -582,6 +695,8 @@ public:
   Int     m_max_mcts_level_idc;
 
   PayloadType payloadType() const { return TEMP_MOTION_CONSTRAINED_TILE_SETS; }
+  SEITempMotionConstrainedTileSets() { }
+  virtual ~SEITempMotionConstrainedTileSets() { }
 
   Void setNumberOfTileSets(const Int number)       { m_tile_set_data.resize(number);     }
   Int  getNumberOfTileSets()                 const { return Int(m_tile_set_data.size()); }
@@ -590,6 +705,135 @@ public:
   const TileSetData &tileSetData (const Int index) const { return m_tile_set_data[index]; }
 
 };
+
+
+class SEIChromaResamplingFilterHint : public SEI
+{
+public:
+  PayloadType payloadType() const {return CHROMA_RESAMPLING_FILTER_HINT;}
+  SEIChromaResamplingFilterHint() {}
+  virtual ~SEIChromaResamplingFilterHint() {}
+
+  Int                            m_verChromaFilterIdc;
+  Int                            m_horChromaFilterIdc;
+  Bool                           m_verFilteringFieldProcessingFlag;
+  Int                            m_targetFormatIdc;
+  Bool                           m_perfectReconstructionFlag;
+  std::vector<std::vector<Int> > m_verFilterCoeff;
+  std::vector<std::vector<Int> > m_horFilterCoeff;
+};
+
+
+class SEIKneeFunctionInfo : public SEI
+{
+public:
+  PayloadType payloadType() const { return KNEE_FUNCTION_INFO; }
+  SEIKneeFunctionInfo() {}
+  virtual ~SEIKneeFunctionInfo() {}
+
+  Int   m_kneeId;
+  Bool  m_kneeCancelFlag;
+  Bool  m_kneePersistenceFlag;
+  Int   m_kneeInputDrange;
+  Int   m_kneeInputDispLuminance;
+  Int   m_kneeOutputDrange;
+  Int   m_kneeOutputDispLuminance;
+  Int   m_kneeNumKneePointsMinus1;
+  std::vector<Int> m_kneeInputKneePoint;
+  std::vector<Int> m_kneeOutputKneePoint;
+};
+
+
+class SEIColourRemappingInfo : public SEI
+{
+public:
+
+  struct CRIlut
+  {
+    Int codedValue;
+    Int targetValue;
+    bool operator < (const CRIlut& a) const
+    {
+      return codedValue < a.codedValue;
+    }
+  };
+
+  PayloadType payloadType() const { return COLOUR_REMAPPING_INFO; }
+  SEIColourRemappingInfo() {}
+  ~SEIColourRemappingInfo() {}
+
+  Void copyFrom( const SEIColourRemappingInfo &seiCriInput)
+  {
+    (*this) = seiCriInput;
+  }
+
+  UInt                m_colourRemapId;
+  Bool                m_colourRemapCancelFlag;
+  Bool                m_colourRemapPersistenceFlag;
+  Bool                m_colourRemapVideoSignalInfoPresentFlag;
+  Bool                m_colourRemapFullRangeFlag;
+  Int                 m_colourRemapPrimaries;
+  Int                 m_colourRemapTransferFunction;
+  Int                 m_colourRemapMatrixCoefficients;
+  Int                 m_colourRemapInputBitDepth;
+  Int                 m_colourRemapBitDepth;
+  Int                 m_preLutNumValMinus1[3];
+  std::vector<CRIlut> m_preLut[3];
+  Bool                m_colourRemapMatrixPresentFlag;
+  Int                 m_log2MatrixDenom;
+  Int                 m_colourRemapCoeffs[3][3];
+  Int                 m_postLutNumValMinus1[3];
+  std::vector<CRIlut> m_postLut[3];
+};
+
+
+class SEIDeinterlaceFieldIdentification : public SEI
+{
+public:
+    PayloadType payloadType() const { return  DEINTERLACE_FIELD_IDENTIFICATION; }
+    SEIDeinterlaceFieldIdentification() { }
+
+    virtual ~SEIDeinterlaceFieldIdentification() {}
+
+    Bool m_deinterlacedPictureSourceParityFlag;
+};
+
+
+class SEIContentLightLevelInfo : public SEI
+{
+public:
+    PayloadType payloadType() const { return CONTENT_LIGHT_LEVEL_INFO; }
+    SEIContentLightLevelInfo() { }
+
+    virtual ~SEIContentLightLevelInfo() { }
+
+    UInt m_maxContentLightLevel;
+    UInt m_maxPicAverageLightLevel;
+};
+
+
+class SEIDependentRAPIndication : public SEI
+{
+public:
+  PayloadType payloadType() const { return DEPENDENT_RAP_INDICATION; }
+  SEIDependentRAPIndication() { }
+
+  virtual ~SEIDependentRAPIndication() { }
+};
+
+
+class SEICodedRegionCompletion : public SEI
+{
+public:
+  PayloadType payloadType() const { return CODED_REGION_COMPLETION; }
+  SEICodedRegionCompletion() { }
+
+  virtual ~SEICodedRegionCompletion() { }
+
+  UInt m_nextSegmentAddress;
+  Bool m_independentSliceSegmentFlag;
+};
+
 
 class SEIAlternativeTransferCharacteristics : public SEI
 {
@@ -604,17 +848,18 @@ public:
   UInt m_preferredTransferCharacteristics;
 };
 
-class SEIGreenMetadataInfo : public SEI
+
+class SEIAmbientViewingEnvironment : public SEI
 {
 public:
-    PayloadType payloadType() const { return GREEN_METADATA; }
-    SEIGreenMetadataInfo() {}
-    
-    virtual ~SEIGreenMetadataInfo() {}
-    
-    UInt m_greenMetadataType;
-    UInt m_xsdMetricType;
-    UInt m_xsdMetricValue;
+  PayloadType payloadType() const { return AMBIENT_VIEWING_ENVIRONMENT; }
+  SEIAmbientViewingEnvironment() { }
+
+  virtual ~SEIAmbientViewingEnvironment() { }
+
+  UInt m_ambientIlluminance;
+  UShort m_ambientLightX;
+  UShort m_ambientLightY;
 };
 
 #endif

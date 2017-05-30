@@ -502,7 +502,7 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
     if( m_pcEncTop->getGradualDecodingRefreshInfoEnabled() && !slice->getRapPicFlag() )
     {
       // Gradual decoding refresh SEI
-      SEIGradualDecodingRefreshInfo *gradualDecodingRefreshInfoSEI = new SEIGradualDecodingRefreshInfo();
+      SEIRegionRefreshInfo *gradualDecodingRefreshInfoSEI = new SEIRegionRefreshInfo();
       gradualDecodingRefreshInfoSEI->m_gdrForegroundFlag = true; // Indicating all "foreground"
       seiMessages.push_back(gradualDecodingRefreshInfoSEI);
     }
