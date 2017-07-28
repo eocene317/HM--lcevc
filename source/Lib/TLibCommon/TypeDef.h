@@ -85,6 +85,7 @@
 #define JCTVC_Y0038_PARAMS                                1
 
 #define JVET_E0059_FLOATING_POINT_QP_FIX                  1 ///< Replace floating point QP with a source-file frame number.
+#define JVET_G0101_QP_SWITCHING                           1 ///< After switching POC, increase base QP instead of frame level QP.
 
 #define JVET_F0064_MSSSIM                                 1 ///< Calculate MS-SSIM scores
 
