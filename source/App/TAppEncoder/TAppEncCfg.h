@@ -110,6 +110,9 @@ protected:
   Bool      m_printMSEBasedSequencePSNR;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
+#if JVET_F0064_MSSSIM
+  Bool      m_printMSSSIM;
+#endif
   Bool      m_cabacZeroWordPaddingEnabled;
   Bool      m_bClipInputVideoToRec709Range;
   Bool      m_bClipOutputVideoToRec709Range;

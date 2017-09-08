@@ -120,17 +120,17 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
   {
     case SEI::BUFFERING_PERIOD:                     return "Buffering period";
     case SEI::PICTURE_TIMING:                       return "Picture timing";
-    case SEI::PAN_SCAN_RECT:                        return "Pan-scan rectangle";                   // not currently decoded
-    case SEI::FILLER_PAYLOAD:                       return "Filler payload";                       // not currently decoded
-    case SEI::USER_DATA_REGISTERED_ITU_T_T35:       return "User data registered";                 // not currently decoded
+    case SEI::PAN_SCAN_RECT:                        return "Pan-scan rectangle";
+    case SEI::FILLER_PAYLOAD:                       return "Filler payload";
+    case SEI::USER_DATA_REGISTERED_ITU_T_T35:       return "User data registered";
     case SEI::USER_DATA_UNREGISTERED:               return "User data unregistered";
     case SEI::RECOVERY_POINT:                       return "Recovery point";
-    case SEI::SCENE_INFO:                           return "Scene information";                    // not currently decoded
-    case SEI::FULL_FRAME_SNAPSHOT:                  return "Picture snapshot";                     // not currently decoded
-    case SEI::PROGRESSIVE_REFINEMENT_SEGMENT_START: return "Progressive refinement segment start"; // not currently decoded
-    case SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END:   return "Progressive refinement segment end";   // not currently decoded
-    case SEI::FILM_GRAIN_CHARACTERISTICS:           return "Film grain characteristics";           // not currently decoded
-    case SEI::POST_FILTER_HINT:                     return "Post filter hint";                     // not currently decoded
+    case SEI::SCENE_INFO:                           return "Scene information";
+    case SEI::PICTURE_SNAPSHOT:                     return "Picture snapshot";
+    case SEI::PROGRESSIVE_REFINEMENT_SEGMENT_START: return "Progressive refinement segment start";
+    case SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END:   return "Progressive refinement segment end";
+    case SEI::FILM_GRAIN_CHARACTERISTICS:           return "Film grain characteristics";
+    case SEI::POST_FILTER_HINT:                     return "Post filter hint";
     case SEI::TONE_MAPPING_INFO:                    return "Tone mapping information";
     case SEI::KNEE_FUNCTION_INFO:                   return "Knee function information";
     case SEI::FRAME_PACKING:                        return "Frame packing arrangement";
@@ -150,7 +150,12 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::TEMP_MOTION_CONSTRAINED_TILE_SETS:    return "Temporal motion constrained tile sets";
     case SEI::CHROMA_RESAMPLING_FILTER_HINT:        return "Chroma sampling filter hint";
     case SEI::COLOUR_REMAPPING_INFO:                return "Colour remapping info";
+    case SEI::DEINTERLACE_FIELD_IDENTIFICATION:     return "Deinterlace field identification";
+    case SEI::CONTENT_LIGHT_LEVEL_INFO:             return "Content light level info";
+    case SEI::DEPENDENT_RAP_INDICATION:             return "Dependent RAP indication";
+    case SEI::CODED_REGION_COMPLETION:              return "Coded region completion";
     case SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS: return "Alternative transfer characteristics";
+    case SEI::AMBIENT_VIEWING_ENVIRONMENT:          return "Ambient viewing environment";
     default:                                        return "Unknown";
   }
 }
