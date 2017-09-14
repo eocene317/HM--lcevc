@@ -321,7 +321,7 @@ Void SEIWriter::xWriteSEIPictureTiming(const SEIPictureTiming& sei, const TComSP
 Void SEIWriter::xWriteSEIPanScanRect(const SEIPanScanRect &sei)
 {
   WRITE_UVLC( sei.m_panScanRectId,         "pan_scan_rect_id" );
-  const UInt numRegions = sei.m_panScanRectRegions.size();
+  const UInt numRegions = (UInt) sei.m_panScanRectRegions.size();
   if ( !sei.m_panScanRectCancelFlag && numRegions>0 )
   {
     WRITE_FLAG( sei.m_panScanRectCancelFlag, "pan_scan_rect_cancel_flag" );
@@ -441,14 +441,14 @@ Void SEIWriter::xWriteSEIFilmGrainCharacteristics(const SEIFilmGrainCharacterist
     for(Int c=0; c<3; c++)
     {
       const SEIFilmGrainCharacteristics::CompModel &cm=sei.m_compModel[c];
-      const UInt numIntensityIntervals = cm.intensityValues.size();
+      const UInt numIntensityIntervals = (UInt) cm.intensityValues.size();
       const UInt numModelValues        = cm.numModelValues;
       WRITE_FLAG( sei.m_compModel[c].bPresentFlag && numIntensityIntervals>0 && numModelValues>0, "comp_model_present_flag[c]" );
     }
     for(Int c=0; c<3; c++)
     {
       const SEIFilmGrainCharacteristics::CompModel &cm=sei.m_compModel[c];
-      const UInt numIntensityIntervals = cm.intensityValues.size();
+      const UInt numIntensityIntervals = (UInt) cm.intensityValues.size();
       const UInt numModelValues        = cm.numModelValues;
       if (cm.bPresentFlag && numIntensityIntervals>0 && numModelValues>0)
       {
