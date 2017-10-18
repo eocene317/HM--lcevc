@@ -191,7 +191,7 @@
 \maketitle
 \begin{abstract}
 This document is a user manual describing usage of reference software
-for the HEVC project. It applies to version 16.16
+for the HEVC project. It applies to version 16.17
 of the software.
 \end{abstract}
 
@@ -843,12 +843,15 @@ Specifies the profile to which the encoded bitstream complies.
 Valid HEVC Ver. 1 values are: none, main, main10, main-still-picture
 
 Valid HEVC Ver. 2 (RExt) values are: main-RExt, high-throughput-RExt,
-monochrome, monochrome12, monochrome16, main12, main_422_10,
-main_422_12, main_444, main_444_10, main_444_12, main_444_16,
-main_intra, main_10_intra, main_12_intra, main_422_10_intra, main_422_12_intra,
-main_444_intra, main_444_10_intra, main_444_12_intra, main_444_16_intra.
+monochrome, monochrome12, monochrome16, main12, main_422_10, 
+main_422_12, main_444, main_444_10, main_444_12, main_444_16, 
+main_intra, main_10_intra, main_12_intra, main_422_10_intra, main_422_12_intra, 
+main_444_intra, main_444_10_intra, main_444_12_intra, main_444_16_intra,
+high_throughput_444_16_intra.
 
-When main-RExt is specified, the constraint flags are either manually specified, or calculated via the other supplied settings.
+In addition, the following profiles strings are available: high_throughput_444, high_throughput_444_10, high_throughput_444_14.
+
+When main-RExt or high-throughput-RExt is specified, the constraint flags are either manually specified, or calculated via the other supplied settings.
 
 Compatibility flags are automatically determined according to the profile.
 NB: There is currently only limited validation that the encoder configuration complies with the profile, level and tier constraints.

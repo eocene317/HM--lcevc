@@ -55,43 +55,51 @@
 using namespace std;
 namespace po = df::program_options_lite;
 
-
-
-enum ExtendedProfileName // this is used for determining profile strings, where multiple profiles map to a single profile idc with various constraint flag combinations
+enum UIProfileName // this is used for determining profile strings, where multiple profiles map to a single profile idc with various constraint flag combinations
 {
-  NONE = 0,
-  MAIN = 1,
-  MAIN10 = 2,
-  MAIN10_STILL_PICTURE=10002,
-  MAINSTILLPICTURE = 3,
-  MAINREXT = 4,
-  HIGHTHROUGHPUTREXT = 5, // Placeholder profile for development
+  UI_NONE = 0,
+  UI_MAIN = 1,
+  UI_MAIN10 = 2,
+  UI_MAIN10_STILL_PICTURE=10002,
+  UI_MAINSTILLPICTURE = 3,
+  UI_MAINREXT = 4,
+  UI_HIGHTHROUGHPUTREXT = 5,
   // The following are RExt profiles, which would map to the MAINREXT profile idc.
   // The enumeration indicates the bit-depth constraint in the bottom 2 digits
   //                           the chroma format in the next digit
-  //                           the intra constraint in the next digit
+  //                           the intra constraint in the next digit (1 for no intra constraint, 2 for intra constraint)
   //                           If it is a RExt still picture, there is a '1' for the top digit.
-  MONOCHROME_8      = 1008,
-  MONOCHROME_12     = 1012,
-  MONOCHROME_16     = 1016,
-  MAIN_12           = 1112,
-  MAIN_422_10       = 1210,
-  MAIN_422_12       = 1212,
-  MAIN_444          = 1308,
-  MAIN_444_10       = 1310,
-  MAIN_444_12       = 1312,
-  MAIN_444_16       = 1316, // non-standard profile definition, used for development purposes
-  MAIN_INTRA        = 2108,
-  MAIN_10_INTRA     = 2110,
-  MAIN_12_INTRA     = 2112,
-  MAIN_422_10_INTRA = 2210,
-  MAIN_422_12_INTRA = 2212,
-  MAIN_444_INTRA    = 2308,
-  MAIN_444_10_INTRA = 2310,
-  MAIN_444_12_INTRA = 2312,
-  MAIN_444_16_INTRA = 2316,
-  MAIN_444_STILL_PICTURE = 11308,
-  MAIN_444_16_STILL_PICTURE = 12316
+  UI_MONOCHROME_8      = 1008,
+  UI_MONOCHROME_12     = 1012,
+  UI_MONOCHROME_16     = 1016,
+  UI_MAIN_12           = 1112,
+  UI_MAIN_422_10       = 1210,
+  UI_MAIN_422_12       = 1212,
+  UI_MAIN_444          = 1308,
+  UI_MAIN_444_10       = 1310,
+  UI_MAIN_444_12       = 1312,
+  UI_MAIN_444_16       = 1316, // non-standard profile definition, used for development purposes
+  UI_MAIN_INTRA        = 2108,
+  UI_MAIN_10_INTRA     = 2110,
+  UI_MAIN_12_INTRA     = 2112,
+  UI_MAIN_422_10_INTRA = 2210,
+  UI_MAIN_422_12_INTRA = 2212,
+  UI_MAIN_444_INTRA    = 2308,
+  UI_MAIN_444_10_INTRA = 2310,
+  UI_MAIN_444_12_INTRA = 2312,
+  UI_MAIN_444_16_INTRA = 2316,
+  UI_MAIN_444_STILL_PICTURE = 11308,
+  UI_MAIN_444_16_STILL_PICTURE = 12316,
+  // The following are high throughput profiles, which would map to the HIGHTHROUGHPUTREXT profile idc.
+  // The enumeration indicates the bit-depth constraint in the bottom 2 digits
+  //                           the chroma format in the next digit
+  //                           the intra constraint in the next digit
+  //                           There is a '2' for the top digit to indicate it is high throughput profile
+  
+  UI_HIGHTHROUGHPUT_444     = 21308,
+  UI_HIGHTHROUGHPUT_444_10  = 21310,
+  UI_HIGHTHROUGHPUT_444_14  = 21314,
+  UI_HIGHTHROUGHPUT_444_16_INTRA  = 22316
 };
 
 
@@ -215,64 +223,74 @@ strToProfile[] =
   {"high-throughput-RExt", Profile::HIGHTHROUGHPUTREXT }
 };
 
-static const struct MapStrToExtendedProfile
+static const struct MapStrToUIProfileName
 {
   const TChar* str;
-  ExtendedProfileName value;
+  UIProfileName value;
 }
-strToExtendedProfile[] =
+strToUIProfileName[] =
 {
-    {"none",                      NONE             },
-    {"main",                      MAIN             },
-    {"main10",                    MAIN10           },
-    {"main10_still_picture",      MAIN10_STILL_PICTURE },
-    {"main10-still-picture",      MAIN10_STILL_PICTURE },
-    {"main_still_picture",        MAINSTILLPICTURE },
-    {"main-still-picture",        MAINSTILLPICTURE },
-    {"main_RExt",                 MAINREXT         },
-    {"main-RExt",                 MAINREXT         },
-    {"main_rext",                 MAINREXT         },
-    {"main-rext",                 MAINREXT         },
-    {"high_throughput_RExt",      HIGHTHROUGHPUTREXT },
-    {"high-throughput-RExt",      HIGHTHROUGHPUTREXT },
-    {"high_throughput_rext",      HIGHTHROUGHPUTREXT },
-    {"high-throughput-rext",      HIGHTHROUGHPUTREXT },
-    {"monochrome",                MONOCHROME_8     },
-    {"monochrome12",              MONOCHROME_12    },
-    {"monochrome16",              MONOCHROME_16    },
-    {"main12",                    MAIN_12          },
-    {"main_422_10",               MAIN_422_10      },
-    {"main_422_12",               MAIN_422_12      },
-    {"main_444",                  MAIN_444         },
-    {"main_444_10",               MAIN_444_10      },
-    {"main_444_12",               MAIN_444_12      },
-    {"main_444_16",               MAIN_444_16      },
-    {"main_intra",                MAIN_INTRA       },
-    {"main_10_intra",             MAIN_10_INTRA    },
-    {"main_12_intra",             MAIN_12_INTRA    },
-    {"main_422_10_intra",         MAIN_422_10_INTRA},
-    {"main_422_12_intra",         MAIN_422_12_INTRA},
-    {"main_444_intra",            MAIN_444_INTRA   },
-    {"main_444_still_picture",    MAIN_444_STILL_PICTURE },
-    {"main_444_10_intra",         MAIN_444_10_INTRA},
-    {"main_444_12_intra",         MAIN_444_12_INTRA},
-    {"main_444_16_intra",         MAIN_444_16_INTRA},
-    {"main_444_16_still_picture", MAIN_444_16_STILL_PICTURE }
+    {"none",                      UI_NONE             },
+    {"main",                      UI_MAIN             },
+    {"main10",                    UI_MAIN10           },
+    {"main10_still_picture",      UI_MAIN10_STILL_PICTURE },
+    {"main10-still-picture",      UI_MAIN10_STILL_PICTURE },
+    {"main_still_picture",        UI_MAINSTILLPICTURE },
+    {"main-still-picture",        UI_MAINSTILLPICTURE },
+    {"main_RExt",                 UI_MAINREXT         },
+    {"main-RExt",                 UI_MAINREXT         },
+    {"main_rext",                 UI_MAINREXT         },
+    {"main-rext",                 UI_MAINREXT         },
+    {"high_throughput_RExt",      UI_HIGHTHROUGHPUTREXT },
+    {"high-throughput-RExt",      UI_HIGHTHROUGHPUTREXT },
+    {"high_throughput_rext",      UI_HIGHTHROUGHPUTREXT },
+    {"high-throughput-rext",      UI_HIGHTHROUGHPUTREXT },
+    {"monochrome",                UI_MONOCHROME_8     },
+    {"monochrome12",              UI_MONOCHROME_12    },
+    {"monochrome16",              UI_MONOCHROME_16    },
+    {"main12",                    UI_MAIN_12          },
+    {"main_422_10",               UI_MAIN_422_10      },
+    {"main_422_12",               UI_MAIN_422_12      },
+    {"main_444",                  UI_MAIN_444         },
+    {"main_444_10",               UI_MAIN_444_10      },
+    {"main_444_12",               UI_MAIN_444_12      },
+    {"main_444_16",               UI_MAIN_444_16      },
+    {"main_intra",                UI_MAIN_INTRA       },
+    {"main_10_intra",             UI_MAIN_10_INTRA    },
+    {"main_12_intra",             UI_MAIN_12_INTRA    },
+    {"main_422_10_intra",         UI_MAIN_422_10_INTRA},
+    {"main_422_12_intra",         UI_MAIN_422_12_INTRA},
+    {"main_444_intra",            UI_MAIN_444_INTRA   },
+    {"main_444_still_picture",    UI_MAIN_444_STILL_PICTURE },
+    {"main_444_10_intra",         UI_MAIN_444_10_INTRA},
+    {"main_444_12_intra",         UI_MAIN_444_12_INTRA},
+    {"main_444_16_intra",         UI_MAIN_444_16_INTRA},
+    {"main_444_16_still_picture", UI_MAIN_444_16_STILL_PICTURE },
+    {"high_throughput_444",       UI_HIGHTHROUGHPUT_444    },
+    {"high_throughput_444_10",    UI_HIGHTHROUGHPUT_444_10 },
+    {"high_throughput_444_14",    UI_HIGHTHROUGHPUT_444_14 },
+    {"high_throughput_444_16_intra", UI_HIGHTHROUGHPUT_444_16_INTRA }
 };
 
-static const ExtendedProfileName validRExtProfileNames[2/* intraConstraintFlag*/][4/* bit depth constraint 8=0, 10=1, 12=2, 16=3*/][4/*chroma format*/]=
+static const UIProfileName validRExtHighThroughPutProfileNames[2/* intraConstraintFlag*/][4/* bit depth constraint 8=0, 10=1, 12=2, 16=3*/]=
+{
+    { UI_HIGHTHROUGHPUT_444,          UI_HIGHTHROUGHPUT_444_10,          UI_HIGHTHROUGHPUT_444_14,         UI_NONE                         }, // intraConstraintFlag 0 - 8-bit,10-bit,14-bit and 16-bit
+    { UI_NONE,                        UI_NONE,                           UI_NONE,                          UI_HIGHTHROUGHPUT_444_16_INTRA  }  // intraConstraintFlag 1 - 8-bit,10-bit,14-bit and 16-bit
+};
+
+static const UIProfileName validRExtProfileNames[2/* intraConstraintFlag*/][4/* bit depth constraint 8=0, 10=1, 12=2, 16=3*/][4/*chroma format*/]=
 {
     {
-        { MONOCHROME_8,  NONE,          NONE,              MAIN_444          }, // 8-bit  inter for 400, 420, 422 and 444
-        { NONE,          NONE,          MAIN_422_10,       MAIN_444_10       }, // 10-bit inter for 400, 420, 422 and 444
-        { MONOCHROME_12, MAIN_12,       MAIN_422_12,       MAIN_444_12       }, // 12-bit inter for 400, 420, 422 and 444
-        { MONOCHROME_16, NONE,          NONE,              MAIN_444_16       }  // 16-bit inter for 400, 420, 422 and 444 (the latter is non standard used for development)
+        { UI_MONOCHROME_8,  UI_NONE,          UI_NONE,              UI_MAIN_444          }, // 8-bit  inter for 400, 420, 422 and 444
+        { UI_NONE,          UI_NONE,          UI_MAIN_422_10,       UI_MAIN_444_10       }, // 10-bit inter for 400, 420, 422 and 444
+        { UI_MONOCHROME_12, UI_MAIN_12,       UI_MAIN_422_12,       UI_MAIN_444_12       }, // 12-bit inter for 400, 420, 422 and 444
+        { UI_MONOCHROME_16, UI_NONE,          UI_NONE,              UI_MAIN_444_16       }  // 16-bit inter for 400, 420, 422 and 444 (the latter is non standard used for development)
     },
     {
-        { NONE,          MAIN_INTRA,    NONE,              MAIN_444_INTRA    }, // 8-bit  intra for 400, 420, 422 and 444
-        { NONE,          MAIN_10_INTRA, MAIN_422_10_INTRA, MAIN_444_10_INTRA }, // 10-bit intra for 400, 420, 422 and 444
-        { NONE,          MAIN_12_INTRA, MAIN_422_12_INTRA, MAIN_444_12_INTRA }, // 12-bit intra for 400, 420, 422 and 444
-        { NONE,          NONE,          NONE,              MAIN_444_16_INTRA }  // 16-bit intra for 400, 420, 422 and 444
+        { UI_NONE,          UI_MAIN_INTRA,    UI_NONE,              UI_MAIN_444_INTRA    }, // 8-bit  intra for 400, 420, 422 and 444
+        { UI_NONE,          UI_MAIN_10_INTRA, UI_MAIN_422_10_INTRA, UI_MAIN_444_10_INTRA }, // 10-bit intra for 400, 420, 422 and 444
+        { UI_NONE,          UI_MAIN_12_INTRA, UI_MAIN_422_12_INTRA, UI_MAIN_444_12_INTRA }, // 12-bit intra for 400, 420, 422 and 444
+        { UI_NONE,          UI_NONE,          UI_NONE,              UI_MAIN_444_16_INTRA }  // 16-bit intra for 400, 420, 422 and 444
     }
 };
 
@@ -365,25 +383,25 @@ static istream& readStrToEnum(P map[], UInt mapLen, istream &in, T &val)
   string str;
   in >> str;
 
-  for (UInt i = 0; i < mapLen; i++)
+  UInt i=0;
+  for (; i < mapLen && str!=map[i].str; i++);
+
+  if (i < mapLen)
   {
-    if (str == map[i].str)
-    {
-      val = map[i].value;
-      goto found;
-    }
+    val = map[i].value;
   }
-  /* not found */
-  in.setstate(ios::failbit);
-found:
+  else
+  {
+    in.setstate(ios::failbit);
+  }
   return in;
 }
 
 //inline to prevent compiler warnings for "unused static function"
 
-static inline istream& operator >> (istream &in, ExtendedProfileName &profile)
+static inline istream& operator >> (istream &in, UIProfileName &profile)
 {
-  return readStrToEnum(strToExtendedProfile, sizeof(strToExtendedProfile)/sizeof(*strToExtendedProfile), in, profile);
+  return readStrToEnum(strToUIProfileName, sizeof(strToUIProfileName)/sizeof(*strToUIProfileName), in, profile);
 }
 
 namespace Level
@@ -639,7 +657,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   Int tmpSliceSegmentMode;
   Int tmpDecodedPictureHashSEIMappedType;
   string inputColourSpaceConvert;
-  ExtendedProfileName extendedProfile;
+  UIProfileName UIProfile;
   Int saoOffsetBitShift[MAX_NUM_CHANNEL_TYPE];
 
   // Multi-value input fields:                                // minval, maxval (incl), min_entries, max_entries (incl) [, default values, number of default values]
@@ -747,7 +765,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("HarmonizeGopFirstFieldCoupleEnabled",             m_bHarmonizeGopFirstFieldCoupleEnabled,            true, "Enables harmonization of Gop first field couple")
 
   // Profile and level
-  ("Profile",                                         extendedProfile,                                   NONE, "Profile name to use for encoding. Use main (for main), main10 (for main10), main-still-picture, main-RExt (for Range Extensions profile), any of the RExt specific profile names, or none")
+  ("Profile",                                         UIProfile,                                      UI_NONE, "Profile name to use for encoding. Use main (for main), main10 (for main10), main-still-picture, main-RExt (for Range Extensions profile), any of the RExt specific profile names, or none")
   ("Level",                                           m_level,                                    Level::NONE, "Level limit to be used, eg 5.1, or none")
   ("Tier",                                            m_levelTier,                                Level::MAIN, "Tier to use for interpretation of --Level (main or high only)")
   ("MaxBitDepthConstraint",                           m_bitDepthConstraint,                                0u, "Bit depth to use for profile-constraint for RExt profiles. 0=automatically choose based upon other parameters")
@@ -1259,34 +1277,86 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   }
   m_motionEstimationSearchMethod=MESearchMethod(tmpMotionEstimationSearchMethod);
 
-  if (extendedProfile == MAIN10_STILL_PICTURE)
+  switch (UIProfile)
   {
-    m_profile = Profile::MAIN10;
-    m_onePictureOnlyConstraintFlag = true;
-  }
-  else if (extendedProfile >= 1000 && extendedProfile <= 12316)
-  {
-    m_profile = Profile::MAINREXT;
-    if (m_bitDepthConstraint != 0 || tmpConstraintChromaFormat != 0)
-    {
-      fprintf(stderr, "Error: The bit depth and chroma format constraints are not used when an explicit RExt profile is specified\n");
-      exit(EXIT_FAILURE);
-    }
-    m_bitDepthConstraint           = (extendedProfile%100);
-    m_intraConstraintFlag          = ((extendedProfile%10000)>=2000);
-    m_onePictureOnlyConstraintFlag = (extendedProfile >= 10000);
-    switch ((extendedProfile/100)%10)
-    {
-      case 0:  tmpConstraintChromaFormat=400; break;
-      case 1:  tmpConstraintChromaFormat=420; break;
-      case 2:  tmpConstraintChromaFormat=422; break;
-      default: tmpConstraintChromaFormat=444; break;
-    }
-  }
-  else
-  {
-    m_profile = Profile::Name(extendedProfile);
-    m_onePictureOnlyConstraintFlag = false;
+    case UI_NONE:
+      m_profile = Profile::NONE;
+      m_onePictureOnlyConstraintFlag = false;
+      break;
+    case UI_MAIN:
+      m_profile = Profile::MAIN;
+      m_onePictureOnlyConstraintFlag = false;
+      break;
+    case UI_MAIN10:
+      m_profile = Profile::MAIN10;
+      m_onePictureOnlyConstraintFlag = false;
+      break;
+    case UI_MAINSTILLPICTURE:
+      m_profile = Profile::MAINSTILLPICTURE;
+      m_onePictureOnlyConstraintFlag = false;
+      break;
+    case UI_MAIN10_STILL_PICTURE:
+      m_profile = Profile::MAIN10;
+      m_onePictureOnlyConstraintFlag = true;
+      break;
+    case UI_MAINREXT:
+      m_profile = Profile::MAINREXT;
+      m_onePictureOnlyConstraintFlag = false;
+      break;
+    case UI_HIGHTHROUGHPUTREXT:
+      m_profile = Profile::HIGHTHROUGHPUTREXT;
+      m_onePictureOnlyConstraintFlag = false;
+      break;
+    default:
+      if (UIProfile >= 1000 && UIProfile <= 12316)
+      {
+        m_profile = Profile::MAINREXT;
+        if (m_bitDepthConstraint != 0 || tmpConstraintChromaFormat != 0)
+        {
+          fprintf(stderr, "Error: The bit depth and chroma format constraints are not used when an explicit RExt profile is specified\n");
+          exit(EXIT_FAILURE);
+        }
+        m_bitDepthConstraint           = (UIProfile%100);
+        m_intraConstraintFlag          = ((UIProfile%10000)>=2000);
+        m_onePictureOnlyConstraintFlag = (UIProfile >= 10000);
+        switch ((UIProfile/100)%10)
+        {
+          case 0:  tmpConstraintChromaFormat=400; break;
+          case 1:  tmpConstraintChromaFormat=420; break;
+          case 2:  tmpConstraintChromaFormat=422; break;
+          default: tmpConstraintChromaFormat=444; break;
+        }
+      }
+      else if (UIProfile >= 21308 && UIProfile <= 22316)
+      {
+        m_profile = Profile::HIGHTHROUGHPUTREXT;
+        if (m_bitDepthConstraint != 0 || tmpConstraintChromaFormat != 0)
+        {
+          fprintf(stderr, "Error: The bit depth and chroma format constraints are not used when an explicit RExt profile is specified\n");
+          exit(EXIT_FAILURE);
+        }
+        m_bitDepthConstraint           = (UIProfile%100);
+        m_intraConstraintFlag          = ((UIProfile%10000)>=2000);
+        m_onePictureOnlyConstraintFlag = 0;
+        if((UIProfile == UI_HIGHTHROUGHPUT_444) || (UIProfile == UI_HIGHTHROUGHPUT_444_10) )
+        {
+           assert(m_cabacBypassAlignmentEnabledFlag==0);
+        }
+        switch ((UIProfile/100)%10)
+        {
+          case 0:  tmpConstraintChromaFormat=400; break;
+          case 1:  tmpConstraintChromaFormat=420; break;
+          case 2:  tmpConstraintChromaFormat=422; break;
+          default: tmpConstraintChromaFormat=444; break;
+        }
+      }
+      else
+      {
+        fprintf(stderr, "Error: Unprocessed UI profile\n");
+        assert(0);
+        exit(EXIT_FAILURE);
+      }
+      break;
   }
 
   switch (m_profile)
@@ -1349,13 +1419,13 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
         }
       }
       break;
-    case MAIN:
-    case MAIN10:
-    case MAINSTILLPICTURE:
+    case Profile::MAIN:
+    case Profile::MAIN10:
+    case Profile::MAINSTILLPICTURE:
       m_chromaFormatConstraint = (tmpConstraintChromaFormat == 0) ? m_chromaFormatIDC : numberToChromaFormat(tmpConstraintChromaFormat);
       m_bitDepthConstraint = (m_profile == Profile::MAIN10?10:8);
       break;
-    case NONE:
+    case Profile::NONE:
       m_chromaFormatConstraint = m_chromaFormatIDC;
       m_bitDepthConstraint = m_chromaFormatIDC==CHROMA_400 ? m_internalBitDepth[CHANNEL_TYPE_LUMA] : std::max(m_internalBitDepth[CHANNEL_TYPE_LUMA], m_internalBitDepth[CHANNEL_TYPE_CHROMA]);
       break;
@@ -1702,7 +1772,7 @@ Void TAppEncCfg::xCheckParameter()
           const UInt intraIdx = m_intraConstraintFlag ? 1:0;
           const UInt bitDepthIdx = (m_bitDepthConstraint == 8 ? 0 : (m_bitDepthConstraint ==10 ? 1 : (m_bitDepthConstraint == 12 ? 2 : (m_bitDepthConstraint == 16 ? 3 : 4 ))));
           const UInt chromaFormatIdx = UInt(m_chromaFormatConstraint);
-          const Bool bValidProfile = (bitDepthIdx > 3 || chromaFormatIdx>3) ? false : (validRExtProfileNames[intraIdx][bitDepthIdx][chromaFormatIdx] != NONE);
+          const Bool bValidProfile = (bitDepthIdx > 3 || chromaFormatIdx>3) ? false : (validRExtProfileNames[intraIdx][bitDepthIdx][chromaFormatIdx] != UI_NONE);
           xConfirmPara(!bValidProfile, "Invalid intra constraint flag, bit depth constraint flag and chroma format constraint flag combination for a RExt profile");
           const Bool bUsingGeneralRExtTools  = m_transformSkipRotationEnabledFlag        ||
                                                m_transformSkipContextEnabledFlag         ||
@@ -1734,14 +1804,28 @@ Void TAppEncCfg::xCheckParameter()
         else
         {
           xConfirmPara( m_chromaFormatConstraint != CHROMA_444, "chroma format constraint must be 4:4:4 in the High Throughput 4:4:4 16-bit Intra profile.");
-          xConfirmPara( m_bitDepthConstraint     != 16,         "bit depth constraint must be 4:4:4 in the High Throughput 4:4:4 16-bit Intra profile.");
-          xConfirmPara( m_intraConstraintFlag    != 1,          "intra constraint flag must be 1 in the High Throughput 4:4:4 16-bit Intra profile.");
+          const UInt intraIdx = m_intraConstraintFlag ? 1:0;
+          const UInt bitDepthIdx = (m_bitDepthConstraint == 8 ? 0 : (m_bitDepthConstraint ==10 ? 1 : (m_bitDepthConstraint == 14 ? 2 : (m_bitDepthConstraint == 16 ? 3 : 4 ))));
+          const Bool bValidProfile = (bitDepthIdx > 3) ? false : (validRExtHighThroughPutProfileNames[intraIdx][bitDepthIdx] != UI_NONE);
+          xConfirmPara(!bValidProfile, "Invalid intra constraint flag and bit depth constraint flag combination for a RExt high profile throughput profile");
+          if(bitDepthIdx < 2)
+          {
+            xConfirmPara((m_extendedPrecisionProcessingFlag || m_cabacBypassAlignmentEnabledFlag), "Invalid configuration for a RExt high throughput 8 and 10 bit profile");
+          }
+          if(bitDepthIdx == 3)
+          {
+            xConfirmPara(!m_cabacBypassAlignmentEnabledFlag, "Cabac Bypass Alignment flag must be 1 in the High Throughput 4:4:4 16-bit Intra profile");
+          }
+          else if(bitDepthIdx < 3)
+          {
+            xConfirmPara(!m_entropyCodingSyncEnabledFlag, "WPP flag must be 1 in the High Throughput 4:4:4 non 16-bit Intra profile");
+          }
         }
       }
       break;
-    case MAIN:
-    case MAIN10:
-    case MAINSTILLPICTURE:
+    case Profile::MAIN:
+    case Profile::MAIN10:
+    case Profile::MAINSTILLPICTURE:
       {
         xConfirmPara(m_bitDepthConstraint!=((m_profile==Profile::MAIN10)?10:8), "BitDepthConstraint must be 8 for MAIN profile and 10 for MAIN10 profile.");
         xConfirmPara(m_chromaFormatConstraint!=CHROMA_420, "ChromaFormatConstraint must be 420 for non main-RExt profiles.");
@@ -1762,7 +1846,7 @@ Void TAppEncCfg::xCheckParameter()
         xConfirmPara(m_cabacBypassAlignmentEnabledFlag, "AlignCABACBeforeBypass cannot be enabled for non main-RExt profiles.");
       }
       break;
-    case NONE:
+    case Profile::NONE:
       // Non-conforming configuration, so all settings are valid.
       break;
     default:
@@ -2523,28 +2607,45 @@ Void TAppEncCfg::xPrintParameter()
   }
   if (m_profile == Profile::MAINREXT)
   {
-    ExtendedProfileName validProfileName;
+    UIProfileName validProfileName;
     if (m_onePictureOnlyConstraintFlag)
     {
-      validProfileName = m_bitDepthConstraint == 8 ? MAIN_444_STILL_PICTURE : (m_bitDepthConstraint == 16 ? MAIN_444_16_STILL_PICTURE : NONE);
+      validProfileName = m_bitDepthConstraint == 8 ? UI_MAIN_444_STILL_PICTURE : (m_bitDepthConstraint == 16 ? UI_MAIN_444_16_STILL_PICTURE : UI_NONE);
     }
     else
     {
       const UInt intraIdx = m_intraConstraintFlag ? 1:0;
       const UInt bitDepthIdx = (m_bitDepthConstraint == 8 ? 0 : (m_bitDepthConstraint ==10 ? 1 : (m_bitDepthConstraint == 12 ? 2 : (m_bitDepthConstraint == 16 ? 3 : 4 ))));
       const UInt chromaFormatIdx = UInt(m_chromaFormatConstraint);
-      validProfileName = (bitDepthIdx > 3 || chromaFormatIdx>3) ? NONE : validRExtProfileNames[intraIdx][bitDepthIdx][chromaFormatIdx];
+      validProfileName = (bitDepthIdx > 3 || chromaFormatIdx>3) ? UI_NONE : validRExtProfileNames[intraIdx][bitDepthIdx][chromaFormatIdx];
     }
     std::string rextSubProfile;
-    if (validProfileName!=NONE)
+    if (validProfileName!=UI_NONE)
     {
-      rextSubProfile=enumToString(strToExtendedProfile, sizeof(strToExtendedProfile)/sizeof(*strToExtendedProfile), validProfileName);
+      rextSubProfile=enumToString(strToUIProfileName, sizeof(strToUIProfileName)/sizeof(*strToUIProfileName), validProfileName);
     }
     if (rextSubProfile == "main_444_16")
     {
       rextSubProfile="main_444_16 [NON STANDARD]";
     }
     printf("Profile                                : %s (%s)\n", profileToString(m_profile), (rextSubProfile.empty())?"INVALID REXT PROFILE":rextSubProfile.c_str() );
+  }
+  else if (m_profile == Profile::HIGHTHROUGHPUTREXT)
+  {
+    UIProfileName validProfileName;
+    const UInt intraIdx = m_intraConstraintFlag ? 1:0;
+    const UInt bitDepthIdx = (m_bitDepthConstraint == 8 ? 0 : (m_bitDepthConstraint ==10 ? 1 : (m_bitDepthConstraint == 12 ? 2 : (m_bitDepthConstraint == 16 ? 3 : 4 ))));
+    validProfileName = (bitDepthIdx > 3) ? UI_NONE : validRExtHighThroughPutProfileNames[intraIdx][bitDepthIdx];
+    std::string subProfile;
+    if (validProfileName!=UI_NONE)
+    {
+      subProfile=enumToString(strToUIProfileName, sizeof(strToUIProfileName)/sizeof(*strToUIProfileName), validProfileName);
+    }
+    printf("Profile                                : %s (%s)\n", profileToString(m_profile), (subProfile.empty())?"INVALID HIGH THROUGHPUT REXT PROFILE":subProfile.c_str() );
+  }
+  else if (m_profile == Profile::MAIN10 && m_onePictureOnlyConstraintFlag)
+  {
+    printf("Profile                                : %s (main10-still-picture)\n", profileToString(m_profile) );
   }
   else
   {
