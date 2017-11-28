@@ -72,42 +72,22 @@ Int   isAboveRightAvailable ( const TComDataCU* pcCU, UInt uiPartIdxLT, UInt uiP
 Int   isBelowLeftAvailable  ( const TComDataCU* pcCU, UInt uiPartIdxLT, UInt uiPartIdxLB, Bool* bValidFlags );
 
 
-// ====================================================================================================================
-// Public member functions (TComPatternParam)
-// ====================================================================================================================
-
-/** 
- \param  piTexture     pixel data
- \param  iRoiWidth     pattern width
- \param  iRoiHeight    pattern height
- \param  iStride       buffer stride
- \param  bitDepth      bit depth
- */
-Void TComPatternParam::setPatternParamPel ( Pel* piTexture,
-                                           Int iRoiWidth,
-                                           Int iRoiHeight,
-                                           Int iStride,
-                                           Int bitDepth
-                                           )
-{
-  m_piROIOrigin    = piTexture;
-  m_iROIWidth      = iRoiWidth;
-  m_iROIHeight     = iRoiHeight;
-  m_iPatternStride = iStride;
-  m_bitDepth       = bitDepth;
-}
 
 // ====================================================================================================================
 // Public member functions (TComPattern)
 // ====================================================================================================================
 
 Void TComPattern::initPattern (Pel* piY,
-                               Int iRoiWidth,
-                               Int iRoiHeight,
-                               Int iStride,
+                               Int roiWidth,
+                               Int roiHeight,
+                               Int stride,
                                Int bitDepthLuma)
 {
-  m_cPatternY. setPatternParamPel( piY,  iRoiWidth, iRoiHeight, iStride, bitDepthLuma);
+  m_piROIOrigin = piY;
+  m_roiWidth = roiWidth;
+  m_roiHeight = roiHeight;
+  m_patternStride = stride;
+  m_bitDepth = bitDepthLuma;
 }
 
 

@@ -3673,8 +3673,7 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   m_iSearchRange = m_aaiAdaptSR[eRefPicList][iRefIdxPred];
 
   Int           iSrchRng      = ( bBi ? m_bipredSearchRange : m_iSearchRange );
-  TComPattern   tmpPattern;
-  TComPattern*  pcPatternKey  = &tmpPattern;
+  TComPattern   cPattern;
 
   Double        fWeight       = 1.0;
 
@@ -3694,11 +3693,11 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   m_cDistParam.bIsBiPred = bBi;
 
   //  Search key pattern initialization
-  pcPatternKey->initPattern( pcYuv->getAddr  ( COMPONENT_Y, uiPartAddr ),
-                             iRoiWidth,
-                             iRoiHeight,
-                             pcYuv->getStride(COMPONENT_Y),
-                             pcCU->getSlice()->getSPS()->getBitDepth(CHANNEL_TYPE_LUMA) );
+  cPattern.initPattern( pcYuv->getAddr  ( COMPONENT_Y, uiPartAddr ),
+                        iRoiWidth,
+                        iRoiHeight,
+                        pcYuv->getStride(COMPONENT_Y),
+                        pcCU->getSlice()->getSPS()->getBitDepth(CHANNEL_TYPE_LUMA) );
 
   Pel*        piRefY      = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getAddr( COMPONENT_Y, pcCU->getCtuRsAddr(), pcCU->getZorderIdxInCtu() + uiPartAddr );
   Int         iRefStride  = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getStride(COMPONENT_Y);
@@ -3723,7 +3722,7 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   //  Do integer search
   if ( (m_motionEstimationSearchMethod==MESEARCH_FULL) || bBi )
   {
-    xPatternSearch      ( pcPatternKey, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost );
+    xPatternSearch      ( &cPattern, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost );
   }
   else
   {
@@ -3733,7 +3732,7 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
     {
       pIntegerMv2Nx2NPred = &(m_integerMv2Nx2N[eRefPicList][iRefIdxPred]);
     }
-    xPatternSearchFast  ( pcCU, pcPatternKey, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost, pIntegerMv2Nx2NPred );
+    xPatternSearchFast  ( pcCU, &cPattern, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost, pIntegerMv2Nx2NPred );
     if (pcCU->getPartitionSize(0) == SIZE_2Nx2N)
     {
       m_integerMv2Nx2N[eRefPicList][iRefIdxPred] = rcMv;
@@ -3744,7 +3743,7 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   m_pcRdCost->setCostScale ( 1 );
 
   const Bool bIsLosslessCoded = pcCU->getCUTransquantBypass(uiPartAddr) != 0;
-  xPatternSearchFracDIF( bIsLosslessCoded, pcPatternKey, piRefY, iRefStride, &rcMv, cMvHalf, cMvQter, ruiCost );
+  xPatternSearchFracDIF( bIsLosslessCoded, &cPattern, piRefY, iRefStride, &rcMv, cMvHalf, cMvQter, ruiCost );
 
   m_pcRdCost->setCostScale( 0 );
   rcMv <<= 2;
