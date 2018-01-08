@@ -291,6 +291,9 @@ Void TAppDecTop::xInitDecLib()
   // initialize decoder class
   m_cTDecTop.init();
   m_cTDecTop.setDecodedPictureHashSEIEnabled(m_decodedPictureHashSEIEnabled);
+#if MCTS_ENC_CHECK
+  m_cTDecTop.setTMctsCheckEnabled(m_tmctsCheck);
+#endif
 #if O0043_BEST_EFFORT_DECODING
   m_cTDecTop.setForceDecodeBitDepth(m_forceDecodeBitDepth);
 #endif

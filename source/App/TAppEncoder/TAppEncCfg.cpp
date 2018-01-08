@@ -1075,6 +1075,9 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEISOPDescription",                               m_SOPDescriptionSEIEnabled,                       false, "Control generation of SOP description SEI messages")
   ("SEIScalableNesting",                              m_scalableNestingSEIEnabled,                      false, "Control generation of scalable nesting SEI messages")
   ("SEITempMotionConstrainedTileSets",                m_tmctsSEIEnabled,                                false, "Control generation of temporal motion constrained tile sets SEI message")
+#if MCTS_ENC_CHECK
+  ("SEITMCTSTileConstraint",                          m_tmctsSEITileConstraint,                         false, "Constrain motion vectors at tile boundaries")
+#endif
   ("SEITimeCodeEnabled",                              m_timeCodeSEIEnabled,                             false, "Control generation of time code information SEI message")
   ("SEITimeCodeNumClockTs",                           m_timeCodeSEINumTs,                                   0, "Number of clock time sets [0..3]")
   ("SEITimeCodeTimeStampFlag",                        cfg_timeCodeSeiTimeStampFlag,          cfg_timeCodeSeiTimeStampFlag,         "Time stamp flag associated to each time set")
@@ -2540,6 +2543,14 @@ Void TAppEncCfg::xCheckParameter()
     printf("Warning: SEITempMotionConstrainedTileSets is set to false to disable temporal motion-constrained tile sets SEI message because there are no tiles enabled.\n");
     m_tmctsSEIEnabled = false;
   }
+
+#if MCTS_ENC_CHECK
+  if ((m_tmctsSEIEnabled) && (m_tmctsSEITileConstraint) && (m_bLFCrossTileBoundaryFlag) )
+  {
+    printf("Warning: Constrained Encoding for Temporal Motion Constrained Tile Sets is enabled. Disabling filtering across tile boundaries!\n");
+    m_bLFCrossTileBoundaryFlag = false;
+  }
+#endif
 
   if(m_timeCodeSEIEnabled)
   {

@@ -77,18 +77,42 @@ Int   isBelowLeftAvailable  ( const TComDataCU* pcCU, UInt uiPartIdxLT, UInt uiP
 // Public member functions (TComPattern)
 // ====================================================================================================================
 
+#if MCTS_ENC_CHECK
+Void TComPattern::initPattern(Pel* piY,
+                              Int roiWidth,
+                              Int roiHeight,
+                              Int stride,
+                              Int bitDepthLuma,
+                              Int roiPosX,
+                              Int roiPosY)
+#else
 Void TComPattern::initPattern (Pel* piY,
                                Int roiWidth,
                                Int roiHeight,
                                Int stride,
                                Int bitDepthLuma)
+#endif
 {
   m_piROIOrigin = piY;
   m_roiWidth = roiWidth;
   m_roiHeight = roiHeight;
   m_patternStride = stride;
   m_bitDepth = bitDepthLuma;
+#if MCTS_ENC_CHECK
+  m_roiPosX       = roiPosX;
+  m_roiPosY       = roiPosY;
+#endif
 }
+
+#if MCTS_ENC_CHECK
+Void TComPattern::setTileBorders(Int tileLeftTopPelPosX, Int tileLeftTopPelPosY, Int tileRightBottomPelPosX, Int tileRightBottomPelPosY)
+{
+  m_tileLeftTopPelPosX = tileLeftTopPelPosX;
+  m_tileLeftTopPelPosY = tileLeftTopPelPosY;
+  m_tileRightBottomPelPosX = tileRightBottomPelPosX;
+  m_tileRightBottomPelPosY = tileRightBottomPelPosY;
+}
+#endif
 
 
 // TODO: move this function to TComPrediction.cpp.

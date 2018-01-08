@@ -649,14 +649,14 @@ public:
 //definition according to P1005_v1;
 class SEITempMotionConstrainedTileSets: public SEI
 {
-  struct TileSetData
+  class TileSetData
   {
     protected:
       std::vector<Int> m_top_left_tile_index;  //[tileSetIdx][tileIdx];
       std::vector<Int> m_bottom_right_tile_index;
 
     public:
-      Int     m_mcts_id;  
+      Int     m_mcts_id;
       Bool    m_display_tile_set_flag;
       Int     m_num_tile_rects_in_set; //_minus1;
       Bool    m_exact_sample_value_match_flag;

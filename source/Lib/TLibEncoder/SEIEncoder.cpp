@@ -345,25 +345,40 @@ Void SEIEncoder::initSEITempMotionConstrainedTileSets (SEITempMotionConstrainedT
 
   if(pps->getTilesEnabledFlag())
   {
-    sei->m_mc_all_tiles_exact_sample_value_match_flag = false;
-    sei->m_each_tile_one_tile_set_flag                = false;
-    sei->m_limited_tile_set_display_flag              = false;
-    sei->setNumberOfTileSets((pps->getNumTileColumnsMinus1() + 1) * (pps->getNumTileRowsMinus1() + 1));
-
-    for(Int i=0; i < sei->getNumberOfTileSets(); i++)
+#if MCTS_ENC_CHECK
+    if (m_pcCfg->getTMCTSSEITileConstraint())
     {
-      sei->tileSetData(i).m_mcts_id = i;  //depends the application;
-      sei->tileSetData(i).setNumberOfTileRects(1);
-
-      for(Int j=0; j<sei->tileSetData(i).getNumberOfTileRects(); j++)
-      {
-        sei->tileSetData(i).topLeftTileIndex(j)     = i+j;
-        sei->tileSetData(i).bottomRightTileIndex(j) = i+j;
-      }
-
-      sei->tileSetData(i).m_exact_sample_value_match_flag    = false;
-      sei->tileSetData(i).m_mcts_tier_level_idc_present_flag = false;
+      sei->m_mc_all_tiles_exact_sample_value_match_flag = true;
+      sei->m_each_tile_one_tile_set_flag = true;
+      sei->m_limited_tile_set_display_flag = false;
+      sei->m_max_mcs_tier_level_idc_present_flag = false;
+      sei->setNumberOfTileSets(0);
     }
+    else
+    {
+#endif
+      sei->m_mc_all_tiles_exact_sample_value_match_flag = false;
+      sei->m_each_tile_one_tile_set_flag                = false;
+      sei->m_limited_tile_set_display_flag              = false;
+      sei->setNumberOfTileSets((pps->getNumTileColumnsMinus1() + 1) * (pps->getNumTileRowsMinus1() + 1));
+
+      for(Int i=0; i < sei->getNumberOfTileSets(); i++)
+      {
+        sei->tileSetData(i).m_mcts_id = i;  //depends the application;
+        sei->tileSetData(i).setNumberOfTileRects(1);
+
+        for(Int j=0; j<sei->tileSetData(i).getNumberOfTileRects(); j++)
+        {
+          sei->tileSetData(i).topLeftTileIndex(j)     = i+j;
+          sei->tileSetData(i).bottomRightTileIndex(j) = i+j;
+        }
+
+        sei->tileSetData(i).m_exact_sample_value_match_flag    = false;
+        sei->tileSetData(i).m_mcts_tier_level_idc_present_flag = false;
+      }
+#if MCTS_ENC_CHECK
+    }
+#endif
   }
   else
   {

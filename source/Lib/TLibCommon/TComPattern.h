@@ -61,12 +61,30 @@ private:
   Int   m_patternStride;
   Int   m_bitDepth;
 
+#if MCTS_ENC_CHECK  
+  Int   m_roiPosX;
+  Int   m_roiPosY;
+  Int   m_tileLeftTopPelPosX;
+  Int   m_tileLeftTopPelPosY;
+  Int   m_tileRightBottomPelPosX;
+  Int   m_tileRightBottomPelPosY;
+#endif
+
 public:
   // ROI & pattern information, (ROI = &pattern[AboveOffset][LeftOffset])
   Int   getROIYWidth() const      { return m_roiWidth;       }
   Int   getROIYHeight() const     { return m_roiHeight;      }
   Int   getPatternLStride() const { return m_patternStride;  }
   Int   getBitDepthY() const      { return m_bitDepth;       }
+#if MCTS_ENC_CHECK
+  Int   getROIYPosX() const       { return m_roiPosX; }
+  Int   getROIYPosY() const       { return m_roiPosY; }
+
+  Int   getTileLeftTopPelPosX() const { return m_tileLeftTopPelPosX; }
+  Int   getTileLeftTopPelPosY() const { return m_tileLeftTopPelPosY; }
+  Int   getTileRightBottomPelPosX() const { return m_tileRightBottomPelPosX; }
+  Int   getTileRightBottomPelPosY() const { return m_tileRightBottomPelPosY; }
+#endif
 
   __inline Pel*  getROIY()
   {
@@ -83,6 +101,14 @@ public:
   , m_roiHeight(0)
   , m_patternStride(0)
   , m_bitDepth(0)
+#if MCTS_ENC_CHECK
+  , m_roiPosX(0)
+  , m_roiPosY(0)
+  , m_tileLeftTopPelPosX(0)
+  , m_tileLeftTopPelPosY(0)
+  , m_tileRightBottomPelPosX(0)
+  , m_tileRightBottomPelPosY(0)
+#endif
   {};
 
 
@@ -91,7 +117,12 @@ public:
   // -------------------------------------------------------------------------------------------------------------------
 
   /// set parameters from Pel buffers for accessing neighbouring pixels
-  Void initPattern( Pel* piY, Int roiWidth, Int roiHeight, Int stride, Int bitDepthLuma );
+#if MCTS_ENC_CHECK
+  Void initPattern(Pel* piY, Int roiWidth, Int roiHeight, Int stride, Int bitDepthLuma, Int roiPosX, Int roiPosY);
+  Void setTileBorders(Int tileLeftTopPelPosX, Int tileLeftTopPelPosY, Int tileRightBottomPelPosX, Int tileRightBottomPelPosY);
+#else
+  Void initPattern(Pel* piY, Int roiWidth, Int roiHeight, Int stride, Int bitDepthLuma);
+#endif
 };
 
 //! \}

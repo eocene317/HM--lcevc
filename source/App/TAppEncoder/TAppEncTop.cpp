@@ -333,6 +333,9 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setSOPDescriptionSEIEnabled                          ( m_SOPDescriptionSEIEnabled );
   m_cTEncTop.setScalableNestingSEIEnabled                         ( m_scalableNestingSEIEnabled );
   m_cTEncTop.setTMCTSSEIEnabled                                   ( m_tmctsSEIEnabled );
+#if MCTS_ENC_CHECK
+  m_cTEncTop.setTMCTSSEITileConstraint                            ( m_tmctsSEITileConstraint );
+#endif
   m_cTEncTop.setTimeCodeSEIEnabled                                ( m_timeCodeSEIEnabled );
   m_cTEncTop.setNumberOfTimeSets                                  ( m_timeCodeSEINumTs );
   for(Int i = 0; i < m_timeCodeSEINumTs; i++)
