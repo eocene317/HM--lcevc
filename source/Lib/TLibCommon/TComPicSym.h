@@ -195,5 +195,9 @@ protected:
 
 //! \}
 
+#if MCTS_ENC_CHECK
+Void getTilePosition(const TComDataCU* const pcCU, UInt &tileXPosInCtus, UInt &tileYPosInCtus, UInt &tileWidthtInCtus, UInt &tileHeightInCtus);
+#endif
+
 #endif // __TCOMPICSYM__
 

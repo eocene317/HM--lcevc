@@ -50,6 +50,7 @@
 #endif // _MSC_VER > 1000
 
 #include "TLibCommon/CommonDef.h"
+#include <stdio.h>
 #include <iostream>
 #if DECODER_PARTIAL_CONFORMANCE_CHECK == 2
 #include <stdlib.h>
@@ -157,6 +158,9 @@ class ProfileLevelTierFeatures
 class TDecConformanceCheck
 {
 private:
+#if MCTS_ENC_CHECK
+  Bool m_tmctsCheckEnabled;
+#endif
 #if DECODER_PARTIAL_CONFORMANCE_CHECK
   UInt  m_numberOfSlicesInPicture;
   UInt64 m_bytesInPicture;
@@ -246,6 +250,14 @@ public:
   checkCtuDecoding(const UInt numUsedBits);
 #endif
 
+#if MCTS_ENC_CHECK
+  Void enableTMctsCheck(Bool enabled) { m_tmctsCheckEnabled = enabled; };
+  Bool getTMctsCheck() const { return m_tmctsCheckEnabled;  }
+  Void flagTMctsError(const char *error)
+  {
+    fprintf(stderr, "TMCTS check error: %s\n", error);
+  }
+#endif
 };
 
 

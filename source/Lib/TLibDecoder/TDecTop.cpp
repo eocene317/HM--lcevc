@@ -79,6 +79,9 @@ TDecTop::TDecTop()
 #endif
   , m_pDecodedSEIOutputStream(NULL)
   , m_warningMessageSkipPicture(false)
+#if MCTS_ENC_CHECK
+  , m_tmctsCheckEnabled(false)
+#endif
   , m_prefixSEINALUs()
 {
 #if ENC_DEC_TRACE
@@ -129,7 +132,11 @@ Void TDecTop::init()
   initROM();
   m_cGopDecoder.init( &m_cEntropyDecoder, &m_cSbacDecoder, &m_cBinCABAC, &m_cCavlcDecoder, &m_cSliceDecoder, &m_cLoopFilter, &m_cSAO);
   m_cSliceDecoder.init( &m_cEntropyDecoder, &m_cCuDecoder, &m_conformanceCheck );
+#if MCTS_ENC_CHECK
+  m_cEntropyDecoder.init(&m_cPrediction, &m_conformanceCheck );
+#else
   m_cEntropyDecoder.init(&m_cPrediction);
+#endif
 }
 
 Void TDecTop::deletePicBuffer ( )
@@ -316,6 +323,9 @@ Void TDecTop::xActivateParameterSets()
     }
 
     xParsePrefixSEImessages();
+#if MCTS_ENC_CHECK
+    xAnalysePrefixSEImessages();
+#endif
 
 #if RExt__HIGH_BIT_DEPTH_SUPPORT==0
     if (sps->getSpsRangeExtension().getExtendedPrecisionProcessingFlag() || sps->getBitDepth(CHANNEL_TYPE_LUMA)>12 || sps->getBitDepth(CHANNEL_TYPE_CHROMA)>12 )
@@ -376,7 +386,11 @@ Void TDecTop::xActivateParameterSets()
 
     // Recursive structure
     m_cCuDecoder.create ( sps->getMaxTotalCUDepth(), sps->getMaxCUWidth(), sps->getMaxCUHeight(), sps->getChromaFormatIdc() );
-    m_cCuDecoder.init   ( &m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction );
+#if MCTS_ENC_CHECK
+    m_cCuDecoder.init   ( &m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction, &m_conformanceCheck );
+#else
+    m_cCuDecoder.init(&m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction);
+#endif
     m_cTrQuant.init     ( sps->getMaxTrSize() );
 
     m_cSliceDecoder.create();
@@ -406,7 +420,9 @@ Void TDecTop::xActivateParameterSets()
     }
 
     xParsePrefixSEImessages();
-
+#if MCTS_ENC_CHECK
+    xAnalysePrefixSEImessages();
+#endif
     // Check if any new SEI has arrived
      if(!m_SEIs.empty())
      {
@@ -443,6 +459,29 @@ Void TDecTop::xParsePrefixSEImessages()
   }
 }
 
+#if MCTS_ENC_CHECK
+Void TDecTop::xAnalysePrefixSEImessages()
+{
+  if (m_tmctsCheckEnabled)
+  {
+    SEIMessages mctsSEIs = getSeisByType(m_SEIs, SEI::TEMP_MOTION_CONSTRAINED_TILE_SETS);
+    for (SEIMessages::iterator it = mctsSEIs.begin(); it != mctsSEIs.end(); it++)
+    {
+      SEITempMotionConstrainedTileSets *mcts = (SEITempMotionConstrainedTileSets*)(*it);
+      if (!mcts->m_each_tile_one_tile_set_flag)
+      {
+        printf("cannot (yet) check Temporal constrained MCTS if each_tile_one_tile_set_flag is not enabled\n");
+        exit(1);
+      }
+      else
+      {
+        printf("MCTS check enabled!\n");
+        m_conformanceCheck.enableTMctsCheck(true);
+      }
+    }
+  }
+}
+#endif
 
 Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay )
 {

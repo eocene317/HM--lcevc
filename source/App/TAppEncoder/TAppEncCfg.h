@@ -330,6 +330,9 @@ protected:
   Bool      m_SOPDescriptionSEIEnabled;
   Bool      m_scalableNestingSEIEnabled;
   Bool      m_tmctsSEIEnabled;
+#if MCTS_ENC_CHECK
+  Bool      m_tmctsSEITileConstraint;
+#endif
   Bool      m_timeCodeSEIEnabled;
   Int       m_timeCodeSEINumTs;
   TComSEITimeSet m_timeSetArray[MAX_TIMECODE_SEI_SETS];

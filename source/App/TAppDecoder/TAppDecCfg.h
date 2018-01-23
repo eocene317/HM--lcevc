@@ -73,6 +73,9 @@ protected:
 #endif
   std::string   m_outputDecodedSEIMessagesFilename;   ///< filename to output decoded SEI messages to. If '-', then use stdout. If empty, do not output details.
   Bool          m_bClipOutputVideoToRec709Range;      ///< If true, clip the output video to the Rec 709 range on saving.
+#if MCTS_ENC_CHECK
+  Bool          m_tmctsCheck;
+#endif
 
 public:
   TAppDecCfg()
@@ -92,6 +95,9 @@ public:
 #endif
   , m_outputDecodedSEIMessagesFilename()
   , m_bClipOutputVideoToRec709Range(false)
+#if MCTS_ENC_CHECK
+  , m_tmctsCheck(false)
+#endif
   {
     for (UInt channelTypeIndex = 0; channelTypeIndex < MAX_NUM_CHANNEL_TYPE; channelTypeIndex++)
     {

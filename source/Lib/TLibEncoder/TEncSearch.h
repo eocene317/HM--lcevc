@@ -396,7 +396,16 @@ protected:
                                     const TComMv&      cMvPred,
                                     const Int          iSrchRng,
                                     TComMv&      rcMvSrchRngLT,
+#if !MCTS_ENC_CHECK
                                     TComMv&      rcMvSrchRngRB );
+#else
+                                    TComMv&      rcMvSrchRngRB,
+                                    const TComPattern* const pcPatternKey );
+#endif
+
+#if MCTS_ENC_CHECK
+  Void xInitTileBorders(const TComDataCU* const pcCU, TComPattern* pcPatternKey);
+#endif
 
   Void xPatternSearchFast         ( const TComDataCU* const  pcCU,
                                     const TComPattern* const pcPatternKey,

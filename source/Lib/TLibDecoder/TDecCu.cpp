@@ -57,11 +57,18 @@ TDecCu::~TDecCu()
 {
 }
 
-Void TDecCu::init( TDecEntropy* pcEntropyDecoder, TComTrQuant* pcTrQuant, TComPrediction* pcPrediction)
+#if MCTS_ENC_CHECK
+Void TDecCu::init( TDecEntropy* pcEntropyDecoder, TComTrQuant* pcTrQuant, TComPrediction* pcPrediction, TDecConformanceCheck* pConformanceCheck)
+#else
+Void TDecCu::init(TDecEntropy* pcEntropyDecoder, TComTrQuant* pcTrQuant, TComPrediction* pcPrediction)
+#endif
 {
   m_pcEntropyDecoder  = pcEntropyDecoder;
   m_pcTrQuant         = pcTrQuant;
   m_pcPrediction      = pcPrediction;
+#if MCTS_ENC_CHECK
+  m_pConformanceCheck = pConformanceCheck;
+#endif
 }
 
 /**
@@ -281,7 +288,18 @@ Void TDecCu::xDecodeCU( TComDataCU*const pcCU, const UInt uiAbsPartIdx, const UI
     }
     m_pcEntropyDecoder->decodeMergeIndex( pcCU, 0, uiAbsPartIdx, uiDepth );
     UInt uiMergeIndex = pcCU->getMergeIndex(uiAbsPartIdx);
+#if MCTS_ENC_CHECK
+    UInt numSpatialMergeCandidates = 0;
+    m_ppcCU[uiDepth]->getInterMergeCandidates( 0, 0, cMvFieldNeighbours, uhInterDirNeighbours, numValidMergeCand, numSpatialMergeCandidates, uiMergeIndex );
+#if MCTS_ENC_CHECK
+    if ( m_pConformanceCheck->getTMctsCheck() && m_ppcCU[uiDepth]->isLastColumnCTUInTile() && (uiMergeIndex >= numSpatialMergeCandidates) )
+    {
+      m_pConformanceCheck->flagTMctsError("Merge Index using non-spatial merge candidate (Skip)");
+    }
+#endif
+#else
     m_ppcCU[uiDepth]->getInterMergeCandidates( 0, 0, cMvFieldNeighbours, uhInterDirNeighbours, numValidMergeCand, uiMergeIndex );
+#endif
     pcCU->setInterDirSubParts( uhInterDirNeighbours[uiMergeIndex], uiAbsPartIdx, 0, uiDepth );
 
     TComMv cTmpMv( 0, 0 );
@@ -418,6 +436,12 @@ Void TDecCu::xReconInter( TComDataCU* pcCU, UInt uiDepth )
 {
 
   // inter prediction
+#if MCTS_ENC_CHECK
+  if (m_pConformanceCheck->getTMctsCheck()  && !m_pcPrediction->checkTMctsMvp(pcCU))
+  {
+    m_pConformanceCheck->flagTMctsError("motion vector across tile boundaries");
+  }
+#endif
   m_pcPrediction->motionCompensation( pcCU, m_ppcYuvReco[uiDepth] );
 
 #if DEBUG_STRING

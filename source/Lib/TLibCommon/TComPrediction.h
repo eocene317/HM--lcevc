@@ -133,6 +133,10 @@ public:
   static Bool filteringIntraReferenceSamples(const ComponentID compID, UInt uiDirMode, UInt uiTuChWidth, UInt uiTuChHeight, const ChromaFormat chFmt, const Bool intraReferenceSmoothingDisabled);
 
   static Bool UseDPCMForFirstPassIntraEstimation(TComTU &rTu, const UInt uiDirMode);
+
+#if MCTS_ENC_CHECK
+  Bool checkTMctsMvp(TComDataCU* pcCU, Int partIdx = -1);
+#endif
 };
 
 //! \}

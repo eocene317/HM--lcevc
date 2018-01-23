@@ -191,7 +191,7 @@
 \maketitle
 \begin{abstract}
 This document is a user manual describing usage of reference software
-for the HEVC project. It applies to version 16.17
+for the HEVC project. It applies to version 16.18
 of the software.
 \end{abstract}
 
@@ -2715,6 +2715,16 @@ If false the SEI applies to the current frame only.
 \Default{false} &
 When true (non-zero), generates example temporal motion constrained tile sets SEI messages.
 \\
+\Option{SEITMCTSTileConstraint} &
+\Default{false} &
+When true (non-zero), the following encoding settings are enabled:
+\begin{itemize}
+\item mc_all_tiles_exact_sample_value_match_flag and each_tile_one_tile_set_flag will be set equal to one int the temporal motion constrained tile sets SEI message
+\item Motion vectors are constrained to not cross tile boundaries
+\item TMVP and merge mode are constrained to not cross tile boundaries
+\item LFCrossTileBoundaryFlag will be disabled
+\end{itemize}
+\\
 \end{OptionTableNoShorthand}
 
 
@@ -3031,6 +3041,18 @@ When true, do not output frames for which there is an SEI NoDisplay message.
 %\ShortOption{\None} &
 \Default{0} &
 If 1 then clip output video to the Rec. 709 Range on saving when OutputBitDepth is less than InternalBitDepth.
+\\
+
+\Option{TMCTSCheck} &
+%\ShortOption{\None} &
+\Default{0} &
+Enables checking of temporal motion constraints (Merge/TMVP, motion vectors) at tile boundaries. Checks are enabled, if
+\begin{itemize}
+\item a temporal motion constraint SEI is present in the bitstream
+\item the SEI message contains mc_all_tiles_exact_sample_value_match_flag and each_tile_one_tile_set_flag equal to 1
+\item TMCTSCheck is equal to 1
+\end{itemize}
+If violations are found, an error message is printed to stderr.
 \\
 
 \end{OptionTableNoShorthand}
