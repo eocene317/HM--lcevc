@@ -1778,7 +1778,7 @@ Void TDecCavlc::parseDeltaQP( TComDataCU* pcCU, UInt uiAbsPartIdx, UInt uiDepth 
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
   READ_SVLC(iDQp, "delta_qp");
 #else
-  xReadSvlc( iDQp );
+  xReadSvlc( iDQp, "delta_qp" );
 #endif
 
   Int qpBdOffsetY = pcCU->getSlice()->getSPS()->getQpBDOffset(CHANNEL_TYPE_LUMA);

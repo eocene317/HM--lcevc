@@ -104,13 +104,13 @@ Void SyntaxElementParser::xReadCode (UInt uiLength, UInt& rValue)
 #endif
 #if ENC_DEC_TRACE
   fprintf( g_hTrace, "%8lld  ", g_nSymbolCounter++ );
-  if (length < 10)
+  if (uiLength < 10)
   {
-    fprintf( g_hTrace, "%-50s u(%d)  : %u\n", pSymbolName, length, rValue );
+    fprintf( g_hTrace, "%-50s u(%d)  : %u\n", pSymbolName, uiLength, rValue );
   }
   else
   {
-    fprintf( g_hTrace, "%-50s u(%d) : %u\n", pSymbolName, length, rValue );
+    fprintf( g_hTrace, "%-50s u(%d) : %u\n", pSymbolName, uiLength, rValue );
   }
   fflush ( g_hTrace );
 #endif
