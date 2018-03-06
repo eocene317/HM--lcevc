@@ -1771,26 +1771,9 @@ Void TDecCavlc::parseCrossComponentPrediction( class TComTU& /*rTu*/, ComponentI
   assert(0);
 }
 
-Void TDecCavlc::parseDeltaQP( TComDataCU* pcCU, UInt uiAbsPartIdx, UInt uiDepth )
+Void TDecCavlc::parseDeltaQP( TComDataCU* /*pcCU*/, UInt /*uiAbsPartIdx*/, UInt /*uiDepth*/ )
 {
-  Int  iDQp;
-
-#if RExt__DECODER_DEBUG_BIT_STATISTICS
-  READ_SVLC(iDQp, "delta_qp");
-#else
-  xReadSvlc( iDQp, "delta_qp" );
-#endif
-
-  Int qpBdOffsetY = pcCU->getSlice()->getSPS()->getQpBDOffset(CHANNEL_TYPE_LUMA);
-  const Int qp = (((Int) pcCU->getRefQP( uiAbsPartIdx ) + iDQp + 52 + 2*qpBdOffsetY )%(52+ qpBdOffsetY)) -  qpBdOffsetY;
-
-  const UInt maxCUDepth        = pcCU->getSlice()->getSPS()->getMaxTotalCUDepth();
-  const UInt maxCuDQPDepth     = pcCU->getSlice()->getPPS()->getMaxCuDQPDepth();
-  const UInt doubleDepthDifference = ((maxCUDepth - maxCuDQPDepth)<<1);
-  const UInt uiAbsQpCUPartIdx = (uiAbsPartIdx>>doubleDepthDifference)<<doubleDepthDifference ;
-  const UInt uiQpCUDepth =   min(uiDepth,pcCU->getSlice()->getPPS()->getMaxCuDQPDepth()) ;
-
-  pcCU->setQPSubParts( qp, uiAbsQpCUPartIdx, uiQpCUDepth );
+  assert(0);
 }
 
 Void TDecCavlc::parseChromaQpAdjustment( TComDataCU* /*pcCU*/, UInt /*uiAbsPartIdx*/, UInt /*uiDepth*/ )
