@@ -350,7 +350,33 @@ protected:
   Int       m_preferredTransferCharacteristics;
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;
-
+#if RWP_SEI_MESSAGE
+  Bool                  m_rwpSEIEnabled;
+  Bool                  m_rwpSEIRwpCancelFlag;
+  Bool                  m_rwpSEIRwpPersistenceFlag;
+  Bool                  m_rwpSEIConstituentPictureMatchingFlag;
+  Int                   m_rwpSEINumPackedRegions;
+  Int                   m_rwpSEIProjPictureWidth;
+  Int                   m_rwpSEIProjPictureHeight;
+  Int                   m_rwpSEIPackedPictureWidth;
+  Int                   m_rwpSEIPackedPictureHeight;
+  std::vector<UChar>    m_rwpSEIRwpTransformType;
+  std::vector<Bool>     m_rwpSEIRwpGuardBandFlag;
+  std::vector<UInt>     m_rwpSEIProjRegionWidth;
+  std::vector<UInt>     m_rwpSEIProjRegionHeight;
+  std::vector<UInt>     m_rwpSEIRwpSEIProjRegionTop;
+  std::vector<UInt>     m_rwpSEIProjRegionLeft;
+  std::vector<UShort>   m_rwpSEIPackedRegionWidth;
+  std::vector<UShort>   m_rwpSEIPackedRegionHeight;
+  std::vector<UShort>   m_rwpSEIPackedRegionTop;
+  std::vector<UShort>   m_rwpSEIPackedRegionLeft;
+  std::vector<UChar>    m_rwpSEIRwpLeftGuardBandWidth;
+  std::vector<UChar>    m_rwpSEIRwpRightGuardBandWidth;
+  std::vector<UChar>    m_rwpSEIRwpTopGuardBandHeight;
+  std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
+  std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
+  std::vector<UChar>    m_rwpSEIRwpGuardBandType;
+#endif     
   // weighted prediction
   Bool      m_useWeightedPred;                    ///< Use of weighted prediction in P slices
   Bool      m_useWeightedBiPred;                  ///< Use of bi-directional weighted prediction in B slices

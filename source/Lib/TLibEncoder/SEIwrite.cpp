@@ -171,6 +171,11 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::AMBIENT_VIEWING_ENVIRONMENT:
     xWriteSEIAmbientViewingEnvironment(*static_cast<const SEIAmbientViewingEnvironment*>(&sei));
     break;
+#if RWP_SEI_MESSAGE
+  case SEI::REGION_WISE_PACKING:
+    xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
+    break;
+#endif
   default:
     assert(!"Trying to write unhandled SEI message");
     break;
@@ -966,7 +971,50 @@ Void SEIWriter::xWriteSEIKneeFunctionInfo(const SEIKneeFunctionInfo &sei)
     }
   }
 }
-
+#if RWP_SEI_MESSAGE
+Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
+{
+  WRITE_FLAG( sei.m_rwpCancelFlag,                                           "rwp_cancel_flag" );
+  if(!sei.m_rwpCancelFlag)
+  {
+    WRITE_FLAG( sei.m_rwpPersistenceFlag,                                    "rwp_persistence_flag" );
+    WRITE_FLAG( sei.m_constituentPictureMatchingFlag,                        "constituent_picture_matching_flag" );
+    WRITE_CODE( 0, 5,                                                        "rwp_reserved_zero_5bits" );
+    WRITE_CODE( (UInt)sei.m_numPackedRegions,                 8,             "num_packed_regions" );
+    WRITE_CODE( (UInt)sei.m_projPictureWidth,                 32,            "proj_picture_width" );
+    WRITE_CODE( (UInt)sei.m_projPictureHeight,                32,            "proj_picture_height" );
+    WRITE_CODE( (UInt)sei.m_packedPictureWidth,               16,            "packed_picture_width" );
+    WRITE_CODE( (UInt)sei.m_packedPictureHeight,              16,            "packed_picture_height" );
+    for( Int i=0; i < sei.m_numPackedRegions; i++ )
+    { 
+      WRITE_CODE( 0, 4,                                                      "rwp_reserved_zero_4bits" );
+      WRITE_CODE( (UInt)sei.m_rwpTransformType[i],            3,             "rwp_tTransform_type" );
+      WRITE_FLAG( sei.m_rwpGuardBandFlag[i],                                 "rwp_guard_band_flag" );
+      WRITE_CODE( (UInt)sei.m_projRegionWidth[i],             32,            "proj_region_width" );
+      WRITE_CODE( (UInt)sei.m_projRegionHeight[i],            32,            "proj_region_height" );
+      WRITE_CODE( (UInt)sei.m_rwpProjRegionTop[i],            32,            "rwp_proj_regionTop" );
+      WRITE_CODE( (UInt)sei.m_projRegionLeft[i],              32,            "proj_region_left" );
+      WRITE_CODE( (UInt)sei.m_packedRegionWidth[i],           16,            "packed_region_width" );
+      WRITE_CODE( (UInt)sei.m_packedRegionHeight[i],          16,            "packed_region_height" );
+      WRITE_CODE( (UInt)sei.m_packedRegionTop[i],             16,            "packed_region_top" );
+      WRITE_CODE( (UInt)sei.m_packedRegionLeft[i],            16,            "packed_region_left" );
+      if( sei.m_rwpGuardBandFlag[i] )
+      {
+        WRITE_CODE( (UInt)sei.m_rwpLeftGuardBandWidth[i],     8,             "rwp_left_guard_band_width");
+        WRITE_CODE( (UInt)sei.m_rwpRightGuardBandWidth[i],    8,             "rwp_right_guard_band_width");
+        WRITE_CODE( (UInt)sei.m_rwpTopGuardBandHeight[i],     8,             "rwp_top_guard_band_height");
+        WRITE_CODE( (UInt)sei. m_rwpBottomGuardBandHeight[i], 8,             "rwp_bottom_guard_band_height");
+        WRITE_FLAG( sei.m_rwpGuardBandNotUsedForPredFlag[i],                 "rwp_guard_band_not_used_forPred_flag" );
+        for( Int j=0; j < 4; j++ )
+        {
+          WRITE_CODE( (UInt)sei.m_rwpGuardBandType[i*4 + j],  3,             "rwp_guard_band_type");
+        }
+        WRITE_CODE( 0, 3,                                                    "rwp_guard_band_reserved_zero_3bits" );
+      }
+    }
+  }
+}
+#endif
 
 Void SEIWriter::xWriteSEIColourRemappingInfo(const SEIColourRemappingInfo& sei)
 {

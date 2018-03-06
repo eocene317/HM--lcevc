@@ -699,8 +699,25 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<Bool> cfg_timeCodeSeiHoursFlag            (0,  1, 0, MAX_TIMECODE_SEI_SETS);
   SMultiValueInput<Int>  cfg_timeCodeSeiTimeOffsetLength     (0, 31, 0, MAX_TIMECODE_SEI_SETS);
   SMultiValueInput<Int>  cfg_timeCodeSeiTimeOffsetValue      (std::numeric_limits<Int>::min(), std::numeric_limits<Int>::max(), 0, MAX_TIMECODE_SEI_SETS);
+#if RWP_SEI_MESSAGE
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpTransformType                 (0, 7, 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandFlag                 (0, 1, 0, std::numeric_limits<UChar>::max()); 
+  SMultiValueInput<UInt>   cfg_rwpSEIProjRegionWidth                  (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIProjRegionHeight                 (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpSEIProjRegionTop              (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIProjRegionLeft                   (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIPackedRegionWidth                (0, std::numeric_limits<UShort>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIPackedRegionHeight               (0, std::numeric_limits<UShort>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIPackedRegionTop                  (0, std::numeric_limits<UShort>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIPackedRegionLeft                 (0, std::numeric_limits<UShort>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpLeftGuardBandWidth            (0, std::numeric_limits<UChar>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpRightGuardBandWidth           (0, std::numeric_limits<UChar>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpTopGuardBandHeight            (0, std::numeric_limits<UChar>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpBottomGuardBandHeight         (0, std::numeric_limits<UChar>::max(), 0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandNotUsedForPredFlag   (0, 1,   0, std::numeric_limits<UChar>::max());
+  SMultiValueInput<UInt>   cfg_rwpSEIRwpGuardBandType                 (0, 7,   0, 4*std::numeric_limits<UChar>::max());
+#endif
   Int warnUnknowParameter = 0;
-
   po::Options opts;
   opts.addOptions()
   ("help",                                            do_help,                                          false, "this help text")
@@ -1114,6 +1131,33 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIPreferredTransferCharacterisics",              m_preferredTransferCharacteristics,                   -1, "Value for the preferred_transfer_characteristics field of the Alternative transfer characteristics SEI which will override the corresponding entry in the VUI. If negative, do not produce the respective SEI message")
   ("SEIGreenMetadataType",                            m_greenMetadataType,                   0u, "Value for the green_metadata_type specifies the type of metadata that is present in the SEI message. If green_metadata_type is 1, then metadata enabling quality recovery after low-power encoding is present")
   ("SEIXSDMetricType",                                m_xsdMetricType,                      0u, "Value for the xsd_metric_type indicates the type of the objective quality metric. PSNR is the only type currently supported")
+#if RWP_SEI_MESSAGE
+  ("SEIRwpEnabled",                                   m_rwpSEIEnabled,                          false,                                    "Controls if region-wise packing SEI message enabled")
+  ("SEIRwpCancelFlag",                                m_rwpSEIRwpCancelFlag,                    true,                                    "Specifies the persistence of any previous region-wise packing SEI message in output order.")
+  ("SEIRwpPersistenceFlag",                           m_rwpSEIRwpPersistenceFlag,               false,                                    "Specifies the persistence of the region-wise packing SEI message for the current layer.")
+  ("SEIRwpConstituentPictureMatchingFlag",            m_rwpSEIConstituentPictureMatchingFlag,   false,                                    "Specifies the information in the SEI message apply individually to each constituent picture or to the projected picture.")
+  ("SEIRwpNumPackedRegions",                          m_rwpSEINumPackedRegions,                 0,                                        "specifies the number of packed regions when constituent picture matching flag is equal to 0.")
+  ("SEIRwpProjPictureWidth",                          m_rwpSEIProjPictureWidth,                 0,                                        "Specifies the width of the projected picture.")
+  ("SEIRwpProjPictureHeight",                         m_rwpSEIProjPictureHeight,                0,                                        "Specifies the height of the projected picture.")
+  ("SEIRwpPackedPictureWidth",                        m_rwpSEIPackedPictureWidth,               0,                                        "specifies the width of the packed picture.")
+  ("SEIRwpPackedPictureHeight",                       m_rwpSEIPackedPictureHeight,              0,                                        "Specifies the height of the packed picture.")
+  ("SEIRwpTransformType",                             cfg_rwpSEIRwpTransformType,               cfg_rwpSEIRwpTransformType,               "specifies the rotation and mirroring to be applied to the i-th packed region.")
+  ("SEIRwpGuardBandFlag",                             cfg_rwpSEIRwpGuardBandFlag,               cfg_rwpSEIRwpGuardBandFlag,               "specifies the existence of guard band in the i-th packed region.")
+  ("SEIRwpProjRegionWidth",                           cfg_rwpSEIProjRegionWidth,                cfg_rwpSEIProjRegionWidth,                "specifies the width of the i-th projected region.")
+  ("SEIRwpProjRegionHeight",                          cfg_rwpSEIProjRegionHeight,               cfg_rwpSEIProjRegionHeight,               "specifies the height of the i-th projected region.")
+  ("SEIRwpProjRegionTop",                             cfg_rwpSEIRwpSEIProjRegionTop,            cfg_rwpSEIRwpSEIProjRegionTop,            "specifies the top sample row of the i-th projected region.")
+  ("SEIRwpProjRegionLeft",                            cfg_rwpSEIProjRegionLeft,                 cfg_rwpSEIProjRegionLeft,                 "specifies the left-most sample column of the i-th projected region.")
+  ("SEIRwpPackedRegionWidth",                         cfg_rwpSEIPackedRegionWidth,              cfg_rwpSEIPackedRegionWidth,              "specifies the width of the i-th packed region.")
+  ("SEIRwpPackedRegionHeight",                        cfg_rwpSEIPackedRegionHeight,             cfg_rwpSEIPackedRegionHeight,             "specifies the height of the i-th packed region.")
+  ("SEIRwpPackedRegionTop",                           cfg_rwpSEIPackedRegionTop,                cfg_rwpSEIPackedRegionTop,                "specifies the top luma sample row of the i-th packed region.")
+  ("SEIRwpPackedRegionLeft",                          cfg_rwpSEIPackedRegionLeft,               cfg_rwpSEIPackedRegionLeft,               "specifies the left-most luma sample column of the i-th packed region.")
+  ("SEIRwpLeftGuardBandWidth",                        cfg_rwpSEIRwpLeftGuardBandWidth,          cfg_rwpSEIRwpLeftGuardBandWidth,          "specifies the width of the guard band on the left side of the i-th packed region.")
+  ("SEIRwpRightGuardBandWidth",                       cfg_rwpSEIRwpRightGuardBandWidth,         cfg_rwpSEIRwpRightGuardBandWidth,         "specifies the width of the guard band on the right side of the i-th packed region.")
+  ("SEIRwpTopGuardBandHeight",                        cfg_rwpSEIRwpTopGuardBandHeight,          cfg_rwpSEIRwpTopGuardBandHeight,          "specifies the height of the guard band above the i-th packed region.")
+  ("SEIRwpBottomGuardBandHeight",                     cfg_rwpSEIRwpBottomGuardBandHeight,       cfg_rwpSEIRwpBottomGuardBandHeight,       "specifies the height of the guard band below the i-th packed region.")
+  ("SEIRwpGuardBandNotUsedForPredFlag",               cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, "Specifies if the guard bands is used in the inter prediction process.")
+  ("SEIRwpGuardBandType",                             cfg_rwpSEIRwpGuardBandType,               cfg_rwpSEIRwpGuardBandType,               "Specifies the type of the guard bands for the i-th packed region.")
+#endif
   ;
 
 #if EXTENSION_360_VIDEO
@@ -1686,6 +1730,60 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
     }
   }
 
+#if RWP_SEI_MESSAGE
+  if(!m_rwpSEIRwpCancelFlag && m_rwpSEIEnabled)
+  {
+    assert ( m_rwpSEINumPackedRegions > 0 && m_rwpSEINumPackedRegions <= std::numeric_limits<UChar>::max() );
+    assert (cfg_rwpSEIRwpTransformType.values.size() == m_rwpSEINumPackedRegions  && cfg_rwpSEIRwpGuardBandFlag.values.size() == m_rwpSEINumPackedRegions    && cfg_rwpSEIProjRegionWidth.values.size() == m_rwpSEINumPackedRegions &&
+            cfg_rwpSEIProjRegionHeight.values.size() == m_rwpSEINumPackedRegions  && cfg_rwpSEIRwpSEIProjRegionTop.values.size() == m_rwpSEINumPackedRegions && cfg_rwpSEIProjRegionLeft.values.size() == m_rwpSEINumPackedRegions  &&
+            cfg_rwpSEIPackedRegionWidth.values.size() == m_rwpSEINumPackedRegions && cfg_rwpSEIPackedRegionHeight.values.size() == m_rwpSEINumPackedRegions  && cfg_rwpSEIPackedRegionTop.values.size() == m_rwpSEINumPackedRegions &&
+            cfg_rwpSEIPackedRegionLeft.values.size() == m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpTransformType.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpGuardBandFlag.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIProjRegionWidth.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIProjRegionHeight.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpSEIProjRegionTop.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIProjRegionLeft.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIPackedRegionWidth.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIPackedRegionHeight.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIPackedRegionTop.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIPackedRegionLeft.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpLeftGuardBandWidth.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpRightGuardBandWidth.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpTopGuardBandHeight.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpBottomGuardBandHeight.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpGuardBandNotUsedForPredFlag.resize(m_rwpSEINumPackedRegions);
+    m_rwpSEIRwpGuardBandType.resize(4*m_rwpSEINumPackedRegions);
+    for( Int i=0; i < m_rwpSEINumPackedRegions; i++ )
+    {
+      m_rwpSEIRwpTransformType[i]                     = cfg_rwpSEIRwpTransformType.values[i];
+      assert ( m_rwpSEIRwpTransformType[i] >= 0 && m_rwpSEIRwpTransformType[i] <= 7 );
+      m_rwpSEIRwpGuardBandFlag[i]                     = cfg_rwpSEIRwpGuardBandFlag.values[i];
+      m_rwpSEIProjRegionWidth[i]                      = cfg_rwpSEIProjRegionWidth.values[i];
+      m_rwpSEIProjRegionHeight[i]                     = cfg_rwpSEIProjRegionHeight.values[i];
+      m_rwpSEIRwpSEIProjRegionTop[i]                  = cfg_rwpSEIRwpSEIProjRegionTop.values[i];
+      m_rwpSEIProjRegionLeft[i]                       = cfg_rwpSEIProjRegionLeft.values[i];
+      m_rwpSEIPackedRegionWidth[i]                    = cfg_rwpSEIPackedRegionWidth.values[i];
+      m_rwpSEIPackedRegionHeight[i]                   = cfg_rwpSEIPackedRegionHeight.values[i];
+      m_rwpSEIPackedRegionTop[i]                      = cfg_rwpSEIPackedRegionTop.values[i];
+      m_rwpSEIPackedRegionLeft[i]                     = cfg_rwpSEIPackedRegionLeft.values[i]; 
+      if( m_rwpSEIRwpGuardBandFlag[i] )
+      {
+        m_rwpSEIRwpLeftGuardBandWidth[i]              =  cfg_rwpSEIRwpLeftGuardBandWidth.values[i];
+        m_rwpSEIRwpRightGuardBandWidth[i]             =  cfg_rwpSEIRwpRightGuardBandWidth.values[i];
+        m_rwpSEIRwpTopGuardBandHeight[i]              =  cfg_rwpSEIRwpTopGuardBandHeight.values[i];
+        m_rwpSEIRwpBottomGuardBandHeight[i]           =  cfg_rwpSEIRwpBottomGuardBandHeight.values[i];
+        assert ( m_rwpSEIRwpLeftGuardBandWidth[i] > 0 || m_rwpSEIRwpRightGuardBandWidth[i] > 0 || m_rwpSEIRwpTopGuardBandHeight[i] >0 || m_rwpSEIRwpBottomGuardBandHeight[i] >0 );
+        m_rwpSEIRwpGuardBandNotUsedForPredFlag[i]     =  cfg_rwpSEIRwpGuardBandNotUsedForPredFlag.values[i];
+        for( Int j=0; j < 4; j++ )
+        {
+          m_rwpSEIRwpGuardBandType[i*4 + j]           =  cfg_rwpSEIRwpGuardBandType.values[i*4 + j];
+        }
+
+      }
+    }
+  }
+#endif
   if(m_timeCodeSEIEnabled)
   {
     for(Int i = 0; i < m_timeCodeSEINumTs && i < MAX_TIMECODE_SEI_SETS; i++)

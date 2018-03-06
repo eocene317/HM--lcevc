@@ -156,6 +156,9 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::CODED_REGION_COMPLETION:              return "Coded region completion";
     case SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS: return "Alternative transfer characteristics";
     case SEI::AMBIENT_VIEWING_ENVIRONMENT:          return "Ambient viewing environment";
+#if RWP_SEI_MESSAGE
+    case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
+#endif
     default:                                        return "Unknown";
   }
 }

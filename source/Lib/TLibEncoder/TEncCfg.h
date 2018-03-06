@@ -356,6 +356,33 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
+#if RWP_SEI_MESSAGE
+  Bool                  m_rwpSEIEnabled;
+  Bool                  m_rwpSEIRwpCancelFlag;
+  Bool                  m_rwpSEIRwpPersistenceFlag;
+  Bool                  m_rwpSEIConstituentPictureMatchingFlag;
+  Int                   m_rwpSEINumPackedRegions;
+  Int                   m_rwpSEIProjPictureWidth;
+  Int                   m_rwpSEIProjPictureHeight;
+  Int                   m_rwpSEIPackedPictureWidth;
+  Int                   m_rwpSEIPackedPictureHeight;
+  std::vector<UChar>    m_rwpSEIRwpTransformType;
+  std::vector<Bool>     m_rwpSEIRwpGuardBandFlag;
+  std::vector<UInt>     m_rwpSEIProjRegionWidth;
+  std::vector<UInt>     m_rwpSEIProjRegionHeight;
+  std::vector<UInt>     m_rwpSEIRwpSEIProjRegionTop;
+  std::vector<UInt>     m_rwpSEIProjRegionLeft;
+  std::vector<UShort>   m_rwpSEIPackedRegionWidth;
+  std::vector<UShort>   m_rwpSEIPackedRegionHeight;
+  std::vector<UShort>   m_rwpSEIPackedRegionTop;
+  std::vector<UShort>   m_rwpSEIPackedRegionLeft;
+  std::vector<UChar>    m_rwpSEIRwpLeftGuardBandWidth;
+  std::vector<UChar>    m_rwpSEIRwpRightGuardBandWidth;
+  std::vector<UChar>    m_rwpSEIRwpTopGuardBandHeight;
+  std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
+  std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
+  std::vector<UChar>    m_rwpSEIRwpGuardBandType;
+#endif
   //====== Weighted Prediction ========
   Bool      m_useWeightedPred;       //< Use of Weighting Prediction (P_SLICE)
   Bool      m_useWeightedBiPred;    //< Use of Bi-directional Weighting Prediction (B_SLICE)
@@ -877,6 +904,58 @@ public:
   Int*  getKneeSEIInputKneePoint()                                   { return m_kneeSEIInputKneePoint; }
   Void  setKneeSEIOutputKneePoint(Int *p)                            { m_kneeSEIOutputKneePoint = p; }
   Int*  getKneeSEIOutputKneePoint()                                  { return m_kneeSEIOutputKneePoint; }
+#if RWP_SEI_MESSAGE
+  Void     setRwpSEIEnabled(Bool b)                                                                     { m_rwpSEIEnabled = b; }
+  Bool     getRwpSEIEnabled()                                                                           { return m_rwpSEIEnabled; }
+  Void     setRwpSEIRwpCancelFlag(Bool b)                                                               { m_rwpSEIRwpCancelFlag = b; }
+  Bool     getRwpSEIRwpCancelFlag()                                                                     { return m_rwpSEIRwpCancelFlag; }
+  Void     setRwpSEIRwpPersistenceFlag (Bool b)                                                         { m_rwpSEIRwpPersistenceFlag = b; }
+  Bool     getRwpSEIRwpPersistenceFlag ()                                                               { return m_rwpSEIRwpPersistenceFlag; }
+  Void     setRwpSEIConstituentPictureMatchingFlag (Bool b)                                             { m_rwpSEIConstituentPictureMatchingFlag = b; }
+  Bool     getRwpSEIConstituentPictureMatchingFlag ()                                                   { return m_rwpSEIConstituentPictureMatchingFlag; }
+  Void     setRwpSEINumPackedRegions (Int value)                                                        { m_rwpSEINumPackedRegions = value; }
+  Int      getRwpSEINumPackedRegions ()                                                                 { return m_rwpSEINumPackedRegions; }
+  Void     setRwpSEIProjPictureWidth (Int value)                                                        { m_rwpSEIProjPictureWidth = value; }
+  Int      getRwpSEIProjPictureWidth ()                                                                 { return m_rwpSEIProjPictureWidth; }
+  Void     setRwpSEIProjPictureHeight (Int value)                                                       { m_rwpSEIProjPictureHeight = value; }
+  Int      getRwpSEIProjPictureHeight ()                                                                { return m_rwpSEIProjPictureHeight; }
+  Void     setRwpSEIPackedPictureWidth (Int value)                                                      { m_rwpSEIPackedPictureWidth = value; }
+  Int      getRwpSEIPackedPictureWidth ()                                                               { return m_rwpSEIPackedPictureWidth; }
+  Void     setRwpSEIPackedPictureHeight (Int value)                                                     { m_rwpSEIPackedPictureHeight = value; }
+  Int      getRwpSEIPackedPictureHeight ()                                                              { return m_rwpSEIPackedPictureHeight; }
+  Void     setRwpSEIRwpTransformType(const std::vector<UChar>& rwpTransformType)                        { m_rwpSEIRwpTransformType =rwpTransformType; }
+  UChar    getRwpSEIRwpTransformType(UInt idx) const                                                    { return m_rwpSEIRwpTransformType[idx]; } 
+  Void     setRwpSEIRwpGuardBandFlag(const std::vector<Bool>& rwpGuardBandFlag)                         { m_rwpSEIRwpGuardBandFlag = rwpGuardBandFlag; }
+  Bool     getRwpSEIRwpGuardBandFlag(UInt idx) const                                                    { return m_rwpSEIRwpGuardBandFlag[idx]; }
+  Void     setRwpSEIProjRegionWidth(const std::vector<UInt>& projRegionWidth)                           { m_rwpSEIProjRegionWidth = projRegionWidth; }
+  UInt     getRwpSEIProjRegionWidth(UInt idx) const                                                     { return m_rwpSEIProjRegionWidth[idx]; } 
+  Void     setRwpSEIProjRegionHeight(const std::vector<UInt>& projRegionHeight)                         { m_rwpSEIProjRegionHeight = projRegionHeight; } 
+  UInt     getRwpSEIProjRegionHeight(UInt idx) const                                                    { return m_rwpSEIProjRegionHeight[idx]; } 
+  Void     setRwpSEIRwpSEIProjRegionTop(const std::vector<UInt>& projRegionTop)                         { m_rwpSEIRwpSEIProjRegionTop = projRegionTop; }
+  UInt     getRwpSEIRwpSEIProjRegionTop(UInt idx) const                                                 { return m_rwpSEIRwpSEIProjRegionTop[idx]; } 
+  Void     setRwpSEIProjRegionLeft(const std::vector<UInt>& projRegionLeft)                             { m_rwpSEIProjRegionLeft = projRegionLeft; } 
+  UInt     getRwpSEIProjRegionLeft(UInt idx) const                                                      { return m_rwpSEIProjRegionLeft[idx]; } 
+  Void    setRwpSEIPackedRegionWidth(const std::vector<UShort>& packedRegionWidth)                      { m_rwpSEIPackedRegionWidth  = packedRegionWidth; }
+  UShort  getRwpSEIPackedRegionWidth(UInt idx) const                                                    { return m_rwpSEIPackedRegionWidth[idx]; } 
+  Void    setRwpSEIPackedRegionHeight(const std::vector<UShort>& packedRegionHeight)                    { m_rwpSEIPackedRegionHeight = packedRegionHeight; }
+  UShort  getRwpSEIPackedRegionHeight(UInt idx) const                                                   { return m_rwpSEIPackedRegionHeight[idx]; } 
+  Void    setRwpSEIPackedRegionTop(const std::vector<UShort>& packedRegionTop)                          { m_rwpSEIPackedRegionTop = packedRegionTop; }
+  UShort  getRwpSEIPackedRegionTop(UInt idx) const                                                      { return m_rwpSEIPackedRegionTop[idx]; } 
+  Void    setRwpSEIPackedRegionLeft(const std::vector<UShort>& packedRegionLeft)                        { m_rwpSEIPackedRegionLeft = packedRegionLeft; } 
+  UShort  getRwpSEIPackedRegionLeft(UInt idx) const                                                     { return m_rwpSEIPackedRegionLeft[idx]; }
+  Void    setRwpSEIRwpLeftGuardBandWidth(const std::vector<UChar>& rwpLeftGuardBandWidth)               { m_rwpSEIRwpLeftGuardBandWidth = rwpLeftGuardBandWidth; } 
+  UChar   getRwpSEIRwpLeftGuardBandWidth(UInt idx) const                                                { return m_rwpSEIRwpLeftGuardBandWidth[idx]; }
+  Void    setRwpSEIRwpRightGuardBandWidth(const std::vector<UChar>& rwpRightGuardBandWidth)             { m_rwpSEIRwpRightGuardBandWidth = rwpRightGuardBandWidth; } 
+  UChar   getRwpSEIRwpRightGuardBandWidth(UInt idx) const                                               { return m_rwpSEIRwpRightGuardBandWidth[idx]; } 
+  Void    setRwpSEIRwpTopGuardBandHeight(const std::vector<UChar>& rwpTopGuardBandHeight)               { m_rwpSEIRwpTopGuardBandHeight = rwpTopGuardBandHeight; } 
+  UChar   getRwpSEIRwpTopGuardBandHeight(UInt idx) const                                                { return m_rwpSEIRwpTopGuardBandHeight[idx]; }
+  Void    setRwpSEIRwpBottomGuardBandHeight(const std::vector<UChar>& rwpBottomGuardBandHeight)         { m_rwpSEIRwpBottomGuardBandHeight = rwpBottomGuardBandHeight; }
+  UChar   getRwpSEIRwpBottomGuardBandHeight(UInt idx) const                                             { return m_rwpSEIRwpBottomGuardBandHeight[idx]; } 
+  Void    setRwpSEIRwpGuardBandNotUsedForPredFlag(const std::vector<Bool>& rwpGuardBandNotUsedForPredFlag){ m_rwpSEIRwpGuardBandNotUsedForPredFlag = rwpGuardBandNotUsedForPredFlag; }
+  Bool    getRwpSEIRwpGuardBandNotUsedForPredFlag(UInt idx) const                                         { return m_rwpSEIRwpGuardBandNotUsedForPredFlag[idx]; }
+  Void    setRwpSEIRwpGuardBandType(const std::vector<UChar>& rwpGuardBandType)                           { m_rwpSEIRwpGuardBandType = rwpGuardBandType; }
+  UChar   getRwpSEIRwpGuardBandType(UInt idx) const                                                       { return m_rwpSEIRwpGuardBandType[idx]; } 
+#endif
   Void  setColourRemapInfoSEIFileRoot( const std::string &s )        { m_colourRemapSEIFileRoot = s; }
   const std::string &getColourRemapInfoSEIFileRoot() const           { return m_colourRemapSEIFileRoot; }
   Void  setMasteringDisplaySEI(const TComSEIMasteringDisplay &src)   { m_masteringDisplay = src; }

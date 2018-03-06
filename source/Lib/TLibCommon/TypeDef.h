@@ -94,7 +94,7 @@
 #endif
 
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
-
+#define RWP_SEI_MESSAGE                                   1 // region-wise SEI message 
 // ====================================================================================================================
 // Tool Switches
 // ====================================================================================================================

@@ -448,6 +448,14 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIKneeFunctionInfo(sei);
     seiMessages.push_back(sei);
   }
+#if RWP_SEI_MESSAGE
+  if (m_pcCfg->getRwpSEIEnabled())
+  {
+    SEIRegionWisePacking *seiRegionWisePacking = new SEIRegionWisePacking;
+    m_seiEncoder.initSEIRegionWisePacking(seiRegionWisePacking);
+    seiMessages.push_back(seiRegionWisePacking);
+  }
+#endif
     
   if(m_pcCfg->getMasteringDisplaySEI().colourVolumeSEIEnabled)
   {

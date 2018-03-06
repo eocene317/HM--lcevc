@@ -83,6 +83,9 @@ protected:
   Void xWriteSEITempMotionConstrainedTileSets     (const SEITempMotionConstrainedTileSets& sei);
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
+#if RWP_SEI_MESSAGE
+  Void xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei);
+#endif
   Void xWriteSEIColourRemappingInfo               (const SEIColourRemappingInfo& sei);
   Void xWriteSEIDeinterlaceFieldIdentification    (const SEIDeinterlaceFieldIdentification& sei);
   Void xWriteSEIContentLightLevelInfo             (const SEIContentLightLevelInfo& sei);

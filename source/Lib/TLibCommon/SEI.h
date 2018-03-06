@@ -92,6 +92,9 @@ public:
     CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
+#if RWP_SEI_MESSAGE
+    REGION_WISE_PACKING                  = 155, 
+#endif
   };
 
   SEI() {}
@@ -743,6 +746,39 @@ public:
   std::vector<Int> m_kneeOutputKneePoint;
 };
 
+#if RWP_SEI_MESSAGE 
+class SEIRegionWisePacking : public SEI
+{
+public:
+  PayloadType payloadType() const { return REGION_WISE_PACKING; }
+  SEIRegionWisePacking() {}
+  virtual ~SEIRegionWisePacking() {}
+  Bool                  m_rwpCancelFlag;
+  Bool                  m_rwpPersistenceFlag;
+  Bool                  m_constituentPictureMatchingFlag;
+  Int                   m_numPackedRegions;
+  Int                   m_projPictureWidth;
+  Int                   m_projPictureHeight;
+  Int                   m_packedPictureWidth;
+  Int                   m_packedPictureHeight;
+  std::vector<UChar>    m_rwpTransformType;
+  std::vector<Bool>     m_rwpGuardBandFlag;
+  std::vector<UInt>     m_projRegionWidth;
+  std::vector<UInt>     m_projRegionHeight;
+  std::vector<UInt>     m_rwpProjRegionTop;
+  std::vector<UInt>     m_projRegionLeft;
+  std::vector<UShort>   m_packedRegionWidth;
+  std::vector<UShort>   m_packedRegionHeight;
+  std::vector<UShort>   m_packedRegionTop;
+  std::vector<UShort>   m_packedRegionLeft;
+  std::vector<UChar>    m_rwpLeftGuardBandWidth;
+  std::vector<UChar>    m_rwpRightGuardBandWidth;
+  std::vector<UChar>    m_rwpTopGuardBandHeight;
+  std::vector<UChar>    m_rwpBottomGuardBandHeight;
+  std::vector<Bool>     m_rwpGuardBandNotUsedForPredFlag;
+  std::vector<UChar>    m_rwpGuardBandType;
+};
+#endif
 
 class SEIColourRemappingInfo : public SEI
 {
