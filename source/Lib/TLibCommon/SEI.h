@@ -92,6 +92,9 @@ public:
     CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
+#if CMP_SEI_MESSAGE
+    CUBEMAP_PROJECTION                   = 151,
+#endif
 #if RWP_SEI_MESSAGE
     REGION_WISE_PACKING                  = 155, 
 #endif
@@ -745,6 +748,19 @@ public:
   std::vector<Int> m_kneeInputKneePoint;
   std::vector<Int> m_kneeOutputKneePoint;
 };
+
+
+#if CMP_SEI_MESSAGE 
+class SEICubemapProjection : public SEI
+{
+public:
+  PayloadType payloadType() const { return CUBEMAP_PROJECTION; }
+  SEICubemapProjection() {}
+  virtual ~SEICubemapProjection() {}
+  Bool                  m_cmpCancelFlag;
+  Bool                  m_cmpPersistenceFlag;
+};
+#endif
 
 #if RWP_SEI_MESSAGE 
 class SEIRegionWisePacking : public SEI

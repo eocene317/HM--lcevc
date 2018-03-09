@@ -2209,6 +2209,7 @@ The table below lists the SEI messages defined for Version 1 and Range-Extension
   141 & Knee function information                & Table \ref{tab:sei-knee-function} \\
   142 & Colour remapping information             & Table \ref{tab:sei-colour-remapping}\\
   143 & Deinterlaced field identification        & (Not handled)\\
+  151 & Cubemap projection                     	 & Table \ref{tab:sei-cmp} \\
   155 & Region-wise packing                      & Table \ref{tab:sei-rwp} \\
 \end{SEIListTable}
 %%
@@ -2821,6 +2822,22 @@ Array of output knee point. Default table can be set to the following:
 Specifies the prefix of input Colour Remapping Information file. Prefix is completed by ``_x.txt'' where x is the  POC number.
 The contents of the file are a list of the SEI message's syntax element names (in decoding order) immediately followed by a `:' and then the associated value.
 An example file can be found in cfg/misc/example_colour_remapping_sei_encoder_0.txt.
+\\
+\end{OptionTableNoShorthand}
+
+
+\begin{OptionTableNoShorthand}{Cubemap Projection SEI message encoder parameters}{tab:sei-cmp}
+\Option{SEICmpEnabled} &
+\Default{false} &
+Enables (true) or disables (false) the insertion of cubemap projection SEI message.
+\\
+\Option{SEICmpCancelFlag} &
+\Default{true} &
+Indicates that cubemap projection SEI message cancels the persistence (true) or follows (false).
+\\
+\Option{SEICmpPersistenceFlag} &
+\Default{false} &
+Specifies the persistence of the Cubemap Projection SEI message.
 \\
 \end{OptionTableNoShorthand}
 

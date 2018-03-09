@@ -356,6 +356,11 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
+#if CMP_SEI_MESSAGE
+  Bool                  m_cmpSEIEnabled;
+  Bool                  m_cmpSEICmpCancelFlag;
+  Bool                  m_cmpSEICmpPersistenceFlag;
+#endif
 #if RWP_SEI_MESSAGE
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;
@@ -904,6 +909,14 @@ public:
   Int*  getKneeSEIInputKneePoint()                                   { return m_kneeSEIInputKneePoint; }
   Void  setKneeSEIOutputKneePoint(Int *p)                            { m_kneeSEIOutputKneePoint = p; }
   Int*  getKneeSEIOutputKneePoint()                                  { return m_kneeSEIOutputKneePoint; }
+#if CMP_SEI_MESSAGE
+  Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }
+  Bool     getCmpSEIEnabled()                                        { return m_cmpSEIEnabled; }
+  Void     setCmpSEICmpCancelFlag(Bool b)                            { m_cmpSEICmpCancelFlag = b; }
+  Bool     getCmpSEICmpCancelFlag()                                  { return m_cmpSEICmpCancelFlag; }
+  Void     setCmpSEICmpPersistenceFlag(Bool b)                       { m_cmpSEICmpPersistenceFlag = b; }
+  Bool     getCmpSEICmpPersistenceFlag()                             { return m_cmpSEICmpPersistenceFlag; }
+#endif
 #if RWP_SEI_MESSAGE
   Void     setRwpSEIEnabled(Bool b)                                                                     { m_rwpSEIEnabled = b; }
   Bool     getRwpSEIEnabled()                                                                           { return m_rwpSEIEnabled; }

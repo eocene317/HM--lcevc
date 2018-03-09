@@ -350,6 +350,11 @@ protected:
   Int       m_preferredTransferCharacteristics;
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;
+#if CMP_SEI_MESSAGE
+  Bool                  m_cmpSEIEnabled;
+  Bool                  m_cmpSEICmpCancelFlag;
+  Bool                  m_cmpSEICmpPersistenceFlag;
+#endif
 #if RWP_SEI_MESSAGE
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;

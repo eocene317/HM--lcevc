@@ -83,6 +83,9 @@ protected:
   Void xWriteSEITempMotionConstrainedTileSets     (const SEITempMotionConstrainedTileSets& sei);
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
+#if CMP_SEI_MESSAGE
+  Void xWriteSEICubemapProjection(const SEICubemapProjection &sei);
+#endif
 #if RWP_SEI_MESSAGE
   Void xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei);
 #endif

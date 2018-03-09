@@ -417,6 +417,16 @@ Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInf
   }
 }
 
+#if CMP_SEI_MESSAGE
+Void SEIEncoder::initSEICubemapProjection(SEICubemapProjection *seiCubemapProjection)
+{
+  assert(m_isInitialized);
+  assert(seiCubemapProjection != NULL);
+  seiCubemapProjection->m_cmpCancelFlag = m_pcCfg->getCmpSEICmpCancelFlag();
+  seiCubemapProjection->m_cmpPersistenceFlag = m_pcCfg->getCmpSEICmpPersistenceFlag();
+}
+#endif
+
 #if RWP_SEI_MESSAGE
 Void SEIEncoder::initSEIRegionWisePacking(SEIRegionWisePacking *seiRegionWisePacking)
 {

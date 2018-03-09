@@ -353,6 +353,11 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setKneeSEINumKneePointsMinus1                        ( m_kneeSEINumKneePointsMinus1 );
   m_cTEncTop.setKneeSEIInputKneePoint                             ( m_kneeSEIInputKneePoint );
   m_cTEncTop.setKneeSEIOutputKneePoint                            ( m_kneeSEIOutputKneePoint );
+#if CMP_SEI_MESSAGE
+  m_cTEncTop.setCmpSEIEnabled                                     (m_cmpSEIEnabled);
+  m_cTEncTop.setCmpSEICmpCancelFlag                               (m_cmpSEICmpCancelFlag);
+  m_cTEncTop.setCmpSEICmpPersistenceFlag                          (m_cmpSEICmpPersistenceFlag);
+#endif
 #if RWP_SEI_MESSAGE
   m_cTEncTop.setRwpSEIEnabled                                     (m_rwpSEIEnabled);
   m_cTEncTop.setRwpSEIRwpCancelFlag                               (m_rwpSEIRwpCancelFlag);

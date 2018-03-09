@@ -171,6 +171,11 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::AMBIENT_VIEWING_ENVIRONMENT:
     xWriteSEIAmbientViewingEnvironment(*static_cast<const SEIAmbientViewingEnvironment*>(&sei));
     break;
+#if CMP_SEI_MESSAGE
+  case SEI::CUBEMAP_PROJECTION:
+    xWriteSEICubemapProjection(*static_cast<const SEICubemapProjection*>(&sei));
+    break;
+#endif
 #if RWP_SEI_MESSAGE
   case SEI::REGION_WISE_PACKING:
     xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
@@ -971,6 +976,16 @@ Void SEIWriter::xWriteSEIKneeFunctionInfo(const SEIKneeFunctionInfo &sei)
     }
   }
 }
+#if CMP_SEI_MESSAGE
+Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
+{
+  WRITE_FLAG(sei.m_cmpCancelFlag, "cmp_cancel_flag");
+  if (!sei.m_cmpCancelFlag)
+  {
+    WRITE_FLAG(sei.m_cmpPersistenceFlag, "cmp_persistence_flag");
+  }
+}
+#endif
 #if RWP_SEI_MESSAGE
 Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
 {

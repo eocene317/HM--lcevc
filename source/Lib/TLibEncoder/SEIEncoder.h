@@ -78,6 +78,9 @@ public:
   Void initSEISegmentedRectFramePacking(SEISegmentedRectFramePacking *sei);
   Void initSEITempMotionConstrainedTileSets (SEITempMotionConstrainedTileSets *sei, const TComPPS *pps);
   Void initSEIKneeFunctionInfo(SEIKneeFunctionInfo *sei);
+#if CMP_SEI_MESSAGE
+  Void initSEICubemapProjection(SEICubemapProjection *sei);
+#endif
 #if RWP_SEI_MESSAGE
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
 #endif
