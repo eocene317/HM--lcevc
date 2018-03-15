@@ -353,6 +353,31 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setKneeSEINumKneePointsMinus1                        ( m_kneeSEINumKneePointsMinus1 );
   m_cTEncTop.setKneeSEIInputKneePoint                             ( m_kneeSEIInputKneePoint );
   m_cTEncTop.setKneeSEIOutputKneePoint                            ( m_kneeSEIOutputKneePoint );
+#if ERP_SR_OV_SEI_MESSAGE
+  m_cTEncTop.setErpSEIEnabled                                     ( m_erpSEIEnabled );           
+  m_cTEncTop.setErpSEICancelFlag                                  ( m_erpSEICancelFlag );        
+  m_cTEncTop.setErpSEIPersistenceFlag                             ( m_erpSEIPersistenceFlag );   
+  m_cTEncTop.setErpSEIGuardBandFlag                               ( m_erpSEIGuardBandFlag );     
+  m_cTEncTop.setErpSEIGuardBandType                               ( m_erpSEIGuardBandType );     
+  m_cTEncTop.setErpSEILeftGuardBandWidth                          ( m_erpSEILeftGuardBandWidth );
+  m_cTEncTop.setErpSEIRightGuardBandWidth                         ( m_erpSEIRightGuardBandWidth );
+  m_cTEncTop.setSphereRotationSEIEnabled                          ( m_sphereRotationSEIEnabled );
+  m_cTEncTop.setSphereRotationSEICancelFlag                       ( m_sphereRotationSEICancelFlag );
+  m_cTEncTop.setSphereRotationSEIPersistenceFlag                  ( m_sphereRotationSEIPersistenceFlag );
+  m_cTEncTop.setSphereRotationSEIYaw                              ( m_sphereRotationSEIYaw );
+  m_cTEncTop.setSphereRotationSEIPitch                            ( m_sphereRotationSEIPitch );
+  m_cTEncTop.setSphereRotationSEIRoll                             ( m_sphereRotationSEIRoll );
+  m_cTEncTop.setOmniViewportSEIEnabled                            ( m_omniViewportSEIEnabled );          
+  m_cTEncTop.setOmniViewportSEIId                                 ( m_omniViewportSEIId );               
+  m_cTEncTop.setOmniViewportSEICancelFlag                         ( m_omniViewportSEICancelFlag );       
+  m_cTEncTop.setOmniViewportSEIPersistenceFlag                    ( m_omniViewportSEIPersistenceFlag );  
+  m_cTEncTop.setOmniViewportSEICntMinus1                          ( m_omniViewportSEICntMinus1 );        
+  m_cTEncTop.setOmniViewportSEIAzimuthCentre                      ( m_omniViewportSEIAzimuthCentre );    
+  m_cTEncTop.setOmniViewportSEIElevationCentre                    ( m_omniViewportSEIElevationCentre );  
+  m_cTEncTop.setOmniViewportSEITiltCentre                         ( m_omniViewportSEITiltCentre );       
+  m_cTEncTop.setOmniViewportSEIHorRange                           ( m_omniViewportSEIHorRange );         
+  m_cTEncTop.setOmniViewportSEIVerRange                           ( m_omniViewportSEIVerRange );         
+#endif
 #if CMP_SEI_MESSAGE
   m_cTEncTop.setCmpSEIEnabled                                     (m_cmpSEIEnabled);
   m_cTEncTop.setCmpSEICmpCancelFlag                               (m_cmpSEICmpCancelFlag);

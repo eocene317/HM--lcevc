@@ -83,6 +83,11 @@ protected:
   Void xWriteSEITempMotionConstrainedTileSets     (const SEITempMotionConstrainedTileSets& sei);
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
+#if ERP_SR_OV_SEI_MESSAGE
+  Void xWriteSEIEquirectangularProjection         (const SEIEquirectangularProjection &sei);
+  Void xWriteSEISphereRotation                    (const SEISphereRotation &sei);
+  Void xWriteSEIOmniViewport                      (const SEIOmniViewport& sei);
+#endif
 #if CMP_SEI_MESSAGE
   Void xWriteSEICubemapProjection(const SEICubemapProjection &sei);
 #endif

@@ -350,6 +350,20 @@ Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType
       sei = new SEIAmbientViewingEnvironment;
       xParseSEIAmbientViewingEnvironment((SEIAmbientViewingEnvironment&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
+#if ERP_SR_OV_SEI_MESSAGE
+    case SEI::EQUIRECTANGULAR_PROJECTION:
+      sei = new SEIEquirectangularProjection;
+      xParseSEIEquirectangularProjection((SEIEquirectangularProjection&) *sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+    case SEI::SPHERE_ROTATION:
+      sei = new SEISphereRotation;
+      xParseSEISphereRotation((SEISphereRotation&) *sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+    case SEI::OMNI_VIEWPORT:
+      sei = new SEIOmniViewport;
+      xParseSEIOmniViewport((SEIOmniViewport&) *sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+#endif
 #if CMP_SEI_MESSAGE
     case SEI::CUBEMAP_PROJECTION:
       sei = new SEICubemapProjection;
@@ -1394,6 +1408,118 @@ Void SEIReader::xParseSEIKneeFunctionInfo(SEIKneeFunctionInfo& sei, UInt payload
     }
   }
 }
+
+#if ERP_SR_OV_SEI_MESSAGE
+Void SEIReader::xParseSEIEquirectangularProjection(SEIEquirectangularProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  UInt val;
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+
+  sei_read_flag( pDecodedMessageOutputStream, val,       "erp_cancel_flag" );              sei.m_erpCancelFlag = val;
+  if( !sei.m_erpCancelFlag )
+  {
+    sei_read_flag( pDecodedMessageOutputStream, val,      "erp_persistence_flag"    );     sei.m_erpPersistenceFlag   = val;
+    sei_read_flag( pDecodedMessageOutputStream, val,      "erp_guard_band_flag"     );     sei.m_erpGuardBandFlag     = val;
+    sei_read_code( pDecodedMessageOutputStream, 2, val,   "erp_reserved_zero_2bits" );
+    if ( sei.m_erpGuardBandFlag == 1)
+    {
+      sei_read_code( pDecodedMessageOutputStream, 3, val,     "erp_guard_band_type"       );   sei.m_erpGuardBandType  = val;
+      sei_read_code( pDecodedMessageOutputStream, 8, val,     "erp_left_guard_band_width" );   sei.m_erpLeftGuardBandWidth = val;
+      sei_read_code( pDecodedMessageOutputStream, 8, val,     "erp_right_guard_band_width");   sei.m_erpRightGuardBandWidth = val;
+    }
+  }
+}
+
+Void SEIReader::xParseSEISphereRotation(SEISphereRotation& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  UInt val;
+  UChar n = 32;
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+  sei_read_flag( pDecodedMessageOutputStream, val,       "sphere_rotation_cancel_flag" );              sei.m_sphereRotationCancelFlag = val;
+  if( !sei.m_sphereRotationCancelFlag )
+  {
+    sei_read_flag( pDecodedMessageOutputStream,    val,   "sphere_rotation_persistence_flag"    );     sei.m_sphereRotationPersistenceFlag = val;
+    sei_read_code( pDecodedMessageOutputStream, 6, val,   "sphere_rotation_reserved_zero_6bits" );
+    sei_read_code( pDecodedMessageOutputStream, n, val,   "sphere_rotation_yaw"                 );                     
+    if((val & (1 << (n-1))) == 0)
+    {
+      sei.m_sphereRotationYaw = val;
+    }
+    else
+    {
+      val &= (1<< (n-1)) - 1;
+      sei.m_sphereRotationYaw = ~val + 1;
+    }
+    sei_read_code( pDecodedMessageOutputStream, n, val,    "sphere_rotation_pitch" );
+    if ((val && (1 << (n-1))) == 0) 
+      sei.m_sphereRotationPitch = val;
+    else
+    {
+      val &= (1 << (n-1)) - 1;
+      sei.m_sphereRotationPitch = ~val + 1;
+    }
+    sei_read_code( pDecodedMessageOutputStream, n, val,    "sphere_rotation_roll" ); 
+    if ((val && (1 << (n-1))) == 0) 
+      sei.m_sphereRotationRoll = val;
+    else
+    {
+      val &= (1 << (n-1)) - 1;
+      sei.m_sphereRotationRoll = ~val + 1;
+    }
+  }
+}
+
+Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  UInt code;
+  UChar n = 32;
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+  sei_read_code( pDecodedMessageOutputStream, 10, code, "omni_viewport_id"          ); sei.m_omniViewportId         = code;
+  sei_read_flag( pDecodedMessageOutputStream,     code, "omni_viewport_cancel_flag" ); sei.m_omniViewportCancelFlag = code;
+  if (!sei.m_omniViewportCancelFlag)
+  {
+    UInt numRegions;
+    sei_read_flag( pDecodedMessageOutputStream,    code,       "omni_viewport_persistence_flag" ); sei.m_omniViewportPersistenceFlag = code;    
+    sei_read_code( pDecodedMessageOutputStream, 4, numRegions, "omni_viewport_cnt_minus1"       ); numRegions++;
+    sei.m_omniViewportRegions.resize(numRegions);
+    for(UInt region=0; region<numRegions; region++)
+    {
+      SEIOmniViewport::OmniViewport &viewport = sei.m_omniViewportRegions[region];
+      sei_read_code( pDecodedMessageOutputStream, n, code, "omni_viewport_azimuth_centre"   );
+      if ((code && (1 << (n-1))) == 0) 
+        viewport.azimuthCentre = code;
+      else
+      {
+        code &= (1 << (n-1)) - 1;
+        viewport.azimuthCentre = ~code + 1;
+      }
+      sei_read_code( pDecodedMessageOutputStream, n, code, "omni_viewport_elevation_centre" );
+      if ((code && (1 << (n-1))) == 0) 
+        viewport.elevationCentre = code;
+      else
+      {
+        code &= (1 << (n-1)) - 1;
+        viewport.elevationCentre = ~code + 1;
+      }
+      sei_read_code( pDecodedMessageOutputStream, n, code, "omni_viewport_tilt_centre"      );
+      if ((code && (1 << (n-1))) == 0) 
+        viewport.tiltCentre = code;
+      else
+      {
+        code &= (1 << (n-1)) - 1;
+        viewport.tiltCentre = ~code + 1;
+      }
+      sei_read_code( pDecodedMessageOutputStream, 32, code, "omni_viewport_hor_range"     );   viewport.horRange        = code;
+      sei_read_code( pDecodedMessageOutputStream, 32, code, "omni_viewport_ver_range"     );   viewport.verRange        = code;
+    }    
+  }
+  else
+  {
+    sei.m_omniViewportRegions.clear();
+    sei.m_omniViewportPersistenceFlag=false;
+  }
+}
+#endif
 
 #if CMP_SEI_MESSAGE
 Void SEIReader::xParseSEICubemapProjection(SEICubemapProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)

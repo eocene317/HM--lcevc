@@ -350,6 +350,33 @@ protected:
   Int       m_preferredTransferCharacteristics;
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;
+#if ERP_SR_OV_SEI_MESSAGE
+  Bool      m_erpSEIEnabled;          
+  Bool      m_erpSEICancelFlag;
+  Bool      m_erpSEIPersistenceFlag;
+  Bool      m_erpSEIGuardBandFlag;
+  UInt      m_erpSEIGuardBandType;
+  UInt      m_erpSEILeftGuardBandWidth;
+  UInt      m_erpSEIRightGuardBandWidth;
+
+  Bool      m_sphereRotationSEIEnabled;          
+  Bool      m_sphereRotationSEICancelFlag;
+  Bool      m_sphereRotationSEIPersistenceFlag;
+  Int       m_sphereRotationSEIYaw;
+  Int       m_sphereRotationSEIPitch;
+  Int       m_sphereRotationSEIRoll;
+
+  Bool      m_omniViewportSEIEnabled;          
+  UInt      m_omniViewportSEIId;
+  Bool      m_omniViewportSEICancelFlag;
+  Bool      m_omniViewportSEIPersistenceFlag;
+  UInt      m_omniViewportSEICntMinus1;
+  std::vector<Int>  m_omniViewportSEIAzimuthCentre;
+  std::vector<Int>  m_omniViewportSEIElevationCentre;
+  std::vector<Int>  m_omniViewportSEITiltCentre;
+  std::vector<UInt> m_omniViewportSEIHorRange;
+  std::vector<UInt> m_omniViewportSEIVerRange;  
+#endif
 #if CMP_SEI_MESSAGE
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;

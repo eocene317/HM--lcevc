@@ -448,6 +448,28 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIKneeFunctionInfo(sei);
     seiMessages.push_back(sei);
   }
+#if ERP_SR_OV_SEI_MESSAGE
+  if (m_pcCfg->getErpSEIEnabled())
+  {
+    SEIEquirectangularProjection *sei = new SEIEquirectangularProjection;
+    m_seiEncoder.initSEIErp(sei);
+    seiMessages.push_back(sei);
+  }
+
+  if (m_pcCfg->getSphereRotationSEIEnabled())
+  {
+    SEISphereRotation *sei = new SEISphereRotation;
+    m_seiEncoder.initSEISphereRotation(sei);
+    seiMessages.push_back(sei);
+  }
+
+  if (m_pcCfg->getOmniViewportSEIEnabled())
+  {
+    SEIOmniViewport *sei = new SEIOmniViewport;
+    m_seiEncoder.initSEIOmniViewport(sei);
+    seiMessages.push_back(sei);
+  }
+#endif
 #if CMP_SEI_MESSAGE
   if (m_pcCfg->getCmpSEIEnabled())
   {

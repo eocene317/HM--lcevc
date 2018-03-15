@@ -92,6 +92,11 @@ public:
     CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
+#if ERP_SR_OV_SEI_MESSAGE
+    EQUIRECTANGULAR_PROJECTION           = 150,
+    SPHERE_ROTATION                      = 154,
+    OMNI_VIEWPORT                        = 156,
+#endif
 #if CMP_SEI_MESSAGE
     CUBEMAP_PROJECTION                   = 151,
 #endif
@@ -749,6 +754,62 @@ public:
   std::vector<Int> m_kneeOutputKneePoint;
 };
 
+#if ERP_SR_OV_SEI_MESSAGE
+class SEIEquirectangularProjection : public SEI
+{
+public:
+  PayloadType payloadType() const { return EQUIRECTANGULAR_PROJECTION; }
+
+  SEIEquirectangularProjection()  {}
+  virtual ~SEIEquirectangularProjection() {}
+
+  Bool   m_erpCancelFlag;
+  Bool   m_erpPersistenceFlag;
+  Bool   m_erpGuardBandFlag;
+  UChar  m_erpGuardBandType;
+  UChar  m_erpLeftGuardBandWidth;
+  UChar  m_erpRightGuardBandWidth;
+};
+
+class SEISphereRotation : public SEI
+{
+public:
+  PayloadType payloadType() const { return SPHERE_ROTATION; }
+
+  SEISphereRotation()  {}
+  virtual ~SEISphereRotation() {}
+
+  Bool  m_sphereRotationCancelFlag;
+  Bool  m_sphereRotationPersistenceFlag;
+  Int   m_sphereRotationYaw;
+  Int   m_sphereRotationPitch;
+  Int   m_sphereRotationRoll;
+};
+
+class SEIOmniViewport : public SEI
+{
+public:
+  PayloadType payloadType() const { return OMNI_VIEWPORT; }
+
+  SEIOmniViewport() {}
+  virtual ~SEIOmniViewport() {}
+
+  struct OmniViewport
+  {
+    Int  azimuthCentre;
+    Int  elevationCentre;
+    Int  tiltCentre;
+    UInt horRange;
+    UInt verRange;
+  };
+
+  UInt  m_omniViewportId;
+  Bool  m_omniViewportCancelFlag;
+  Bool  m_omniViewportPersistenceFlag;
+  UChar m_omniViewportCntMinus1;
+  std::vector<OmniViewport> m_omniViewportRegions;  
+};
+#endif
 
 #if CMP_SEI_MESSAGE 
 class SEICubemapProjection : public SEI

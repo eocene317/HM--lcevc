@@ -171,6 +171,17 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::AMBIENT_VIEWING_ENVIRONMENT:
     xWriteSEIAmbientViewingEnvironment(*static_cast<const SEIAmbientViewingEnvironment*>(&sei));
     break;
+#if ERP_SR_OV_SEI_MESSAGE
+  case SEI::EQUIRECTANGULAR_PROJECTION:
+    xWriteSEIEquirectangularProjection(*static_cast<const SEIEquirectangularProjection*>(&sei));
+    break;
+  case SEI::SPHERE_ROTATION:
+    xWriteSEISphereRotation(*static_cast<const SEISphereRotation*>(&sei));
+    break;
+  case SEI::OMNI_VIEWPORT:
+    xWriteSEIOmniViewport(*static_cast<const SEIOmniViewport*>(&sei));
+    break;
+#endif
 #if CMP_SEI_MESSAGE
   case SEI::CUBEMAP_PROJECTION:
     xWriteSEICubemapProjection(*static_cast<const SEICubemapProjection*>(&sei));
@@ -976,6 +987,100 @@ Void SEIWriter::xWriteSEIKneeFunctionInfo(const SEIKneeFunctionInfo &sei)
     }
   }
 }
+#if ERP_SR_OV_SEI_MESSAGE
+Void SEIWriter::xWriteSEIEquirectangularProjection(const SEIEquirectangularProjection &sei)
+{
+  WRITE_FLAG( sei.m_erpCancelFlag, "erp_cancel_flag" );
+  if( !sei.m_erpCancelFlag )
+  {
+    WRITE_FLAG( sei.m_erpPersistenceFlag, "erp_persistence_flag" );
+    WRITE_FLAG( sei.m_erpGuardBandFlag,   "erp_guard_band_flag" );
+    WRITE_CODE( 0, 2, "erp_reserved_zero_2bits" );
+    if ( sei.m_erpGuardBandFlag == 1)
+    {
+      WRITE_CODE( sei.m_erpGuardBandType,       3, "erp_guard_band_type" );  
+      WRITE_CODE( sei.m_erpLeftGuardBandWidth,  8, "erp_left_guard_band_width" );  
+      WRITE_CODE( sei.m_erpRightGuardBandWidth, 8, "erp_right_guard_band_width" );  
+    }
+  }
+}
+
+Void SEIWriter::xWriteSEISphereRotation(const SEISphereRotation &sei)
+{
+  WRITE_FLAG( sei.m_sphereRotationCancelFlag, "sphere_rotation_cancel_flag" );
+  if( !sei.m_sphereRotationCancelFlag )
+  {
+    WRITE_FLAG( sei.m_sphereRotationPersistenceFlag, "sphere_rotation_persistence_flag" );
+    WRITE_CODE( 0, 6, "sphere_rotation_reserved_zero_6bits" );
+    if (sei.m_sphereRotationYaw >= 0)
+      WRITE_CODE( (UInt)sei.m_sphereRotationYaw,   32,  "sphere_rotation_yaw"    );  
+    else
+    {
+      UInt offsetValue = ~(sei.m_sphereRotationYaw) + 1;
+      offsetValue |= (1 << 31);
+      WRITE_CODE(offsetValue, 32, "sphere_rotation_yaw");
+    }
+    if (sei.m_sphereRotationPitch>= 0)
+      WRITE_CODE( (UInt)sei.m_sphereRotationPitch,   32,  "sphere_rotation_pitch"    );  
+    else
+    {
+      UInt offsetValue = ~(sei.m_sphereRotationPitch) + 1;
+      offsetValue |= (1 << 31);
+      WRITE_CODE(offsetValue, 32, "sphere_rotation_pitch");
+    }
+    if (sei.m_sphereRotationRoll >= 0)
+      WRITE_CODE( (UInt)sei.m_sphereRotationRoll,   32,  "sphere_rotation_roll"    );  
+    else
+    {
+      UInt offsetValue = ~(sei.m_sphereRotationRoll) + 1;
+      offsetValue |= (1 << 31);
+      WRITE_CODE(offsetValue, 32, "sphere_rotation_roll");
+    }
+  }
+}
+
+Void SEIWriter::xWriteSEIOmniViewport(const SEIOmniViewport &sei)
+{
+  WRITE_CODE( sei.m_omniViewportId,     10,    "omni_viewport_id" );
+  WRITE_FLAG( sei.m_omniViewportCancelFlag, "omni_viewport_cancel_flag" );
+  if ( !sei.m_omniViewportCancelFlag )
+  {
+    WRITE_FLAG( sei.m_omniViewportPersistenceFlag, "omni_viewport_persistence_flag" );
+    const UInt numRegions = (UInt) sei.m_omniViewportRegions.size();
+    WRITE_CODE( numRegions - 1, 4, "omni_viewport_cnt_minus1" );
+    for(UInt region=0; region<numRegions; region++)
+    {
+      const SEIOmniViewport::OmniViewport &viewport=sei.m_omniViewportRegions[region];
+      if (viewport.azimuthCentre >= 0)
+        WRITE_CODE( (UInt)viewport.azimuthCentre,   32,  "omni_viewport_azimuth_centre"    );  
+      else
+      {
+        UInt offsetValue = ~(viewport.azimuthCentre) + 1;
+        offsetValue |= (1 << 31);
+        WRITE_CODE(offsetValue, 32, "omni_viewport_azimuth_centre" );
+      }
+      if (viewport.elevationCentre >= 0)
+        WRITE_CODE( (UInt)viewport.elevationCentre,   32,  "omni_viewport_elevation_centre" );  
+      else
+      {
+        UInt offsetValue = ~(viewport.elevationCentre) + 1;
+        offsetValue |= (1 << 31);
+        WRITE_CODE(offsetValue, 32, "omni_viewport_elevation_centre");
+      }
+      if (viewport.tiltCentre >= 0)
+        WRITE_CODE( (UInt)viewport.tiltCentre,   32,  "omni_viewport_tilt_center" );  
+      else
+      {
+        UInt offsetValue = ~(viewport.tiltCentre) + 1;
+        offsetValue |= (1 << 31);
+        WRITE_CODE(offsetValue, 32, "omni_viewport_tilt_center");
+      }
+      WRITE_CODE( viewport.horRange,     32, "omni_viewport_hor_range[i]" );
+      WRITE_CODE( viewport.verRange,     32, "omni_viewport_ver_range[i]" );
+    }
+  }
+}
+#endif
 #if CMP_SEI_MESSAGE
 Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
 {

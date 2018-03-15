@@ -356,6 +356,31 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
+#if ERP_SR_OV_SEI_MESSAGE
+  Bool      m_erpSEIEnabled;          
+  Bool      m_erpSEICancelFlag;
+  Bool      m_erpSEIPersistenceFlag;
+  Bool      m_erpSEIGuardBandFlag;
+  UInt      m_erpSEIGuardBandType;
+  UInt      m_erpSEILeftGuardBandWidth;
+  UInt      m_erpSEIRightGuardBandWidth;
+  Bool      m_sphereRotationSEIEnabled;          
+  Bool      m_sphereRotationSEICancelFlag;
+  Bool      m_sphereRotationSEIPersistenceFlag;
+  Int       m_sphereRotationSEIYaw;
+  Int       m_sphereRotationSEIPitch;
+  Int       m_sphereRotationSEIRoll;
+  Bool      m_omniViewportSEIEnabled;          
+  UInt      m_omniViewportSEIId;
+  Bool      m_omniViewportSEICancelFlag;
+  Bool      m_omniViewportSEIPersistenceFlag;
+  UInt      m_omniViewportSEICntMinus1;
+  std::vector<Int>  m_omniViewportSEIAzimuthCentre;
+  std::vector<Int>  m_omniViewportSEIElevationCentre;
+  std::vector<Int>  m_omniViewportSEITiltCentre;
+  std::vector<UInt> m_omniViewportSEIHorRange;
+  std::vector<UInt> m_omniViewportSEIVerRange; 
+#endif
 #if CMP_SEI_MESSAGE
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;
@@ -909,6 +934,54 @@ public:
   Int*  getKneeSEIInputKneePoint()                                   { return m_kneeSEIInputKneePoint; }
   Void  setKneeSEIOutputKneePoint(Int *p)                            { m_kneeSEIOutputKneePoint = p; }
   Int*  getKneeSEIOutputKneePoint()                                  { return m_kneeSEIOutputKneePoint; }
+#if ERP_SR_OV_SEI_MESSAGE
+  Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
+  Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }
+  Void  setErpSEICancelFlag(Bool b)                                  { m_erpSEICancelFlag = b; }                                                         
+  Bool  getErpSEICancelFlag()                                        { return m_erpSEICancelFlag; }
+  Void  setErpSEIPersistenceFlag(Bool b)                             { m_erpSEIPersistenceFlag = b; }                                                         
+  Bool  getErpSEIPersistenceFlag()                                   { return m_erpSEIPersistenceFlag; }
+  Void  setErpSEIGuardBandFlag(Bool b)                               { m_erpSEIGuardBandFlag = b; }                                                         
+  Bool  getErpSEIGuardBandFlag()                                     { return m_erpSEIGuardBandFlag; }
+  Void  setErpSEIGuardBandType(UInt b)                               { m_erpSEIGuardBandType = b; } 
+  UInt  getErpSEIGuardBandType()                                     { return m_erpSEIGuardBandType; }  
+  Void  setErpSEILeftGuardBandWidth(UInt b)                          { m_erpSEILeftGuardBandWidth = b; } 
+  UInt  getErpSEILeftGuardBandWidth()                                { return m_erpSEILeftGuardBandWidth; }  
+  Void  setErpSEIRightGuardBandWidth(UInt b)                         { m_erpSEIRightGuardBandWidth = b; } 
+  UInt  getErpSEIRightGuardBandWidth()                               { return m_erpSEIRightGuardBandWidth; }      
+  Void  setSphereRotationSEIEnabled(Bool b)                          { m_sphereRotationSEIEnabled = b; }                                                         
+  Bool  getSphereRotationSEIEnabled()                                { return m_sphereRotationSEIEnabled; }
+  Void  setSphereRotationSEICancelFlag(Bool b)                       { m_sphereRotationSEICancelFlag = b; }                                                         
+  Bool  getSphereRotationSEICancelFlag()                             { return m_sphereRotationSEICancelFlag; }
+  Void  setSphereRotationSEIPersistenceFlag(Bool b)                  { m_sphereRotationSEIPersistenceFlag = b; }
+  Bool  getSphereRotationSEIPersistenceFlag()                        { return m_sphereRotationSEIPersistenceFlag; }
+  Void  setSphereRotationSEIYaw(Int b)                               { m_sphereRotationSEIYaw = b; }
+  Int   getSphereRotationSEIYaw()                                    { return m_sphereRotationSEIYaw; }
+  Void  setSphereRotationSEIPitch(Int b)                             { m_sphereRotationSEIPitch = b; }
+  Int   getSphereRotationSEIPitch()                                  { return m_sphereRotationSEIPitch; }
+  Void  setSphereRotationSEIRoll(Int b)                              { m_sphereRotationSEIRoll = b; }
+  Int   getSphereRotationSEIRoll()                                   { return m_sphereRotationSEIRoll; }
+  Void  setOmniViewportSEIEnabled(Bool b)                            { m_omniViewportSEIEnabled = b; }
+  Bool  getOmniViewportSEIEnabled()                                  { return m_omniViewportSEIEnabled; }
+  Void  setOmniViewportSEIId(UInt b)                                 { m_omniViewportSEIId = b; }
+  UInt  getOmniViewportSEIId()                                       { return m_omniViewportSEIId; }
+  Void  setOmniViewportSEICancelFlag(Bool b)                         { m_omniViewportSEICancelFlag = b; }
+  Bool  getOmniViewportSEICancelFlag()                               { return m_omniViewportSEICancelFlag; }
+  Void  setOmniViewportSEIPersistenceFlag(Bool b)                    { m_omniViewportSEIPersistenceFlag = b; }
+  Bool  getOmniViewportSEIPersistenceFlag()                          { return m_omniViewportSEIPersistenceFlag; }
+  Void  setOmniViewportSEICntMinus1(UInt b)                          { m_omniViewportSEICntMinus1 = b; }
+  UInt  getOmniViewportSEICntMinus1()                                { return m_omniViewportSEICntMinus1; }
+  Void  setOmniViewportSEIAzimuthCentre(const std::vector<Int>& vi)  { m_omniViewportSEIAzimuthCentre = vi; }
+  Int   getOmniViewportSEIAzimuthCentre(Int idx)                     { return m_omniViewportSEIAzimuthCentre[idx]; }
+  Void  setOmniViewportSEIElevationCentre(const std::vector<Int>& vi){ m_omniViewportSEIElevationCentre = vi; }
+  Int   getOmniViewportSEIElevationCentre(Int idx)                   { return m_omniViewportSEIElevationCentre[idx]; }
+  Void  setOmniViewportSEITiltCentre(const std::vector<Int>& vi)     { m_omniViewportSEITiltCentre = vi; }
+  Int   getOmniViewportSEITiltCentre(Int idx)                        { return m_omniViewportSEITiltCentre[idx]; }
+  Void  setOmniViewportSEIHorRange(const std::vector<UInt>& vi)      { m_omniViewportSEIHorRange = vi; }
+  UInt  getOmniViewportSEIHorRange(Int idx)                          { return m_omniViewportSEIHorRange[idx]; }
+  Void  setOmniViewportSEIVerRange(const std::vector<UInt>& vi)      { m_omniViewportSEIVerRange = vi; } 
+  UInt  getOmniViewportSEIVerRange(Int idx)                          { return m_omniViewportSEIVerRange[idx]; }
+#endif
 #if CMP_SEI_MESSAGE
   Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }
   Bool     getCmpSEIEnabled()                                        { return m_cmpSEIEnabled; }

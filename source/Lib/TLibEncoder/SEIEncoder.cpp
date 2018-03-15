@@ -417,6 +417,67 @@ Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInf
   }
 }
 
+#if ERP_SR_OV_SEI_MESSAGE
+Void SEIEncoder::initSEIErp(SEIEquirectangularProjection* seiEquirectangularProjection)
+{
+  assert (m_isInitialized);
+  assert (seiEquirectangularProjection!=NULL);
+
+  seiEquirectangularProjection->m_erpCancelFlag = m_pcCfg->getErpSEICancelFlag();
+  if (!seiEquirectangularProjection->m_erpCancelFlag)
+  {
+    seiEquirectangularProjection->m_erpPersistenceFlag   = m_pcCfg->getErpSEIPersistenceFlag();
+    seiEquirectangularProjection->m_erpGuardBandFlag     = m_pcCfg->getErpSEIGuardBandFlag();
+    if (seiEquirectangularProjection->m_erpGuardBandFlag == 1)
+    {
+      seiEquirectangularProjection->m_erpGuardBandType       = m_pcCfg->getErpSEIGuardBandType();
+      seiEquirectangularProjection->m_erpLeftGuardBandWidth  = m_pcCfg->getErpSEILeftGuardBandWidth();
+      seiEquirectangularProjection->m_erpRightGuardBandWidth = m_pcCfg->getErpSEIRightGuardBandWidth();
+    }
+  }
+}
+
+Void SEIEncoder::initSEISphereRotation(SEISphereRotation* seiSphereRotation)
+{
+  assert (m_isInitialized);
+  assert (seiSphereRotation!=NULL);
+
+  seiSphereRotation->m_sphereRotationCancelFlag = m_pcCfg->getSphereRotationSEICancelFlag();
+  if ( !seiSphereRotation->m_sphereRotationCancelFlag )
+  {
+    seiSphereRotation->m_sphereRotationPersistenceFlag = m_pcCfg->getSphereRotationSEIPersistenceFlag();
+    seiSphereRotation->m_sphereRotationYaw = m_pcCfg->getSphereRotationSEIYaw();
+    seiSphereRotation->m_sphereRotationPitch = m_pcCfg->getSphereRotationSEIPitch();
+    seiSphereRotation->m_sphereRotationRoll = m_pcCfg->getSphereRotationSEIRoll();
+  }
+}
+
+Void SEIEncoder::initSEIOmniViewport(SEIOmniViewport* seiOmniViewport)
+{
+  assert (m_isInitialized);
+  assert (seiOmniViewport!=NULL);
+
+  seiOmniViewport->m_omniViewportId = m_pcCfg->getOmniViewportSEIId();
+  seiOmniViewport->m_omniViewportCancelFlag = m_pcCfg->getOmniViewportSEICancelFlag();
+  if ( !seiOmniViewport->m_omniViewportCancelFlag )
+  {
+    seiOmniViewport->m_omniViewportPersistenceFlag = m_pcCfg->getOmniViewportSEIPersistenceFlag();
+    seiOmniViewport->m_omniViewportCntMinus1 = m_pcCfg->getOmniViewportSEICntMinus1();
+
+    seiOmniViewport->m_omniViewportRegions.resize(seiOmniViewport->m_omniViewportCntMinus1+1);
+    for (UInt i = 0; i <= seiOmniViewport->m_omniViewportCntMinus1; i++)
+    {
+      SEIOmniViewport::OmniViewport &viewport = seiOmniViewport->m_omniViewportRegions[i];
+      viewport.azimuthCentre   = m_pcCfg->getOmniViewportSEIAzimuthCentre(i);
+      viewport.elevationCentre = m_pcCfg->getOmniViewportSEIElevationCentre(i);
+      viewport.tiltCentre      = m_pcCfg->getOmniViewportSEITiltCentre(i);
+      viewport.horRange        = m_pcCfg->getOmniViewportSEIHorRange(i);
+      viewport.verRange        = m_pcCfg->getOmniViewportSEIVerRange(i);
+    }
+  }
+}
+#endif
+
 #if CMP_SEI_MESSAGE
 Void SEIEncoder::initSEICubemapProjection(SEICubemapProjection *seiCubemapProjection)
 {

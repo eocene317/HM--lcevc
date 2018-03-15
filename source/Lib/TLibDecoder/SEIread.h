@@ -90,6 +90,11 @@ protected:
   Void xParseSEITempMotionConstraintsTileSets (SEITempMotionConstrainedTileSets& sei, UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIChromaResamplingFilterHint    (SEIChromaResamplingFilterHint& sei,    UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIKneeFunctionInfo              (SEIKneeFunctionInfo& sei,              UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
+#if ERP_SR_OV_SEI_MESSAGE
+  Void xParseSEIEquirectangularProjection     (SEIEquirectangularProjection &sei,     UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
+  Void xParseSEISphereRotation                (SEISphereRotation &sei,                UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
+  Void xParseSEIOmniViewport                  (SEIOmniViewport& sei,                  UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
+#endif
 #if CMP_SEI_MESSAGE
   Void xParseSEICubemapProjection             (SEICubemapProjection& sei,             UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
 #endif
