@@ -391,28 +391,25 @@ Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInf
   assert (m_isInitialized);
   assert (seiKneeFunctionInfo!=NULL);
 
-  seiKneeFunctionInfo->m_kneeId = m_pcCfg->getKneeSEIId();
-  seiKneeFunctionInfo->m_kneeCancelFlag = m_pcCfg->getKneeSEICancelFlag();
+  const TEncCfg::TEncSEIKneeFunctionInformation &knee=m_pcCfg->getKneeFunctionInformationSEI();
+  seiKneeFunctionInfo->m_kneeId = knee.m_kneeFunctionId;
+  seiKneeFunctionInfo->m_kneeCancelFlag = knee.m_kneeFunctionCancelFlag;
   if ( !seiKneeFunctionInfo->m_kneeCancelFlag )
   {
-    seiKneeFunctionInfo->m_kneePersistenceFlag = m_pcCfg->getKneeSEIPersistenceFlag();
-    seiKneeFunctionInfo->m_kneeInputDrange = m_pcCfg->getKneeSEIInputDrange();
-    seiKneeFunctionInfo->m_kneeInputDispLuminance = m_pcCfg->getKneeSEIInputDispLuminance();
-    seiKneeFunctionInfo->m_kneeOutputDrange = m_pcCfg->getKneeSEIOutputDrange();
-    seiKneeFunctionInfo->m_kneeOutputDispLuminance = m_pcCfg->getKneeSEIOutputDispLuminance();
+    seiKneeFunctionInfo->m_kneePersistenceFlag = knee.m_kneeFunctionPersistenceFlag;
+    seiKneeFunctionInfo->m_kneeInputDrange = knee.m_inputDRange;
+    seiKneeFunctionInfo->m_kneeInputDispLuminance = knee.m_inputDispLuminance;
+    seiKneeFunctionInfo->m_kneeOutputDrange = knee.m_outputDRange;
+    seiKneeFunctionInfo->m_kneeOutputDispLuminance = knee.m_outputDispLuminance;
 
-    seiKneeFunctionInfo->m_kneeNumKneePointsMinus1 = m_pcCfg->getKneeSEINumKneePointsMinus1();
-    Int* piInputKneePoint  = m_pcCfg->getKneeSEIInputKneePoint();
-    Int* piOutputKneePoint = m_pcCfg->getKneeSEIOutputKneePoint();
-    if(piInputKneePoint&&piOutputKneePoint)
+    assert(knee.m_kneeSEIKneePointPairs.size()>0);
+    seiKneeFunctionInfo->m_kneeNumKneePointsMinus1 = knee.m_kneeSEIKneePointPairs.size()-1;
+    seiKneeFunctionInfo->m_kneeInputKneePoint.resize(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1);
+    seiKneeFunctionInfo->m_kneeOutputKneePoint.resize(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1);
+    for(Int i=0; i<=seiKneeFunctionInfo->m_kneeNumKneePointsMinus1; i++)
     {
-      seiKneeFunctionInfo->m_kneeInputKneePoint.resize(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1);
-      seiKneeFunctionInfo->m_kneeOutputKneePoint.resize(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1);
-      for(Int i=0; i<=seiKneeFunctionInfo->m_kneeNumKneePointsMinus1; i++)
-      {
-        seiKneeFunctionInfo->m_kneeInputKneePoint[i] = piInputKneePoint[i];
-        seiKneeFunctionInfo->m_kneeOutputKneePoint[i] = piOutputKneePoint[i];
-      }
+      seiKneeFunctionInfo->m_kneeInputKneePoint[i]  = knee.m_kneeSEIKneePointPairs[i].inputKneePoint;
+      seiKneeFunctionInfo->m_kneeOutputKneePoint[i] = knee.m_kneeSEIKneePointPairs[i].outputKneePoint;
     }
   }
 }

@@ -110,6 +110,26 @@ std::istringstream &operator>>(std::istringstream &in, GOPEntry &entry);     //i
 /// encoder configuration class
 class TEncCfg
 {
+public:
+
+struct TEncSEIKneeFunctionInformation
+{
+  struct KneePointPair
+  {
+    Int inputKneePoint;
+    Int outputKneePoint;
+  };
+
+  Int       m_kneeFunctionId;
+  Bool      m_kneeFunctionCancelFlag;
+  Bool      m_kneeFunctionPersistenceFlag;
+  Int       m_inputDRange;
+  Int       m_inputDispLuminance;
+  Int       m_outputDRange;
+  Int       m_outputDispLuminance;
+  std::vector<KneePointPair> m_kneeSEIKneePointPairs;
+};
+
 protected:
   //==== File I/O ========
   Int       m_iFrameRate;
@@ -339,16 +359,7 @@ protected:
   Int       m_timeCodeSEINumTs;
   TComSEITimeSet   m_timeSetArray[MAX_TIMECODE_SEI_SETS];
   Bool      m_kneeSEIEnabled;
-  Int       m_kneeSEIId;
-  Bool      m_kneeSEICancelFlag;
-  Bool      m_kneeSEIPersistenceFlag;
-  Int       m_kneeSEIInputDrange;
-  Int       m_kneeSEIInputDispLuminance;
-  Int       m_kneeSEIOutputDrange;
-  Int       m_kneeSEIOutputDispLuminance;
-  Int       m_kneeSEINumKneePointsMinus1;
-  Int*      m_kneeSEIInputKneePoint;
-  Int*      m_kneeSEIOutputKneePoint;
+  TEncSEIKneeFunctionInformation m_kneeFunctionInformationSEI;
   std::string m_colourRemapSEIFileRoot;          ///< SEI Colour Remapping File (initialized from external file)
   TComSEIMasteringDisplay m_masteringDisplay;
   Bool      m_alternativeTransferCharacteristicsSEIEnabled;
@@ -914,26 +925,8 @@ public:
   const TComSEITimeSet &getTimeSet(Int index) const                  { return m_timeSetArray[index]; }
   Void  setKneeSEIEnabled(Int b)                                     { m_kneeSEIEnabled = b; }
   Bool  getKneeSEIEnabled()                                          { return m_kneeSEIEnabled; }
-  Void  setKneeSEIId(Int b)                                          { m_kneeSEIId = b; }
-  Int   getKneeSEIId()                                               { return m_kneeSEIId; }
-  Void  setKneeSEICancelFlag(Bool b)                                 { m_kneeSEICancelFlag=b; }
-  Bool  getKneeSEICancelFlag()                                       { return m_kneeSEICancelFlag; }
-  Void  setKneeSEIPersistenceFlag(Bool b)                            { m_kneeSEIPersistenceFlag = b; }
-  Bool  getKneeSEIPersistenceFlag()                                  { return m_kneeSEIPersistenceFlag; }
-  Void  setKneeSEIInputDrange(Int b)                                 { m_kneeSEIInputDrange = b; }
-  Int   getKneeSEIInputDrange()                                      { return m_kneeSEIInputDrange; }
-  Void  setKneeSEIInputDispLuminance(Int b)                          { m_kneeSEIInputDispLuminance = b; }
-  Int   getKneeSEIInputDispLuminance()                               { return m_kneeSEIInputDispLuminance; }
-  Void  setKneeSEIOutputDrange(Int b)                                { m_kneeSEIOutputDrange = b; }
-  Int   getKneeSEIOutputDrange()                                     { return m_kneeSEIOutputDrange; }
-  Void  setKneeSEIOutputDispLuminance(Int b)                         { m_kneeSEIOutputDispLuminance = b; }
-  Int   getKneeSEIOutputDispLuminance()                              { return m_kneeSEIOutputDispLuminance; }
-  Void  setKneeSEINumKneePointsMinus1(Int b)                         { m_kneeSEINumKneePointsMinus1 = b; }
-  Int   getKneeSEINumKneePointsMinus1()                              { return m_kneeSEINumKneePointsMinus1; }
-  Void  setKneeSEIInputKneePoint(Int *p)                             { m_kneeSEIInputKneePoint = p; }
-  Int*  getKneeSEIInputKneePoint()                                   { return m_kneeSEIInputKneePoint; }
-  Void  setKneeSEIOutputKneePoint(Int *p)                            { m_kneeSEIOutputKneePoint = p; }
-  Int*  getKneeSEIOutputKneePoint()                                  { return m_kneeSEIOutputKneePoint; }
+  Void  setKneeFunctionInformationSEI(const TEncSEIKneeFunctionInformation &seiknee) { m_kneeFunctionInformationSEI = seiknee; }
+  const TEncSEIKneeFunctionInformation &getKneeFunctionInformationSEI() const        { return m_kneeFunctionInformationSEI; }
 #if ERP_SR_OV_SEI_MESSAGE
   Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
   Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }

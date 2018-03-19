@@ -337,16 +337,7 @@ protected:
   Int       m_timeCodeSEINumTs;
   TComSEITimeSet m_timeSetArray[MAX_TIMECODE_SEI_SETS];
   Bool      m_kneeSEIEnabled;
-  Int       m_kneeSEIId;
-  Bool      m_kneeSEICancelFlag;
-  Bool      m_kneeSEIPersistenceFlag;
-  Int       m_kneeSEIInputDrange;
-  Int       m_kneeSEIInputDispLuminance;
-  Int       m_kneeSEIOutputDrange;
-  Int       m_kneeSEIOutputDispLuminance;
-  Int       m_kneeSEINumKneePointsMinus1;
-  Int*      m_kneeSEIInputKneePoint;
-  Int*      m_kneeSEIOutputKneePoint;
+  TEncCfg::TEncSEIKneeFunctionInformation m_kneeFunctionInformationSEI;
   Int       m_preferredTransferCharacteristics;
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;

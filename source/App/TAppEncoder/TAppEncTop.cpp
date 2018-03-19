@@ -343,16 +343,7 @@ Void TAppEncTop::xInitLibCfg()
     m_cTEncTop.setTimeSet(m_timeSetArray[i], i);
   }
   m_cTEncTop.setKneeSEIEnabled                                    ( m_kneeSEIEnabled );
-  m_cTEncTop.setKneeSEIId                                         ( m_kneeSEIId );
-  m_cTEncTop.setKneeSEICancelFlag                                 ( m_kneeSEICancelFlag );
-  m_cTEncTop.setKneeSEIPersistenceFlag                            ( m_kneeSEIPersistenceFlag );
-  m_cTEncTop.setKneeSEIInputDrange                                ( m_kneeSEIInputDrange );
-  m_cTEncTop.setKneeSEIInputDispLuminance                         ( m_kneeSEIInputDispLuminance );
-  m_cTEncTop.setKneeSEIOutputDrange                               ( m_kneeSEIOutputDrange );
-  m_cTEncTop.setKneeSEIOutputDispLuminance                        ( m_kneeSEIOutputDispLuminance );
-  m_cTEncTop.setKneeSEINumKneePointsMinus1                        ( m_kneeSEINumKneePointsMinus1 );
-  m_cTEncTop.setKneeSEIInputKneePoint                             ( m_kneeSEIInputKneePoint );
-  m_cTEncTop.setKneeSEIOutputKneePoint                            ( m_kneeSEIOutputKneePoint );
+  m_cTEncTop.setKneeFunctionInformationSEI                        ( m_kneeFunctionInformationSEI );
 #if ERP_SR_OV_SEI_MESSAGE
   m_cTEncTop.setErpSEIEnabled                                     ( m_erpSEIEnabled );           
   m_cTEncTop.setErpSEICancelFlag                                  ( m_erpSEICancelFlag );        

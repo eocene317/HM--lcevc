@@ -677,6 +677,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 
   const UInt defaultInputKneeCodes[3]  = { 600, 800, 900 };
   const UInt defaultOutputKneeCodes[3] = { 100, 250, 450 };
+  Int cfg_kneeSEINumKneePointsMinus1=0;
   SMultiValueInput<UInt> cfg_kneeSEIInputKneePointValue      (1,  999, 0, 999, defaultInputKneeCodes,  sizeof(defaultInputKneeCodes )/sizeof(UInt));
   SMultiValueInput<UInt> cfg_kneeSEIOutputKneePointValue     (0, 1000, 0, 999, defaultOutputKneeCodes, sizeof(defaultOutputKneeCodes)/sizeof(UInt));
   const Int defaultPrimaryCodes[6]     = { 0,50000, 0,0, 50000,0 };
@@ -1119,17 +1120,17 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEITimeCodeHoursFlag",                            cfg_timeCodeSeiHoursFlag,              cfg_timeCodeSeiHoursFlag,             "Flag to signal hours value presence in each time set")
   ("SEITimeCodeOffsetLength",                         cfg_timeCodeSeiTimeOffsetLength,       cfg_timeCodeSeiTimeOffsetLength,      "Time offset length associated to each time set")
   ("SEITimeCodeTimeOffset",                           cfg_timeCodeSeiTimeOffsetValue,        cfg_timeCodeSeiTimeOffsetValue,       "Time offset associated to each time set")
-  ("SEIKneeFunctionInfo",                             m_kneeSEIEnabled,                                 false, "Control generation of Knee function SEI messages")
-  ("SEIKneeFunctionId",                               m_kneeSEIId,                                          0, "Specifies Id of Knee function SEI message for a given session")
-  ("SEIKneeFunctionCancelFlag",                       m_kneeSEICancelFlag,                              false, "Indicates that Knee function SEI message cancels the persistence or follows")
-  ("SEIKneeFunctionPersistenceFlag",                  m_kneeSEIPersistenceFlag,                          true, "Specifies the persistence of the Knee function SEI message")
-  ("SEIKneeFunctionInputDrange",                      m_kneeSEIInputDrange,                              1000, "Specifies the peak luminance level for the input picture of Knee function SEI messages")
-  ("SEIKneeFunctionInputDispLuminance",               m_kneeSEIInputDispLuminance,                        100, "Specifies the expected display brightness for the input picture of Knee function SEI messages")
-  ("SEIKneeFunctionOutputDrange",                     m_kneeSEIOutputDrange,                             4000, "Specifies the peak luminance level for the output picture of Knee function SEI messages")
-  ("SEIKneeFunctionOutputDispLuminance",              m_kneeSEIOutputDispLuminance,                       800, "Specifies the expected display brightness for the output picture of Knee function SEI messages")
-  ("SEIKneeFunctionNumKneePointsMinus1",              m_kneeSEINumKneePointsMinus1,                         2, "Specifies the number of knee points - 1")
-  ("SEIKneeFunctionInputKneePointValue",              cfg_kneeSEIInputKneePointValue,   cfg_kneeSEIInputKneePointValue, "Array of input knee point")
-  ("SEIKneeFunctionOutputKneePointValue",             cfg_kneeSEIOutputKneePointValue, cfg_kneeSEIOutputKneePointValue, "Array of output knee point")
+  ("SEIKneeFunctionInfo",                             m_kneeSEIEnabled,                                            false,          "Control generation of Knee function SEI messages")
+  ("SEIKneeFunctionId",                               m_kneeFunctionInformationSEI.m_kneeFunctionId,               0,              "Specifies Id of Knee function SEI message for a given session")
+  ("SEIKneeFunctionCancelFlag",                       m_kneeFunctionInformationSEI.m_kneeFunctionCancelFlag,       false,          "Indicates that Knee function SEI message cancels the persistence or follows")
+  ("SEIKneeFunctionPersistenceFlag",                  m_kneeFunctionInformationSEI.m_kneeFunctionPersistenceFlag,  true,           "Specifies the persistence of the Knee function SEI message")
+  ("SEIKneeFunctionInputDrange",                      m_kneeFunctionInformationSEI.m_inputDRange,                  1000,           "Specifies the peak luminance level for the input picture of Knee function SEI messages")
+  ("SEIKneeFunctionInputDispLuminance",               m_kneeFunctionInformationSEI.m_inputDispLuminance,           100,            "Specifies the expected display brightness for the input picture of Knee function SEI messages")
+  ("SEIKneeFunctionOutputDrange",                     m_kneeFunctionInformationSEI.m_outputDRange,                 4000,           "Specifies the peak luminance level for the output picture of Knee function SEI messages")
+  ("SEIKneeFunctionOutputDispLuminance",              m_kneeFunctionInformationSEI.m_outputDispLuminance,          800,            "Specifies the expected display brightness for the output picture of Knee function SEI messages")
+  ("SEIKneeFunctionNumKneePointsMinus1",              cfg_kneeSEINumKneePointsMinus1,           2,                                 "Specifies the number of knee points - 1")
+  ("SEIKneeFunctionInputKneePointValue",              cfg_kneeSEIInputKneePointValue,           cfg_kneeSEIInputKneePointValue,    "Array of input knee point")
+  ("SEIKneeFunctionOutputKneePointValue",             cfg_kneeSEIOutputKneePointValue,          cfg_kneeSEIOutputKneePointValue,   "Array of output knee point")
   ("SEIMasteringDisplayColourVolume",                 m_masteringDisplay.colourVolumeSEIEnabled,         false, "Control generation of mastering display colour volume SEI messages")
   ("SEIMasteringDisplayMaxLuminance",                 m_masteringDisplay.maxLuminance,                  10000u, "Specifies the mastering display maximum luminance value in units of 1/10000 candela per square metre (32-bit code value)")
   ("SEIMasteringDisplayMinLuminance",                 m_masteringDisplay.minLuminance,                      0u, "Specifies the mastering display minimum luminance value in units of 1/10000 candela per square metre (32-bit code value)")
@@ -1755,15 +1756,15 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
     }
   }
 
-  if( m_kneeSEIEnabled && !m_kneeSEICancelFlag )
+  if( m_kneeSEIEnabled && !m_kneeFunctionInformationSEI.m_kneeFunctionCancelFlag )
   {
-    assert ( m_kneeSEINumKneePointsMinus1 >= 0 && m_kneeSEINumKneePointsMinus1 < 999 );
-    m_kneeSEIInputKneePoint  = new Int[m_kneeSEINumKneePointsMinus1+1];
-    m_kneeSEIOutputKneePoint = new Int[m_kneeSEINumKneePointsMinus1+1];
-    for(Int i=0; i<(m_kneeSEINumKneePointsMinus1+1); i++)
+    assert ( cfg_kneeSEINumKneePointsMinus1 >= 0 && cfg_kneeSEINumKneePointsMinus1 < 999 );
+    m_kneeFunctionInformationSEI.m_kneeSEIKneePointPairs.resize(cfg_kneeSEINumKneePointsMinus1+1);
+    for(Int i=0; i<(cfg_kneeSEINumKneePointsMinus1+1); i++)
     {
-      m_kneeSEIInputKneePoint[i]  = cfg_kneeSEIInputKneePointValue.values.size()  > i ? cfg_kneeSEIInputKneePointValue.values[i]  : 1;
-      m_kneeSEIOutputKneePoint[i] = cfg_kneeSEIOutputKneePointValue.values.size() > i ? cfg_kneeSEIOutputKneePointValue.values[i] : 0;
+      TEncCfg::TEncSEIKneeFunctionInformation::KneePointPair &kpp=m_kneeFunctionInformationSEI.m_kneeSEIKneePointPairs[i];
+      kpp.inputKneePoint = cfg_kneeSEIInputKneePointValue.values.size()  > i ? cfg_kneeSEIInputKneePointValue.values[i]  : 1;
+      kpp.outputKneePoint = cfg_kneeSEIOutputKneePointValue.values.size() > i ? cfg_kneeSEIOutputKneePointValue.values[i] : 0;
     }
   }
 
@@ -2626,17 +2627,20 @@ Void TAppEncCfg::xCheckParameter()
     xConfirmPara( m_extendedWhiteLevelLumaCodeValue < m_nominalWhiteLevelLumaCodeValue, "SEIToneMapExtendedWhiteLevelLumaCodeValue shall be greater than or equal to SEIToneMapNominalWhiteLevelLumaCodeValue");
   }
 
-  if (m_kneeSEIEnabled && !m_kneeSEICancelFlag)
+  if (m_kneeSEIEnabled && !m_kneeFunctionInformationSEI.m_kneeFunctionCancelFlag)
   {
-    xConfirmPara( m_kneeSEINumKneePointsMinus1 < 0 || m_kneeSEINumKneePointsMinus1 > 998, "SEIKneeFunctionNumKneePointsMinus1 must be in the range of 0 to 998");
-    for ( UInt i=0; i<=m_kneeSEINumKneePointsMinus1; i++ )
+    Int kneeSEINumKneePointsMinus1=Int(m_kneeFunctionInformationSEI.m_kneeSEIKneePointPairs.size())-1;
+    xConfirmPara( kneeSEINumKneePointsMinus1 < 0 || kneeSEINumKneePointsMinus1 > 998, "SEIKneeFunctionNumKneePointsMinus1 must be in the range of 0 to 998");
+    for ( UInt i=0; i<=kneeSEINumKneePointsMinus1; i++ )
     {
-      xConfirmPara( m_kneeSEIInputKneePoint[i] < 1 || m_kneeSEIInputKneePoint[i] > 999, "SEIKneeFunctionInputKneePointValue must be in the range of 1 to 999");
-      xConfirmPara( m_kneeSEIOutputKneePoint[i] < 0 || m_kneeSEIOutputKneePoint[i] > 1000, "SEIKneeFunctionInputKneePointValue must be in the range of 0 to 1000");
+      TEncCfg::TEncSEIKneeFunctionInformation::KneePointPair &kpp=m_kneeFunctionInformationSEI.m_kneeSEIKneePointPairs[i];
+      xConfirmPara( kpp.inputKneePoint  < 1 || kpp.inputKneePoint  >  999, "SEIKneeFunctionInputKneePointValue must be in the range of 1 to 999");
+      xConfirmPara( kpp.outputKneePoint < 0 || kpp.outputKneePoint > 1000, "SEIKneeFunctionOutputKneePointValue must be in the range of 0 to 1000");
       if ( i > 0 )
       {
-        xConfirmPara( m_kneeSEIInputKneePoint[i-1] >= m_kneeSEIInputKneePoint[i],  "The i-th SEIKneeFunctionInputKneePointValue must be greater than the (i-1)-th value");
-        xConfirmPara( m_kneeSEIOutputKneePoint[i-1] > m_kneeSEIOutputKneePoint[i],  "The i-th SEIKneeFunctionOutputKneePointValue must be greater than or equal to the (i-1)-th value");
+        TEncCfg::TEncSEIKneeFunctionInformation::KneePointPair &kppPrev=m_kneeFunctionInformationSEI.m_kneeSEIKneePointPairs[i-1];
+        xConfirmPara( kppPrev.inputKneePoint  >= kpp.inputKneePoint,   "The i-th SEIKneeFunctionInputKneePointValue must be greater than the (i-1)-th value");
+        xConfirmPara( kppPrev.outputKneePoint >= kpp.outputKneePoint,  "The i-th SEIKneeFunctionOutputKneePointValue must be greater than or equal to the (i-1)-th value");
       }
     }
   }
