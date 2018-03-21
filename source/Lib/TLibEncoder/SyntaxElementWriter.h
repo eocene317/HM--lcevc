@@ -50,21 +50,14 @@
 //! \{
 
 #if ENC_DEC_TRACE
-#if CCV_SEI_MESSAGE
-#endif
-#if CCV_SEI_MESSAGE
 #define WRITE_SCODE( value, length, name)   xWriteSCodeTr ( value, length, name )
-#endif
 #define WRITE_CODE( value, length, name)    xWriteCodeTr  ( value, length, name )
 #define WRITE_UVLC( value,         name)    xWriteUvlcTr  ( value,         name )
 #define WRITE_SVLC( value,         name)    xWriteSvlcTr  ( value,         name )
 #define WRITE_FLAG( value,         name)    xWriteFlagTr  ( value,         name )
 
 #else
-#if CCV_SEI_MESSAGE
 #define WRITE_SCODE( value, length, name)    xWriteSCode ( value, length )
-#endif
-
 #define WRITE_CODE( value, length, name)     xWriteCode  ( value, length )
 #define WRITE_UVLC( value,         name)     xWriteUvlc  ( value )
 #define WRITE_SVLC( value,         name)     xWriteSvlc  ( value )
@@ -84,17 +77,13 @@ protected:
 
   Void  setBitstream          ( TComBitIf* p )  { m_pcBitIf = p;  }
 
-#if CCV_SEI_MESSAGE
   Void  xWriteSCode           ( Int  iCode,  UInt uiLength );
-#endif
   Void  xWriteCode            ( UInt uiCode, UInt uiLength );
   Void  xWriteUvlc            ( UInt uiCode );
   Void  xWriteSvlc            ( Int  iCode   );
   Void  xWriteFlag            ( UInt uiCode );
 #if ENC_DEC_TRACE
-#if CCV_SEI_MESSAGE
   Void  xWriteSCodeTr         ( Int value,  UInt  length, const TChar *pSymbolName);
-#endif
   Void  xWriteCodeTr          ( UInt value, UInt  length, const TChar *pSymbolName);
   Void  xWriteUvlcTr          ( UInt value,               const TChar *pSymbolName);
   Void  xWriteSvlcTr          ( Int  value,               const TChar *pSymbolName);

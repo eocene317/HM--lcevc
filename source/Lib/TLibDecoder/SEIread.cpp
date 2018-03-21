@@ -62,7 +62,6 @@ Void  xTraceSEIMessageType(SEI::PayloadType payloadType)
 }
 #endif
 
-#if CCV_SEI_MESSAGE
 Void SEIReader::sei_read_scode(std::ostream *pOS, UInt uiLength, Int& ruiCode, const TChar *pSymbolName)
 {
   READ_SCODE(uiLength, ruiCode, pSymbolName);
@@ -71,7 +70,6 @@ Void SEIReader::sei_read_scode(std::ostream *pOS, UInt uiLength, Int& ruiCode, c
     (*pOS) << "  " << std::setw(55) << pSymbolName << ": " << ruiCode << "\n";
   }
 }
-#endif
 
 Void SEIReader::sei_read_code(std::ostream *pOS, UInt uiLength, UInt& ruiCode, const TChar *pSymbolName)
 {
@@ -1492,46 +1490,24 @@ Void SEIReader::xParseSEIEquirectangularProjection(SEIEquirectangularProjection&
 Void SEIReader::xParseSEISphereRotation(SEISphereRotation& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   UInt val;
+  Int  sval;
   UChar n = 32;
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
   sei_read_flag( pDecodedMessageOutputStream, val,       "sphere_rotation_cancel_flag" );              sei.m_sphereRotationCancelFlag = val;
   if( !sei.m_sphereRotationCancelFlag )
   {
-    sei_read_flag( pDecodedMessageOutputStream,    val,   "sphere_rotation_persistence_flag"    );     sei.m_sphereRotationPersistenceFlag = val;
-    sei_read_code( pDecodedMessageOutputStream, 6, val,   "sphere_rotation_reserved_zero_6bits" );
-    sei_read_code( pDecodedMessageOutputStream, n, val,   "sphere_rotation_yaw"                 );                     
-    if((val & (1 << (n-1))) == 0)
-    {
-      sei.m_sphereRotationYaw = val;
-    }
-    else
-    {
-      val &= (1<< (n-1)) - 1;
-      sei.m_sphereRotationYaw = ~val + 1;
-    }
-    sei_read_code( pDecodedMessageOutputStream, n, val,    "sphere_rotation_pitch" );
-    if ((val && (1 << (n-1))) == 0) 
-      sei.m_sphereRotationPitch = val;
-    else
-    {
-      val &= (1 << (n-1)) - 1;
-      sei.m_sphereRotationPitch = ~val + 1;
-    }
-    sei_read_code( pDecodedMessageOutputStream, n, val,    "sphere_rotation_roll" ); 
-    if ((val && (1 << (n-1))) == 0) 
-      sei.m_sphereRotationRoll = val;
-    else
-    {
-      val &= (1 << (n-1)) - 1;
-      sei.m_sphereRotationRoll = ~val + 1;
-    }
+    sei_read_flag ( pDecodedMessageOutputStream,      val,   "sphere_rotation_persistence_flag"    );     sei.m_sphereRotationPersistenceFlag = val;
+    sei_read_code ( pDecodedMessageOutputStream, 6,   val,   "sphere_rotation_reserved_zero_6bits" );
+    sei_read_scode( pDecodedMessageOutputStream, 32, sval,   "sphere_rotation_yaw"                 );     sei.m_sphereRotationYaw = sval;
+    sei_read_scode( pDecodedMessageOutputStream, 32, sval,   "sphere_rotation_pitch"               );     sei.m_sphereRotationPitch = sval;
+    sei_read_scode( pDecodedMessageOutputStream, 32, sval,   "sphere_rotation_roll"                );     sei.m_sphereRotationRoll = sval;
   }
 }
 
 Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   UInt code;
-  UChar n = 32;
+  Int  scode;
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
   sei_read_code( pDecodedMessageOutputStream, 10, code, "omni_viewport_id"          ); sei.m_omniViewportId         = code;
   sei_read_flag( pDecodedMessageOutputStream,     code, "omni_viewport_cancel_flag" ); sei.m_omniViewportCancelFlag = code;
@@ -1544,30 +1520,9 @@ Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, st
     for(UInt region=0; region<numRegions; region++)
     {
       SEIOmniViewport::OmniViewport &viewport = sei.m_omniViewportRegions[region];
-      sei_read_code( pDecodedMessageOutputStream, n, code, "omni_viewport_azimuth_centre"   );
-      if ((code && (1 << (n-1))) == 0) 
-        viewport.azimuthCentre = code;
-      else
-      {
-        code &= (1 << (n-1)) - 1;
-        viewport.azimuthCentre = ~code + 1;
-      }
-      sei_read_code( pDecodedMessageOutputStream, n, code, "omni_viewport_elevation_centre" );
-      if ((code && (1 << (n-1))) == 0) 
-        viewport.elevationCentre = code;
-      else
-      {
-        code &= (1 << (n-1)) - 1;
-        viewport.elevationCentre = ~code + 1;
-      }
-      sei_read_code( pDecodedMessageOutputStream, n, code, "omni_viewport_tilt_centre"      );
-      if ((code && (1 << (n-1))) == 0) 
-        viewport.tiltCentre = code;
-      else
-      {
-        code &= (1 << (n-1)) - 1;
-        viewport.tiltCentre = ~code + 1;
-      }
+      sei_read_scode( pDecodedMessageOutputStream, 32, scode, "omni_viewport_azimuth_centre"   );   viewport.azimuthCentre = scode;
+      sei_read_scode( pDecodedMessageOutputStream, 32, scode, "omni_viewport_elevation_centre" );   viewport.elevationCentre = scode;
+      sei_read_scode( pDecodedMessageOutputStream, 32, scode, "omni_viewport_tilt_centre"      );   viewport.tiltCentre = code;
       sei_read_code( pDecodedMessageOutputStream, 32, code, "omni_viewport_hor_range"     );   viewport.horRange        = code;
       sei_read_code( pDecodedMessageOutputStream, 32, code, "omni_viewport_ver_range"     );   viewport.verRange        = code;
     }    

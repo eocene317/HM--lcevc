@@ -64,13 +64,11 @@ Void xTraceFillerData ()
 
 #if DECODER_PARTIAL_CONFORMANCE_CHECK!=0
 
-#if CCV_SEI_MESSAGE
 Void SyntaxElementParser::xReadSCodeChk ( UInt   length, Int& val, const TChar *pSymbolName, const Int minValIncl, const Int maxValIncl )
 {
   READ_SCODE(length, val, pSymbolName);
   TDecConformanceCheck::checkRange(val, pSymbolName, minValIncl, maxValIncl);
 }
-#endif
 
 Void SyntaxElementParser::xReadCodeChk ( UInt   length, UInt& val, const TChar *pSymbolName, const UInt minValIncl, const UInt maxValIncl )
 {
@@ -100,7 +98,6 @@ Void SyntaxElementParser::xReadFlagChk ( UInt&  val, const TChar *pSymbolName, c
 // ====================================================================================================================
 // Protected member functions
 // ====================================================================================================================
-#if CCV_SEI_MESSAGE
 #if RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
 Void SyntaxElementParser::xReadSCode (UInt uiLength, Int& rValue, const TChar *pSymbolName)
 #else
@@ -136,7 +133,6 @@ Void SyntaxElementParser::xReadSCode (UInt uiLength, Int& rValue)
   fflush ( g_hTrace );
 #endif
 }
-#endif
 
 #if RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
 Void SyntaxElementParser::xReadCode (UInt uiLength, UInt& rValue, const TChar *pSymbolName)

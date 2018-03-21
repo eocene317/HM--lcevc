@@ -403,7 +403,7 @@ Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInf
     seiKneeFunctionInfo->m_kneeOutputDispLuminance = knee.m_outputDispLuminance;
 
     assert(knee.m_kneeSEIKneePointPairs.size()>0);
-    seiKneeFunctionInfo->m_kneeNumKneePointsMinus1 = knee.m_kneeSEIKneePointPairs.size()-1;
+    seiKneeFunctionInfo->m_kneeNumKneePointsMinus1 = (Int) knee.m_kneeSEIKneePointPairs.size()-1;
     seiKneeFunctionInfo->m_kneeInputKneePoint.resize(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1);
     seiKneeFunctionInfo->m_kneeOutputKneePoint.resize(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1);
     for(Int i=0; i<=seiKneeFunctionInfo->m_kneeNumKneePointsMinus1; i++)

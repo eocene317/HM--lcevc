@@ -43,7 +43,6 @@
 
 #if ENC_DEC_TRACE
 
-#if CCV_SEI_MESSAGE
 Void  SyntaxElementWriter::xWriteSCodeTr (Int value, UInt  length, const TChar *pSymbolName)
 {
   xWriteSCode (value,length);
@@ -60,7 +59,6 @@ Void  SyntaxElementWriter::xWriteSCodeTr (Int value, UInt  length, const TChar *
     }
   }
 }
-#endif
 
 Void  SyntaxElementWriter::xWriteCodeTr (UInt value, UInt  length, const TChar *pSymbolName)
 {
@@ -111,7 +109,6 @@ Void  SyntaxElementWriter::xWriteFlagTr(UInt value, const TChar *pSymbolName)
 
 #endif
 
-#if CCV_SEI_MESSAGE
 Void SyntaxElementWriter::xWriteSCode    ( Int iCode, UInt uiLength )
 {
   assert ( uiLength > 0 );
@@ -127,7 +124,6 @@ Void SyntaxElementWriter::xWriteSCode    ( Int iCode, UInt uiLength )
   }
   m_pcBitIf->write( uiCode, uiLength );
 }
-#endif
 
 Void SyntaxElementWriter::xWriteCode     ( UInt uiCode, UInt uiLength )
 {

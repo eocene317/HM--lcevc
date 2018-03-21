@@ -46,25 +46,19 @@
 #include "TDecConformance.h"
 
 #if DECODER_PARTIAL_CONFORMANCE_CHECK!=0
-#if CCV_SEI_MESSAGE
 #define READ_SCODE_CHK(length, code, name, minValIncl, maxValIncl) xReadSCodeChk ( length, code, name, minValIncl, maxValIncl )
-#endif
 #define READ_CODE_CHK(length, code, name, minValIncl, maxValIncl)  xReadCodeChk  ( length, code, name, minValIncl, maxValIncl )
 #define READ_UVLC_CHK(        code, name, minValIncl, maxValIncl)  xReadUvlcChk  (         code, name, minValIncl, maxValIncl )
 #define READ_SVLC_CHK(        code, name, minValIncl, maxValIncl)  xReadSvlcChk  (         code, name, minValIncl, maxValIncl )
 #define READ_FLAG_CHK(        code, name, minValIncl, maxValIncl)  xReadFlagChk  (         code, name, minValIncl, maxValIncl )
 #elif RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
-#if CCV_SEI_MESSAGE
 #define READ_SCODE_CHK(length, code, name, minValIncl, maxValIncl) xReadSCode ( length, code, name )
-#endif
 #define READ_CODE_CHK(length, code, name, minValIncl, maxValIncl)  xReadCode  ( length, code, name )
 #define READ_UVLC_CHK(        code, name, minValIncl, maxValIncl)  xReadUvlc  (         code, name )
 #define READ_SVLC_CHK(        code, name, minValIncl, maxValIncl)  xReadSvlc  (         code, name )
 #define READ_FLAG_CHK(        code, name, minValIncl, maxValIncl)  xReadFlag  (         code, name )
 #else
-#if CCV_SEI_MESSAGE
 #define READ_SCODE_CHK(length, code, name, minValIncl, maxValIncl) xReadSCode ( length, code )
-#endif
 #define READ_CODE_CHK(length, code, name, minValIncl, maxValIncl)  xReadCode  ( length, code )
 #define READ_UVLC_CHK(        code, name, minValIncl, maxValIncl)  xReadUvlc  (         code )
 #define READ_SVLC_CHK(        code, name, minValIncl, maxValIncl)  xReadSvlc  (         code )
@@ -73,18 +67,14 @@
 
 
 #if RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
-#if CCV_SEI_MESSAGE
 #define READ_SCODE(length, code, name)    xReadSCode ( length, code, name )
-#endif
 #define READ_CODE(length, code, name)     xReadCode  ( length, code, name )
 #define READ_UVLC(        code, name)     xReadUvlc  (         code, name )
 #define READ_SVLC(        code, name)     xReadSvlc  (         code, name )
 #define READ_FLAG(        code, name)     xReadFlag  (         code, name )
 
 #else
-#if CCV_SEI_MESSAGE
 #define READ_SCODE(length, code, name)    xReadSCode ( length, code )
-#endif
 #define READ_CODE(length, code, name)     xReadCode  ( length, code )
 #define READ_UVLC(        code, name)     xReadUvlc  (         code )
 #define READ_SVLC(        code, name)     xReadSvlc  (         code )
@@ -110,9 +100,7 @@ protected:
   virtual ~SyntaxElementParser() {};
 
 #if DECODER_PARTIAL_CONFORMANCE_CHECK!=0
-#if CCV_SEI_MESSAGE
   Void  xReadSCodeChk ( UInt   length, Int& val, const TChar *pSymbolName, const Int minValIncl, const Int maxValIncl );
-#endif
   Void  xReadCodeChk  ( UInt   length, UInt& val, const TChar *pSymbolName, const UInt minValIncl, const UInt maxValIncl );
   Void  xReadUvlcChk  ( UInt&  val, const TChar *pSymbolName, const UInt minValIncl, const UInt maxValIncl );
   Void  xReadSvlcChk  ( Int&   val, const TChar *pSymbolName, const Int  minValIncl, const Int  maxValIncl );
@@ -120,17 +108,13 @@ protected:
 #endif
 
 #if RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
-#if CCV_SEI_MESSAGE
   Void  xReadSCode   ( UInt   length, Int& val, const TChar *pSymbolName );
-#endif
   Void  xReadCode    ( UInt   length, UInt& val, const TChar *pSymbolName );
   Void  xReadUvlc    ( UInt&  val, const TChar *pSymbolName );
   Void  xReadSvlc    ( Int&   val, const TChar *pSymbolName );
   Void  xReadFlag    ( UInt&  val, const TChar *pSymbolName );
 #else
-#if CCV_SEI_MESSAGE
   Void  xReadSCode   ( UInt   length, Int& val );
-#endif
   Void  xReadCode    ( UInt   length, UInt& val );
   Void  xReadUvlc    ( UInt&  val );
   Void  xReadSvlc    ( Int&   val );
