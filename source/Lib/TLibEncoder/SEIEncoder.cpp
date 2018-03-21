@@ -413,6 +413,44 @@ Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInf
     }
   }
 }
+#if CCV_SEI_MESSAGE
+Void SEIEncoder::initSEIContentColourVolume(SEIContentColourVolume *seiContentColourVolume)
+{
+  assert(m_isInitialized);
+  assert(seiContentColourVolume != NULL);
+  seiContentColourVolume->m_ccvCancelFlag = m_pcCfg->getCcvSEICancelFlag();
+  seiContentColourVolume->m_ccvPersistenceFlag = m_pcCfg->getCcvSEIPersistenceFlag();
+  
+  seiContentColourVolume->m_ccvPrimariesPresentFlag = m_pcCfg->getCcvSEIPrimariesPresentFlag();
+  seiContentColourVolume->m_ccvMinLuminanceValuePresentFlag = m_pcCfg->getCcvSEIMinLuminanceValuePresentFlag();
+  seiContentColourVolume->m_ccvMaxLuminanceValuePresentFlag = m_pcCfg->getCcvSEIMaxLuminanceValuePresentFlag();
+  seiContentColourVolume->m_ccvAvgLuminanceValuePresentFlag = m_pcCfg->getCcvSEIAvgLuminanceValuePresentFlag();
+
+  // Currently we are using a floor operation for setting up the "integer" values for this SEI.
+  // This applies to both primaries and luminance limits.
+  if (seiContentColourVolume->m_ccvPrimariesPresentFlag == true) 
+  {
+    for (Int i = 0; i < MAX_NUM_COMPONENT; i++) 
+    {
+      seiContentColourVolume->m_ccvPrimariesX[i] = (Int) (50000.0 * m_pcCfg->getCcvSEIPrimariesX(i));
+      seiContentColourVolume->m_ccvPrimariesY[i] = (Int) (50000.0 * m_pcCfg->getCcvSEIPrimariesY(i));
+    }
+  }
+  
+  if (seiContentColourVolume->m_ccvMinLuminanceValuePresentFlag == true)
+  {
+    seiContentColourVolume->m_ccvMinLuminanceValue = (Int) (10000000 * m_pcCfg->getCcvSEIMinLuminanceValue());
+  }
+  if (seiContentColourVolume->m_ccvMaxLuminanceValuePresentFlag == true)
+  {
+    seiContentColourVolume->m_ccvMaxLuminanceValue = (Int) (10000000 * m_pcCfg->getCcvSEIMaxLuminanceValue());
+  }
+  if (seiContentColourVolume->m_ccvAvgLuminanceValuePresentFlag == true)
+  {
+    seiContentColourVolume->m_ccvAvgLuminanceValue = (Int) (10000000 * m_pcCfg->getCcvSEIAvgLuminanceValue());
+  }
+}
+#endif
 
 #if ERP_SR_OV_SEI_MESSAGE
 Void SEIEncoder::initSEIErp(SEIEquirectangularProjection* seiEquirectangularProjection)

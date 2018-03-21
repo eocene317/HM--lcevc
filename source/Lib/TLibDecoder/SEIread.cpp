@@ -62,6 +62,17 @@ Void  xTraceSEIMessageType(SEI::PayloadType payloadType)
 }
 #endif
 
+#if CCV_SEI_MESSAGE
+Void SEIReader::sei_read_scode(std::ostream *pOS, UInt uiLength, Int& ruiCode, const TChar *pSymbolName)
+{
+  READ_SCODE(uiLength, ruiCode, pSymbolName);
+  if (pOS)
+  {
+    (*pOS) << "  " << std::setw(55) << pSymbolName << ": " << ruiCode << "\n";
+  }
+}
+#endif
+
 Void SEIReader::sei_read_code(std::ostream *pOS, UInt uiLength, UInt& ruiCode, const TChar *pSymbolName)
 {
   READ_CODE(uiLength, ruiCode, pSymbolName);
@@ -107,6 +118,7 @@ static inline Void output_sei_message_header(SEI &sei, std::ostream *pDecodedMes
   }
 }
 
+#undef READ_SCODE
 #undef READ_CODE
 #undef READ_SVLC
 #undef READ_UVLC
@@ -350,6 +362,12 @@ Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType
       sei = new SEIAmbientViewingEnvironment;
       xParseSEIAmbientViewingEnvironment((SEIAmbientViewingEnvironment&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
+#if CCV_SEI_MESSAGE
+    case SEI::CONTENT_COLOUR_VOLUME:
+      sei = new SEIContentColourVolume;
+      xParseSEIContentColourVolume((SEIContentColourVolume&) *sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:
       sei = new SEIEquirectangularProjection;
@@ -1408,6 +1426,47 @@ Void SEIReader::xParseSEIKneeFunctionInfo(SEIKneeFunctionInfo& sei, UInt payload
     }
   }
 }
+
+#if CCV_SEI_MESSAGE
+Void SEIReader::xParseSEIContentColourVolume(SEIContentColourVolume& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  Int i;
+  UInt val;
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+
+  sei_read_flag( pDecodedMessageOutputStream, val, "ccv_cancel_flag" );          sei.m_ccvCancelFlag = val;
+  if ( !sei.m_ccvCancelFlag )
+  {
+    Int iVal;
+    sei_read_flag( pDecodedMessageOutputStream, val, "ccv_persistence_flag" );   sei.m_ccvPersistenceFlag = val;
+    sei_read_flag( pDecodedMessageOutputStream, val, "ccv_primaries_present_flag" );   sei.m_ccvPrimariesPresentFlag = val;
+    sei_read_flag( pDecodedMessageOutputStream, val, "ccv_min_luminance_value_present_flag" );   sei.m_ccvMinLuminanceValuePresentFlag = val;
+    sei_read_flag( pDecodedMessageOutputStream, val, "ccv_max_luminance_value_present_flag" );   sei.m_ccvMaxLuminanceValuePresentFlag = val;
+    sei_read_flag( pDecodedMessageOutputStream, val, "ccv_avg_luminance_value_present_flag" );   sei.m_ccvAvgLuminanceValuePresentFlag = val;
+    
+    if (sei.m_ccvPrimariesPresentFlag) 
+    {
+      for (i = 0; i < MAX_NUM_COMPONENT; i++) 
+      {
+        sei_read_scode( pDecodedMessageOutputStream, 32, iVal, "ccv_primaries_x[i]" );          sei.m_ccvPrimariesX[i] = iVal;
+        sei_read_scode( pDecodedMessageOutputStream, 32, iVal, "ccv_primaries_y[i]" );          sei.m_ccvPrimariesY[i] = iVal;
+      }
+    }
+    if (sei.m_ccvMinLuminanceValuePresentFlag) 
+    {
+      sei_read_code( pDecodedMessageOutputStream, 32, val,     "ccv_min_luminance_value" );   sei.m_ccvMinLuminanceValue = val;
+    }
+    if (sei.m_ccvMaxLuminanceValuePresentFlag) 
+    {
+      sei_read_code( pDecodedMessageOutputStream, 32, val,     "ccv_max_luminance_value" );   sei.m_ccvMaxLuminanceValue = val;
+    }
+    if (sei.m_ccvAvgLuminanceValuePresentFlag) 
+    {
+      sei_read_code( pDecodedMessageOutputStream, 32, val,     "ccv_avg_luminance_value" );   sei.m_ccvAvgLuminanceValue = val;
+    }
+  }
+}
+#endif
 
 #if ERP_SR_OV_SEI_MESSAGE
 Void SEIReader::xParseSEIEquirectangularProjection(SEIEquirectangularProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)

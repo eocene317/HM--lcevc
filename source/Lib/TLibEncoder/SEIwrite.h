@@ -83,16 +83,19 @@ protected:
   Void xWriteSEITempMotionConstrainedTileSets     (const SEITempMotionConstrainedTileSets& sei);
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
+#if CCV_SEI_MESSAGE
+  Void xWriteSEIContentColourVolume               (const SEIContentColourVolume &sei);
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Void xWriteSEIEquirectangularProjection         (const SEIEquirectangularProjection &sei);
   Void xWriteSEISphereRotation                    (const SEISphereRotation &sei);
   Void xWriteSEIOmniViewport                      (const SEIOmniViewport& sei);
 #endif
 #if CMP_SEI_MESSAGE
-  Void xWriteSEICubemapProjection(const SEICubemapProjection &sei);
+  Void xWriteSEICubemapProjection                 (const SEICubemapProjection &sei);
 #endif
 #if RWP_SEI_MESSAGE
-  Void xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei);
+  Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
 #endif
   Void xWriteSEIColourRemappingInfo               (const SEIColourRemappingInfo& sei);
   Void xWriteSEIDeinterlaceFieldIdentification    (const SEIDeinterlaceFieldIdentification& sei);

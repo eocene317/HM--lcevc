@@ -94,9 +94,11 @@
 #endif
 
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
+#define CCV_SEI_MESSAGE                                   1 // Content Colour Volume SEI message
 #define RWP_SEI_MESSAGE                                   1 // region-wise SEI message 
 #define CMP_SEI_MESSAGE                                   1 // cubemap projection SEI message
-#define ERP_SR_OV_SEI_MESSAGE                             1 //equirectangular projection, sphere rotation, and omni viewport SEI message
+#define ERP_SR_OV_SEI_MESSAGE                             1 // equirectangular projection, sphere rotation, and omni viewport SEI message
+
 // ====================================================================================================================
 // Tool Switches
 // ====================================================================================================================

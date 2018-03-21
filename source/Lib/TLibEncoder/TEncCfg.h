@@ -367,6 +367,20 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
+#if CCV_SEI_MESSAGE
+  Bool      m_ccvSEIEnabled;
+  Bool      m_ccvSEICancelFlag;
+  Bool      m_ccvSEIPersistenceFlag;
+  Bool      m_ccvSEIPrimariesPresentFlag;
+  Bool      m_ccvSEIMinLuminanceValuePresentFlag;
+  Bool      m_ccvSEIMaxLuminanceValuePresentFlag;
+  Bool      m_ccvSEIAvgLuminanceValuePresentFlag;
+  Double    m_ccvSEIPrimariesX[MAX_NUM_COMPONENT]; 
+  Double    m_ccvSEIPrimariesY[MAX_NUM_COMPONENT];
+  Double    m_ccvSEIMinLuminanceValue;
+  Double    m_ccvSEIMaxLuminanceValue;
+  Double    m_ccvSEIAvgLuminanceValue;
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;
@@ -927,6 +941,34 @@ public:
   Bool  getKneeSEIEnabled()                                          { return m_kneeSEIEnabled; }
   Void  setKneeFunctionInformationSEI(const TEncSEIKneeFunctionInformation &seiknee) { m_kneeFunctionInformationSEI = seiknee; }
   const TEncSEIKneeFunctionInformation &getKneeFunctionInformationSEI() const        { return m_kneeFunctionInformationSEI; }
+
+#if CCV_SEI_MESSAGE
+  Void     setCcvSEIEnabled(Bool b)                                  { m_ccvSEIEnabled = b; }
+  Bool     getCcvSEIEnabled()                                        { return m_ccvSEIEnabled; }
+  Void     setCcvSEICancelFlag(Bool b)                               { m_ccvSEICancelFlag = b; }
+  Bool     getCcvSEICancelFlag()                                     { return m_ccvSEICancelFlag; }
+  Void     setCcvSEIPersistenceFlag(Bool b)                          { m_ccvSEIPersistenceFlag = b; }
+  Bool     getCcvSEIPersistenceFlag()                                { return m_ccvSEIPersistenceFlag; }
+  Void     setCcvSEIPrimariesPresentFlag(Bool b)                     { m_ccvSEIPrimariesPresentFlag = b; }
+  Bool     getCcvSEIPrimariesPresentFlag()                           { return m_ccvSEIPrimariesPresentFlag; }
+  Void     setCcvSEIMinLuminanceValuePresentFlag(Bool b)             { m_ccvSEIMinLuminanceValuePresentFlag = b; }
+  Bool     getCcvSEIMinLuminanceValuePresentFlag()                   { return m_ccvSEIMinLuminanceValuePresentFlag; }
+  Void     setCcvSEIMaxLuminanceValuePresentFlag(Bool b)             { m_ccvSEIMaxLuminanceValuePresentFlag = b; }
+  Bool     getCcvSEIMaxLuminanceValuePresentFlag()                   { return m_ccvSEIMaxLuminanceValuePresentFlag; }
+  Void     setCcvSEIAvgLuminanceValuePresentFlag(Bool b)             { m_ccvSEIAvgLuminanceValuePresentFlag = b; }
+  Bool     getCcvSEIAvgLuminanceValuePresentFlag()                   { return m_ccvSEIAvgLuminanceValuePresentFlag; }
+  Void     setCcvSEIPrimariesX(Double dValue, Int index)             { m_ccvSEIPrimariesX[index] = dValue; }
+  Double   getCcvSEIPrimariesX(Int index)                            { return m_ccvSEIPrimariesX[index]; }
+  Void     setCcvSEIPrimariesY(Double dValue, Int index)             { m_ccvSEIPrimariesY[index] = dValue; }
+  Double   getCcvSEIPrimariesY(Int index)                            { return m_ccvSEIPrimariesY[index]; }
+  Void     setCcvSEIMinLuminanceValue  (Double dValue)               { m_ccvSEIMinLuminanceValue = dValue; }
+  Double   getCcvSEIMinLuminanceValue  ()                            { return m_ccvSEIMinLuminanceValue;  }
+  Void     setCcvSEIMaxLuminanceValue  (Double dValue)               { m_ccvSEIMaxLuminanceValue = dValue; }
+  Double   getCcvSEIMaxLuminanceValue  ()                            { return m_ccvSEIMaxLuminanceValue;  }
+  Void     setCcvSEIAvgLuminanceValue  (Double dValue)               { m_ccvSEIAvgLuminanceValue = dValue; }
+  Double   getCcvSEIAvgLuminanceValue  ()                            { return m_ccvSEIAvgLuminanceValue;  }
+#endif
+
 #if ERP_SR_OV_SEI_MESSAGE
   Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
   Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }

@@ -448,6 +448,16 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIKneeFunctionInfo(sei);
     seiMessages.push_back(sei);
   }
+
+#if CCV_SEI_MESSAGE
+  if (m_pcCfg->getCcvSEIEnabled())
+  {
+    SEIContentColourVolume *seiContentColourVolume = new SEIContentColourVolume;
+    m_seiEncoder.initSEIContentColourVolume(seiContentColourVolume);
+    seiMessages.push_back(seiContentColourVolume);
+  }
+#endif
+
 #if ERP_SR_OV_SEI_MESSAGE
   if (m_pcCfg->getErpSEIEnabled())
   {

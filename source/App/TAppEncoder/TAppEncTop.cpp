@@ -344,6 +344,26 @@ Void TAppEncTop::xInitLibCfg()
   }
   m_cTEncTop.setKneeSEIEnabled                                    ( m_kneeSEIEnabled );
   m_cTEncTop.setKneeFunctionInformationSEI                        ( m_kneeFunctionInformationSEI );
+#if CCV_SEI_MESSAGE
+  m_cTEncTop.setCcvSEIEnabled                                     (m_ccvSEIEnabled);
+  m_cTEncTop.setCcvSEICancelFlag                                  (m_ccvSEICancelFlag);
+  m_cTEncTop.setCcvSEIPersistenceFlag                             (m_ccvSEIPersistenceFlag);
+  
+  m_cTEncTop.setCcvSEIEnabled                                     (m_ccvSEIEnabled);
+  m_cTEncTop.setCcvSEICancelFlag                                  (m_ccvSEICancelFlag);
+  m_cTEncTop.setCcvSEIPersistenceFlag                             (m_ccvSEIPersistenceFlag);
+  m_cTEncTop.setCcvSEIPrimariesPresentFlag                        (m_ccvSEIPrimariesPresentFlag);
+  m_cTEncTop.setCcvSEIMinLuminanceValuePresentFlag                (m_ccvSEIMinLuminanceValuePresentFlag);
+  m_cTEncTop.setCcvSEIMaxLuminanceValuePresentFlag                (m_ccvSEIMaxLuminanceValuePresentFlag);
+  m_cTEncTop.setCcvSEIAvgLuminanceValuePresentFlag                (m_ccvSEIAvgLuminanceValuePresentFlag);
+  for(Int i = 0; i < MAX_NUM_COMPONENT; i++) {
+    m_cTEncTop.setCcvSEIPrimariesX                                (m_ccvSEIPrimariesX[i], i);
+    m_cTEncTop.setCcvSEIPrimariesY                                (m_ccvSEIPrimariesY[i], i);
+  }
+  m_cTEncTop.setCcvSEIMinLuminanceValue                           (m_ccvSEIMinLuminanceValue);
+  m_cTEncTop.setCcvSEIMaxLuminanceValue                           (m_ccvSEIMaxLuminanceValue);
+  m_cTEncTop.setCcvSEIAvgLuminanceValue                           (m_ccvSEIAvgLuminanceValue);
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
   m_cTEncTop.setErpSEIEnabled                                     ( m_erpSEIEnabled );           
   m_cTEncTop.setErpSEICancelFlag                                  ( m_erpSEICancelFlag );        

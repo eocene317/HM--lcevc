@@ -4239,7 +4239,7 @@ Void TEncSearch::xTZSearch( const TComDataCU* const pcCU,
   // raster search if distance is too big
   if (bUseAdaptiveRaster)
   {
-    int iWindowSize = iRaster;
+    Int   iWindowSize = iRaster;
     Int   iSrchRngRasterLeft   = iSrchRngHorLeft;
     Int   iSrchRngRasterRight  = iSrchRngHorRight;
     Int   iSrchRngRasterTop    = iSrchRngVerTop;

@@ -43,6 +43,25 @@
 
 #if ENC_DEC_TRACE
 
+#if CCV_SEI_MESSAGE
+Void  SyntaxElementWriter::xWriteSCodeTr (Int value, UInt  length, const TChar *pSymbolName)
+{
+  xWriteSCode (value,length);
+  if( g_HLSTraceEnable )
+  {
+    fprintf( g_hTrace, "%8lld  ", g_nSymbolCounter++ );
+    if( length<10 )
+    {
+      fprintf( g_hTrace, "%-50s u(%d)  : %d\n", pSymbolName, length, value );
+    }
+    else
+    {
+      fprintf( g_hTrace, "%-50s u(%d) : %d\n", pSymbolName, length, value );
+    }
+  }
+}
+#endif
+
 Void  SyntaxElementWriter::xWriteCodeTr (UInt value, UInt  length, const TChar *pSymbolName)
 {
   xWriteCode (value,length);
@@ -92,6 +111,23 @@ Void  SyntaxElementWriter::xWriteFlagTr(UInt value, const TChar *pSymbolName)
 
 #endif
 
+#if CCV_SEI_MESSAGE
+Void SyntaxElementWriter::xWriteSCode    ( Int iCode, UInt uiLength )
+{
+  assert ( uiLength > 0 );
+  UInt uiCode;
+  if (iCode >= 0)
+  {
+    uiCode =  (UInt) iCode;
+  }
+  else
+  {
+    uiCode = ~(iCode) + 1;
+    uiCode |= (1 << 31);
+  }
+  m_pcBitIf->write( uiCode, uiLength );
+}
+#endif
 
 Void SyntaxElementWriter::xWriteCode     ( UInt uiCode, UInt uiLength )
 {
