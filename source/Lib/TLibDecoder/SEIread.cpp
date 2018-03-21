@@ -1491,7 +1491,6 @@ Void SEIReader::xParseSEISphereRotation(SEISphereRotation& sei, UInt payloadSize
 {
   UInt val;
   Int  sval;
-  UChar n = 32;
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
   sei_read_flag( pDecodedMessageOutputStream, val,       "sphere_rotation_cancel_flag" );              sei.m_sphereRotationCancelFlag = val;
   if( !sei.m_sphereRotationCancelFlag )
@@ -1523,8 +1522,8 @@ Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, st
       sei_read_scode( pDecodedMessageOutputStream, 32, scode, "omni_viewport_azimuth_centre"   );   viewport.azimuthCentre = scode;
       sei_read_scode( pDecodedMessageOutputStream, 32, scode, "omni_viewport_elevation_centre" );   viewport.elevationCentre = scode;
       sei_read_scode( pDecodedMessageOutputStream, 32, scode, "omni_viewport_tilt_centre"      );   viewport.tiltCentre = code;
-      sei_read_code( pDecodedMessageOutputStream, 32, code, "omni_viewport_hor_range"     );   viewport.horRange        = code;
-      sei_read_code( pDecodedMessageOutputStream, 32, code, "omni_viewport_ver_range"     );   viewport.verRange        = code;
+      sei_read_code( pDecodedMessageOutputStream,  32, code, "omni_viewport_hor_range"         );   viewport.horRange        = code;
+      sei_read_code( pDecodedMessageOutputStream,  32, code, "omni_viewport_ver_range"         );   viewport.verRange        = code;
     }    
   }
   else
