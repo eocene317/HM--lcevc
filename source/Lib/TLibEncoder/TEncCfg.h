@@ -438,6 +438,9 @@ protected:
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
 #endif
+#if RNSEI
+  std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
+#endif
   //====== Weighted Prediction ========
   Bool      m_useWeightedPred;       //< Use of Weighting Prediction (P_SLICE)
   Bool      m_useWeightedBiPred;    //< Use of Bi-directional Weighting Prediction (B_SLICE)
@@ -1090,6 +1093,10 @@ public:
   UChar getSEIGreenMetadataType() const                              { return m_greenMetadataType; }
   Void  setSEIXSDMetricType(UChar v)                                 { m_xsdMetricType = v;    }
   UChar getSEIXSDMetricType() const                                  { return m_xsdMetricType; }
+#if RNSEI
+  Void  setRegionalNestingSEIFileRoot( const std::string &s )        { m_regionalNestingSEIFileRoot = s; }
+  const std::string &getRegionalNestingSEIFileRoot() const           { return m_regionalNestingSEIFileRoot; }
+#endif
 
   const TComSEIMasteringDisplay &getMasteringDisplaySEI() const      { return m_masteringDisplay; }
   Void         setUseWP               ( Bool b )                     { m_useWeightedPred   = b;    }

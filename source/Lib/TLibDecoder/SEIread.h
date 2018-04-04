@@ -59,6 +59,9 @@ public:
 
 protected:
   Void xReadSEImessage                        (SEIMessages& seis, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
+#if RNSEI
+  Void xReadSEImessageHdrPayload              (SEI* &sei, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
+#endif
   Void xParseSEIBufferingPeriod               (SEIBufferingPeriod& sei,               UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIPictureTiming                 (SEIPictureTiming& sei,                 UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIPanScanRect                   (SEIPanScanRect& sei,                   UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
@@ -111,7 +114,9 @@ protected:
   Void xParseSEICodedRegionCompletion         (SEICodedRegionCompletion& sei,         UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics& sei, UInt payLoadSize,            std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIAmbientViewingEnvironment     (SEIAmbientViewingEnvironment& sei,     UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
-
+#if RNSEI
+  Void xParseSEIRegionalNesting               ( SEIRegionalNesting& sei,              UInt payloadSize, const TComSPS* sps, std::ostream *pDecodedMessageOutputStream );
+#endif
   Void sei_read_scode(std::ostream *pOS, UInt uiLength, Int& ruiCode, const TChar *pSymbolName);
   Void sei_read_code(std::ostream *pOS, UInt uiLength, UInt& ruiCode, const TChar *pSymbolName);
   Void sei_read_uvlc(std::ostream *pOS,                UInt& ruiCode, const TChar *pSymbolName);

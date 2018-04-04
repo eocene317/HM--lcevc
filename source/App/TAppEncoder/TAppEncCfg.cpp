@@ -1214,6 +1214,9 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIRwpGuardBandNotUsedForPredFlag",               cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, "Specifies if the guard bands is used in the inter prediction process.")
   ("SEIRwpGuardBandType",                             cfg_rwpSEIRwpGuardBandType,               cfg_rwpSEIRwpGuardBandType,               "Specifies the type of the guard bands for the i-th packed region.")
 #endif
+#if RNSEI
+  ("SEIRegionalNestingFileRoot,-rns",                 m_regionalNestingSEIFileRoot,                    string(""), "Regional nesting SEI parameters root file name (wo num ext)")
+#endif
   ;
 
 #if EXTENSION_360_VIDEO

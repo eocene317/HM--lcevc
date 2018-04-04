@@ -37,6 +37,7 @@
 
 #include "CommonDef.h"
 #include "SEI.h"
+#include <iostream>
 
 SEIMessages getSeisByType(SEIMessages &seiList, SEI::PayloadType seiType)
 {
@@ -112,6 +113,70 @@ void SEIPictureTiming::copyTo (SEIPictureTiming& target)
   target.m_numNalusInDuMinus1 = m_numNalusInDuMinus1;
   target.m_duCpbRemovalDelayMinus1 = m_duCpbRemovalDelayMinus1;
 }
+#if RNSEI
+std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region)
+{
+  os << region.getRegionId() << " " << region.getWindowLeftOffset() <<
+      region.getWindowRightOffset() << " " << region.getWindowTopOffset() << " "  <<
+      region.getWindowBottomOffset() << "\n";
+  return os;
+}
+SEIRegionalNesting::~SEIRegionalNesting()
+{
+  // Delete SEI messages
+  for(Int i = 0; i < m_rnSeiMessages.size(); i++)
+  {
+    delete m_rnSeiMessages[i].second;
+  }
+}
+Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
+{
+  // Check if no conflict with region IDs of regions
+  const RNSEIWindowVec newRegions = regSEI->getRegions();
+  RNSEIWindowVec regionsToAdd;
+  std::vector<UInt> listOfIndices;
+
+  // Loop through regions to add
+  for(RNSEIWindowVec::const_iterator iterNew = newRegions.begin();
+            iterNew != newRegions.end(); iterNew++)
+  {
+    Bool addNewRegion = m_regions.empty() ? true : false;
+    Bool foundRegion = false;
+    // Loop through regions already present
+    for(RNSEIWindowVec::const_iterator iterRef = m_regions.begin();
+            !foundRegion && iterRef != m_regions.end(); iterRef++)
+    {
+      if( (*iterNew) == (*iterRef) )  // Check if same region present
+      {
+        listOfIndices.push_back(iterRef - m_regions.begin());  // Add index
+        foundRegion = true;
+      }
+      else if( iterRef->checkSameID(*iterNew) )  // Check if there is a region ID class
+      {
+        // Two regions are different yet have same ID value; violates constraint
+        std::cout << "Two different regions have the same ID; please check.\n";
+        std::cout << "Region:" << (*iterNew) << "\n";
+        std::cout << "Region:" << (*iterRef) << "\n";
+        exit(1);
+      }
+    }        
+    addNewRegion = !foundRegion;
+    
+    if(addNewRegion)
+    {
+      // Index is current size of the m_regions;
+      listOfIndices.push_back(m_regions.size());
+      m_regions.push_back((*iterNew));
+    }
+  }
+  if(listOfIndices.empty())
+  {
+    std::cout << "Unable to add regions to the regional nesting SEI.\n";
+    exit(1);
+  }
+  addRegionalSEI(listOfIndices, regSEI->getSEI());
+}
+#endif
 
 // Static member
 const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
@@ -169,6 +234,9 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
 #endif
 #if RWP_SEI_MESSAGE
     case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
+#endif
+#if RNSEI
+    case SEI::REGIONAL_NESTING:                     return "Regional nesting";
 #endif
     default:                                        return "Unknown";
   }

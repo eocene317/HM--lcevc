@@ -657,6 +657,84 @@ static Void readTokenValueAndValidate(Bool         &returnedValue, /// value ret
   readTokenValue(returnedValue, failed, is, pToken);
 }
 
+#if RNSEI
+template <typename T>
+static Void readTokenValue(std::vector<T> &returnedValue, /// value returned
+                           Bool         &failed,        /// used and updated
+                           std::istream &is,            /// stream to read token from
+                           const TChar  *pToken,         /// token string
+                           const UInt   &numValues)     /// Num of values to be read in array
+{
+  returnedValue=std::vector<T>();
+  if (failed)
+  {
+    return;
+  }
+
+  Int c;
+  // Ignore any whitespace
+  while ((c=is.get())!=EOF && isspace(c));
+  // test for comment mark
+  while (c=='#')
+  {
+    // Ignore to the end of the line
+    while ((c=is.get())!=EOF && (c!=10 && c!=13));
+    // Ignore any white space at the start of the next line
+    while ((c=is.get())!=EOF && isspace(c));
+  }
+  // test first character of token
+  failed=(c!=pToken[0]);
+  // test remaining characters of token
+  Int pos;
+  for(pos=1;!failed && pToken[pos]!=0 && is.get()==pToken[pos]; pos++);
+  failed|=(pToken[pos]!=0);
+  // Ignore any whitespace before the ':'
+  while (!failed && (c=is.get())!=EOF && isspace(c));
+  failed|=(c!=':');
+  // Now read the value associated with the token:
+  for(UInt i = 0; i < numValues; i++)
+  {
+    if (!failed)
+    {
+      is >> returnedValue[i];
+      failed=!is.good();
+      if (!failed)
+      {
+        c=is.get();
+        failed=(c!=EOF && !isspace(c));
+      }
+    }
+    if (failed)
+    {
+      std::cerr << "Unable to read token '" << pToken << "[" << i << "]'\n";
+    }
+  }
+}
+// Version to read an array 
+template <typename T>
+static Void readTokenValueAndValidate(std::vector<T> &returnedValue, /// value returned
+                                      Bool         &failed,        /// used and updated
+                                      std::istream &is,            /// stream to read token from
+                                      const TChar  *pToken,        /// token string
+                                      const T      &minInclusive,  /// minimum value allowed, inclusive
+                                      const T      &maxInclusive,  /// maximum value allowed, inclusive
+                                      const UInt   &numValues)
+{
+  readTokenValue<Int>(returnedValue, failed, is, pToken, numValues);
+  if (!failed)
+  {
+    for(UInt i = 0; i < numValues; i++)
+    {
+      if (returnedValue[i]<minInclusive || returnedValue[i]>maxInclusive)
+      {
+        failed=true;
+        std::cerr << "Value for token " << pToken << "[" << i  << "] must be in the range " << minInclusive << " to " << maxInclusive << " (inclusive); value read: " << returnedValue[i] << std::endl;
+      }
+    }
+  }
+}
+#endif
+
 Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRemappingInfo, Int currPOC) // returns true on success, false on failure.
 {
   assert (m_isInitialized);
@@ -683,7 +761,9 @@ Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRem
     }
 
     // TODO: identify and remove duplication with decoder parsing through abstraction.
-
+#if RNSEI
+    readColourRemapSEI(fic, seiColourRemappingInfo, failed );
+#else
     readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapId,         failed, fic, "colour_remap_id",        UInt(0), UInt(0x7fffffff) );
     readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapCancelFlag, failed, fic, "colour_remap_cancel_flag" );
     if( !seiColourRemappingInfo->m_colourRemapCancelFlag )
@@ -742,6 +822,7 @@ Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRem
         }
       }
     }
+#endif
 
     if( failed )
     {
@@ -752,6 +833,292 @@ Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRem
   return true;
 }
 
+#if RNSEI
+Void SEIEncoder::readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed )
+{
+  Int regionId;
+  Int offLeft, offRight, offTop, offBottom;
+  fic >> regionId >> offLeft >> offRight >> offTop >> offBottom;
+  (*regionIter).setRegionId(regionId);
+  (*regionIter).setWindow(offLeft, offRight, offTop, offBottom);
+}
+Void SEIEncoder::readColourRemapSEI(std::istream &fic, SEIColourRemappingInfo *seiColourRemappingInfo, Bool &failed )
+{
+  readTokenValueAndValidate<UInt>(seiColourRemappingInfo->m_colourRemapId,         failed, fic, "colour_remap_id",        UInt(0), UInt(0x7fffffff) );
+  readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapCancelFlag, failed, fic, "colour_remap_cancel_flag" );
+  if( !seiColourRemappingInfo->m_colourRemapCancelFlag )
+  {
+    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapPersistenceFlag,            failed, fic, "colour_remap_persistence_flag" );
+    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapVideoSignalInfoPresentFlag, failed, fic, "colour_remap_video_signal_info_present_flag");
+    if( seiColourRemappingInfo->m_colourRemapVideoSignalInfoPresentFlag )
+    {
+      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapFullRangeFlag,      failed, fic, "colour_remap_full_range_flag" );
+      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapPrimaries,          failed, fic, "colour_remap_primaries",           Int(0), Int(255) );
+      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapTransferFunction,   failed, fic, "colour_remap_transfer_function",   Int(0), Int(255) );
+      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapMatrixCoefficients, failed, fic, "colour_remap_matrix_coefficients", Int(0), Int(255) );
+    }
+    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapInputBitDepth, failed, fic, "colour_remap_input_bit_depth",            Int(8), Int(16) );
+    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapBitDepth,      failed, fic, "colour_remap_bit_depth",                  Int(8), Int(16) );
+
+    const Int maximumInputValue    = (1 << (((seiColourRemappingInfo->m_colourRemapInputBitDepth + 7) >> 3) << 3)) - 1;
+    const Int maximumRemappedValue = (1 << (((seiColourRemappingInfo->m_colourRemapBitDepth      + 7) >> 3) << 3)) - 1;
+
+    for( Int c=0 ; c<3 ; c++ )
+    {
+      readTokenValueAndValidate(seiColourRemappingInfo->m_preLutNumValMinus1[c],         failed, fic, "pre_lut_num_val_minus1[c]",        Int(0), Int(32) );
+      if( seiColourRemappingInfo->m_preLutNumValMinus1[c]>0 )
+      {
+        seiColourRemappingInfo->m_preLut[c].resize(seiColourRemappingInfo->m_preLutNumValMinus1[c]+1);
+        for( Int i=0 ; i<=seiColourRemappingInfo->m_preLutNumValMinus1[c] ; i++ )
+        {
+          readTokenValueAndValidate(seiColourRemappingInfo->m_preLut[c][i].codedValue,   failed, fic, "pre_lut_coded_value[c][i]",  Int(0), maximumInputValue    );
+          readTokenValueAndValidate(seiColourRemappingInfo->m_preLut[c][i].targetValue,  failed, fic, "pre_lut_target_value[c][i]", Int(0), maximumRemappedValue );
+        }
+      }
+    }
+    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapMatrixPresentFlag, failed, fic, "colour_remap_matrix_present_flag" );
+    if( seiColourRemappingInfo->m_colourRemapMatrixPresentFlag )
+    {
+      readTokenValueAndValidate(seiColourRemappingInfo->m_log2MatrixDenom, failed, fic, "log2_matrix_denom", Int(0), Int(15) );
+      for( Int c=0 ; c<3 ; c++ )
+      {
+        for( Int i=0 ; i<3 ; i++ )
+        {
+          readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapCoeffs[c][i], failed, fic, "colour_remap_coeffs[c][i]", -32768, 32767 );
+        }
+      }
+    }
+    for( Int c=0 ; c<3 ; c++ )
+    {
+      readTokenValueAndValidate(seiColourRemappingInfo->m_postLutNumValMinus1[c], failed, fic, "post_lut_num_val_minus1[c]", Int(0), Int(32) );
+      if( seiColourRemappingInfo->m_postLutNumValMinus1[c]>0 )
+      {
+        seiColourRemappingInfo->m_postLut[c].resize(seiColourRemappingInfo->m_postLutNumValMinus1[c]+1);
+        for( Int i=0 ; i<=seiColourRemappingInfo->m_postLutNumValMinus1[c] ; i++ )
+        {
+          readTokenValueAndValidate(seiColourRemappingInfo->m_postLut[c][i].codedValue,  failed, fic, "post_lut_coded_value[c][i]",  Int(0), maximumRemappedValue );
+          readTokenValueAndValidate(seiColourRemappingInfo->m_postLut[c][i].targetValue, failed, fic, "post_lut_target_value[c][i]", Int(0), maximumRemappedValue );
+        }
+      }
+    }
+  }
+}
+Void SEIEncoder::readToneMappingInfoSEI(std::istream &fic, SEIToneMappingInfo *seiToneMappingInfo , Bool &failed )
+{
+  readTokenValueAndValidate(seiToneMappingInfo->m_toneMapId,                          failed, fic,       "SEIToneMapId",        Int(0), Int(255) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_toneMapCancelFlag,                  failed, fic,       "SEIToneMapCancelFlag");
+  readTokenValueAndValidate(seiToneMappingInfo->m_toneMapPersistenceFlag,             failed, fic,       "SEIToneMapPersistenceFlag");
+  readTokenValueAndValidate(seiToneMappingInfo->m_codedDataBitDepth,                  failed, fic,       "SEIToneMapCodedDataBitDepth",        Int(8), Int(14) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_targetBitDepth,                     failed, fic,       "SEIToneMapTargetBitDepth",        Int(8), Int(14) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_modelId,                            failed, fic,       "SEIToneMapModelId",        Int(0), Int(4) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_minValue,                           failed, fic,       "SEIToneMapMinValue",       Int(0), Int((1<<14)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_maxValue,                           failed, fic,       "SEIToneMapMaxValue",       Int(0), Int((1<<14)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_sigmoidMidpoint,                    failed, fic,       "SEIToneMapSigmoidMidpoint",       Int(0), Int((1<<14)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_sigmoidWidth,                       failed, fic,       "SEIToneMapSigmoidWidth",       Int(0), Int((1<<14)-1) );
+  readTokenValueAndValidate<Int>(seiToneMappingInfo->m_startOfCodedInterval,               failed, fic,       "SEIToneMapStartOfCodedInterval",       Int(0), Int((1<<16)-1), UInt(1<<seiToneMappingInfo->m_targetBitDepth) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_numPivots,                          failed, fic,       "SEIToneMapNumPivots",       Int(0), Int((1<<16)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_codedPivotValue,                    failed, fic,       "SEIToneMapCodedPivotValue",       Int(0), Int((1<<16)-1), seiToneMappingInfo->m_numPivots );
+  readTokenValueAndValidate(seiToneMappingInfo->m_targetPivotValue,                   failed, fic,       "SEIToneMapTargetPivotValue",       Int(0), Int((1<<16)-1), seiToneMappingInfo->m_numPivots );
+  readTokenValueAndValidate(seiToneMappingInfo->m_cameraIsoSpeedIdc,                  failed, fic,       "SEIToneMapCameraIsoSpeedIdc",       Int(0), Int(255) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_cameraIsoSpeedValue,                failed, fic,       "SEIToneMapCameraIsoSpeedValue",       Int(0), Int((~0)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_exposureIndexIdc,                   failed, fic,       "SEIToneMapExposureIndexIdc",       Int(0), Int(255) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_exposureIndexValue,                 failed, fic,       "SEIToneMapExposureIndexValue",       Int(0), Int((~0)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_exposureCompensationValueSignFlag,  failed, fic,       "SEIToneMapExposureCompensationValueSignFlag");
+  readTokenValueAndValidate(seiToneMappingInfo->m_exposureCompensationValueNumerator, failed, fic,       "SEIToneMapExposureCompensationValueNumerator",       Int(0), Int((1<<16)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_exposureCompensationValueDenomIdc,  failed, fic,       "SEIToneMapExposureCompensationValueDenomIdc",       Int(0), Int((1<<16)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_refScreenLuminanceWhite,            failed, fic,       "SEIToneMapRefScreenLuminanceWhite",       Int(0), Int(10000) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_extendedRangeWhiteLevel,            failed, fic,       "SEIToneMapExtendedRangeWhiteLevel",       Int(100), Int(10000) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_nominalBlackLevelLumaCodeValue,     failed, fic,       "SEIToneMapNominalBlackLevelLumaCodeValue",       Int(0), Int((1<<16)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_nominalWhiteLevelLumaCodeValue,     failed, fic,       "SEIToneMapNominalWhiteLevelLumaCodeValue",       Int(0), Int((1<<16)-1) );
+  readTokenValueAndValidate(seiToneMappingInfo->m_extendedWhiteLevelLumaCodeValue,    failed, fic,       "SEIToneMapExtendedWhiteLevelLumaCodeValue",       Int(0), Int((1<<16)-1) );
+}
+Void SEIEncoder::readChromaResamplingFilterHintSEI(std::istream &fic, SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Bool &failed )
+{
+  Int horFilType, verFilType;
+  readTokenValueAndValidate(horFilType,         failed, fic,       "SEIChromaResamplingHorizontalFilterType",        Int(0), Int(2) );
+  readTokenValueAndValidate(verFilType,         failed, fic,       "SEIChromaResamplingVerticalFilterType",          Int(0), Int(2) );
+  if(horFilType == 1 || verFilType == 1)
+  {
+    cout << "Encoder support needed for scanning additional syntax elements of chroma resampling filter hint SEI message.\n";
+    cout << "Addn. code needed in readChromaResamplingFilterHintSEI() and initSEIChromaResamplingFilterHint().\n";
+    exit(1);
+  }
+  initSEIChromaResamplingFilterHint(seiChromaResamplingFilterHint, horFilType, verFilType);
+}
+Void SEIEncoder::readKneeFunctionInfoSEI(std::istream &fic, SEIKneeFunctionInfo *seiKneeFunctionInfo, Bool &failed )
+{
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeId,                  failed, fic,       "SEIKneeFunctionId",                 Int(0), Int(255));
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeCancelFlag,          failed, fic,       "SEIKneeFunctionCancelFlag"      );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneePersistenceFlag,     failed, fic,       "SEIKneeFunctionPersistenceFlag" );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeInputDrange,         failed, fic,       "SEIKneeFunctionInputDrange",        Int(0), Int(1000) );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeInputDispLuminance,  failed, fic,       "SEIKneeFunctionInputDispLuminance", Int(0), Int(10000) );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeOutputDrange,        failed, fic,       "SEIKneeFunctionOutputDrange",       Int(0), Int(1000) );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeOutputDispLuminance, failed, fic,       "SEIKneeFunctionOutputDispLuminance",Int(0), Int(10000) );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeNumKneePointsMinus1, failed, fic,       "SEIKneeFunctionNumKneePointsMinus1",Int(0), Int(998) );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeInputKneePoint,      failed, fic,       "SEIKneeFunctionInputKneePointValue",Int(0), Int(1000), seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1 );
+  readTokenValueAndValidate(seiKneeFunctionInfo->m_kneeOutputKneePoint,     failed, fic,       "SEIKneeFunctionInputKneePointValue",Int(0), Int(1000), seiKneeFunctionInfo->m_kneeNumKneePointsMinus1+1 );
+
+}
+Void SEIEncoder::readContentColourVolumeSEI(std::istream &fic, SEIContentColourVolume *seiContentColourVolume, Bool &failed )
+{
+  Double dCode, primaries[2][MAX_NUM_COMPONENT];
+  readTokenValueAndValidate(seiContentColourVolume->m_ccvCancelFlag,              failed, fic,       "SEICCVCancelFlag"          );
+  readTokenValueAndValidate(seiContentColourVolume->m_ccvPersistenceFlag,         failed, fic,       "SEICCVPersistenceFlag"     );
+  readTokenValueAndValidate(seiContentColourVolume->m_ccvPrimariesPresentFlag,    failed, fic,  "SEICCVPrimariesPresent"    );
+  readTokenValueAndValidate(primaries[0][0],    failed, fic,  "m_ccvSEIPrimariesX0",    Double(-100), Double(100));
+  readTokenValueAndValidate(primaries[1][1],    failed, fic,  "m_ccvSEIPrimariesY0",    Double(-100), Double(100));
+  readTokenValueAndValidate(primaries[0][2],    failed, fic,  "m_ccvSEIPrimariesX1",    Double(-100), Double(100));
+  readTokenValueAndValidate(primaries[1][0],    failed, fic,  "m_ccvSEIPrimariesY1",    Double(-100), Double(100));
+  readTokenValueAndValidate(primaries[0][1],    failed, fic,  "m_ccvSEIPrimariesX2",    Double(-100), Double(100));
+  readTokenValueAndValidate(primaries[1][2],    failed, fic,  "m_ccvSEIPrimariesY2",    Double(-100), Double(100));
+  if(seiContentColourVolume->m_ccvPrimariesPresentFlag)
+  {
+    for (Int i = 0; i < MAX_NUM_COMPONENT; i++) 
+    {
+      seiContentColourVolume->m_ccvPrimariesX[i] = (Int) (50000.0 * primaries[0][i]);
+      seiContentColourVolume->m_ccvPrimariesY[i] = (Int) (50000.0 * primaries[1][i]);
+    }
+  }
+  readTokenValueAndValidate(seiContentColourVolume->m_ccvMinLuminanceValuePresentFlag,    failed, fic,  "SEICCVMinLuminanceValuePresent"    );
+  readTokenValueAndValidate(dCode,    failed, fic,  "SEICCVMinLuminanceValue",    Double(0), Double(429.4967295));
+  if(seiContentColourVolume->m_ccvMinLuminanceValuePresentFlag)
+  {
+    seiContentColourVolume->m_ccvMinLuminanceValue = (Int) (10000000 * dCode);
+  }
+  readTokenValueAndValidate(seiContentColourVolume->m_ccvMaxLuminanceValuePresentFlag,    failed, fic,  "SEICCVMaxLuminanceValuePresent"    );
+  readTokenValueAndValidate(dCode,    failed, fic,  "SEICCVMaxLuminanceValue",    Double(0), Double(429.4967295));
+  if(seiContentColourVolume->m_ccvMaxLuminanceValuePresentFlag)
+  {
+    seiContentColourVolume->m_ccvMaxLuminanceValue = (Int) (10000000 * dCode);
+  }
+  readTokenValueAndValidate(seiContentColourVolume->m_ccvAvgLuminanceValuePresentFlag,    failed, fic,  "SEICCVAvgLuminanceValuePresent"    );
+  readTokenValueAndValidate(dCode,    failed, fic,  "SEICCVAvgLuminanceValue",    Double(0), Double(429.4967295));
+  if(seiContentColourVolume->m_ccvAvgLuminanceValuePresentFlag)
+  {
+    seiContentColourVolume->m_ccvAvgLuminanceValue = (Int) (10000000 * dCode);
+  }
+}
+Bool SEIEncoder::initSEIRegionalNesting(SEIRegionalNesting* seiRegionalNesting, Int currPOC) // returns true on success, false on failure.
+{
+  assert (m_isInitialized);
+  assert (seiRegionalNesting!=NULL);
+  Int numRegions; 
+  RNSEIWindowVec regions;
+
+  // reading external regional nesting SEI message parameters from file
+  if( !m_pcCfg->getRegionalNestingSEIFileRoot().empty())
+  {
+    Bool failed=false;
+
+    // building the regional nesting file name with poc num in prefix "_poc.txt"
+    std::string regionalNestingSEIFileWithPoc(m_pcCfg->getRegionalNestingSEIFileRoot());
+    {
+      std::stringstream suffix;
+      suffix << "_" << currPOC << ".txt";
+      regionalNestingSEIFileWithPoc+=suffix.str();
+    }
+
+    std::ifstream fic(regionalNestingSEIFileWithPoc.c_str());
+    if (!fic.good() || !fic.is_open())
+    {
+      std::cerr <<  "No Regional Nesting Information SEI parameters file " << regionalNestingSEIFileWithPoc << " for POC " << currPOC << std::endl;
+      return false;
+    }
+    
+    Int payloadType, numSEIs;
+    readTokenValueAndValidate( numSEIs, failed, fic, "num_seis", 0, 255 );
+    // Loop through each region - ID - SEI
+    for(Int i = 0; i < numSEIs; i++)
+    {
+      RegionalSEI *regSEI = NULL;
+      // Parse num region
+      readTokenValueAndValidate( numRegions, failed, fic, "num_regions", 0, 255 );
+      regions.resize(numRegions);
+      RNSEIWindowVec::iterator regionIter;
+      for(regionIter = regions.begin(); regionIter != regions.end(); regionIter++)
+      {
+        readRNSEIWindow(fic, regionIter, failed);
+      }
+      // Parse payloadType
+      readTokenValueAndValidate( payloadType, failed, fic, "payloadType", 0, 255 );
+      if(!RegionalSEI::checkRegionalNestedSEIPayloadType(SEI::PayloadType(payloadType)))
+      {
+        cout << "PayloadType " << payloadType << " not supported in regional nesting SEI message. Exiting.\n";
+        exit(1);
+      }
+
+      // Parse SEI
+      switch(SEI::PayloadType(payloadType))
+      {
+      case SEI::FILM_GRAIN_CHARACTERISTICS: // TBD - no encoder support
+      case SEI::POST_FILTER_HINT:           // TBD - no encoder support
+      case SEI::USER_DATA_REGISTERED_ITU_T_T35: // TBD: Support for user-data SEI to be added
+      case SEI::USER_DATA_UNREGISTERED:     // TBD: Support for user-data SEI to be added
+        {
+          cout << "Encoder support for " << SEI::getSEIMessageString(SEI::PayloadType(payloadType)) << 
+                " nested in regional nesting SEI message needs to be added.\n";
+          exit(1);
+        }
+      case SEI::TONE_MAPPING_INFO:  
+        {
+        SEIToneMappingInfo *seiToneMappingInfo = new SEIToneMappingInfo;
+        readToneMappingInfoSEI(fic, seiToneMappingInfo, failed);
+        regSEI = new RegionalSEI(seiToneMappingInfo, regions);
+        break;
+        }
+      case SEI::CHROMA_RESAMPLING_FILTER_HINT:
+        {
+        SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint  = new SEIChromaResamplingFilterHint;
+        readChromaResamplingFilterHintSEI(fic, seiChromaResamplingFilterHint, failed);
+        regSEI = new RegionalSEI(seiChromaResamplingFilterHint, regions);
+        break;
+        }
+      case SEI::KNEE_FUNCTION_INFO:
+        {
+        SEIKneeFunctionInfo *seiKneeFunctionInfo = new SEIKneeFunctionInfo;
+        readKneeFunctionInfoSEI(fic, seiKneeFunctionInfo, failed);
+        regSEI = new RegionalSEI(seiKneeFunctionInfo, regions);
+        break;
+        }
+      case SEI::COLOUR_REMAPPING_INFO:
+        {
+        SEIColourRemappingInfo *seiColourRemappingInfo = new SEIColourRemappingInfo;
+        readColourRemapSEI(fic, seiColourRemappingInfo, failed);
+        regSEI = new RegionalSEI(seiColourRemappingInfo, regions);
+        break;
+        }
+      case SEI::CONTENT_COLOUR_VOLUME:
+        {
+        SEIContentColourVolume *seiContentColourVolume = new SEIContentColourVolume;
+        readContentColourVolumeSEI(fic, seiContentColourVolume, failed);
+        regSEI = new RegionalSEI(seiContentColourVolume, regions);
+        break;
+        }
+      default:
+        cout << "Unable to read the payloadType " << payloadType << " in " << regionalNestingSEIFileWithPoc << std::endl;
+        exit(1);
+      }
+      if( failed )
+      {
+        std::cerr << "Error while reading regional nesting SEI parameters file '" << regionalNestingSEIFileWithPoc << "'" << std::endl;
+        exit(EXIT_FAILURE);
+      }
+      // Add to SEI
+      if(regSEI)
+      {
+        seiRegionalNesting->addRegionalSEI(regSEI);
+        delete regSEI;
+      }
+      else
+      {
+        // Error - SEI should've been read.
+      }
+    }
+  }
+  return true;
+}
+
+#endif
 Void SEIEncoder::initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Int iHorFilterIndex, Int iVerFilterIndex)
 {
   assert (m_isInitialized);

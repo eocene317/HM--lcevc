@@ -197,6 +197,11 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
     xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
     break;
 #endif
+#if RNSEI
+  case SEI::REGIONAL_NESTING:
+    xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
+    break;
+#endif
   default:
     assert(!"Trying to write unhandled SEI message");
     break;
@@ -263,6 +268,57 @@ Void SEIWriter::writeSEImessages(TComBitIf& bs, const SEIMessages &seiList, cons
   }
 }
 
+#if RNSEI
+// Similar to writing the SEI message but does not write the trailing bits
+Void SEIWriter::writeSEImessageHdrPayload(TComBitIf& bs, const SEI *sei, const TComSPS *sps)
+{
+#if ENC_DEC_TRACE
+  if (g_HLSTraceEnable)
+    xTraceSEIHeader();
+#endif
+
+  TComBitCounter bs_count;
+
+  // calculate how large the payload data is
+  // TODO: this would be far nicer if it used vectored buffers
+  bs_count.resetBits();
+  setBitstream(&bs_count);
+
+#if ENC_DEC_TRACE
+  Bool traceEnable = g_HLSTraceEnable;
+  g_HLSTraceEnable = false;
+#endif
+  xWriteSEIpayloadData(bs_count, *sei, sps);
+#if ENC_DEC_TRACE
+  g_HLSTraceEnable = traceEnable;
+#endif
+  UInt payload_data_num_bits = bs_count.getNumberOfWrittenBits();
+  assert(0 == payload_data_num_bits % 8);
+
+  setBitstream(&bs);
+  UInt payloadType = sei->payloadType();
+  for (; payloadType >= 0xff; payloadType -= 0xff)
+  {
+    WRITE_CODE(0xff, 8, "payload_type");
+  }
+  WRITE_CODE(payloadType, 8, "payload_type");
+
+  UInt payloadSize = payload_data_num_bits/8;
+  for (; payloadSize >= 0xff; payloadSize -= 0xff)
+  {
+    WRITE_CODE(0xff, 8, "payload_size");
+  }
+  WRITE_CODE(payloadSize, 8, "payload_size");
+
+  /* payloadData */
+#if ENC_DEC_TRACE
+  if (g_HLSTraceEnable)
+    xTraceSEIMessageType((*sei)->payloadType());
+#endif
+
+  xWriteSEIpayloadData(bs, *sei, sps);
+}
+#endif
 
 Void SEIWriter::xWriteSEIBufferingPeriod(const SEIBufferingPeriod& sei, const TComSPS *sps)
 {
@@ -1237,7 +1293,38 @@ Void SEIWriter::xWriteSEIAmbientViewingEnvironment(const SEIAmbientViewingEnviro
   WRITE_CODE(sei.m_ambientLightY,      16, "ambient_light_y" );
 }
 
-
+#if RNSEI
+Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps)
+{
+  WRITE_CODE(sei.getRNId(),            16, "regional_nesting_id");
+  WRITE_CODE(sei.getNumRectRegions(),   8, "regional_nesting_num_rect_regions");
+  const RNSEIWindowVec regions = sei.getRegions();
+  for(RNSEIWindowVec::const_iterator it = regions.begin(); it != regions.end(); it++)
+  {
+    assert((*it).getWindowEnabledFlag());
+    WRITE_CODE((*it).getRegionId(),            8, "regional_nesting_rect_region_id[i]");
+    WRITE_CODE((*it).getWindowLeftOffset(),   16, "regional_nesting_rect_left_offset[i]");
+    WRITE_CODE((*it).getWindowRightOffset(),  16, "regional_nesting_rect_right_offset[i]");
+    WRITE_CODE((*it).getWindowTopOffset(),    16, "regional_nesting_rect_top_offset[i]");
+    WRITE_CODE((*it).getWindowBottomOffset(), 16, "regional_nesting_rect_bottom_offset[i]");
+  }
+  assert(sei.getNumRnSEIMessage() >= 1);
+  WRITE_CODE(sei.getNumRnSEIMessage()-1,   8, "num_sei_messages_in_regional_nesting_minus1");
+  const std::vector< std::pair< std::vector<UInt>, SEI* > > seiMessages = sei.getRnSEIMessages();
+  std::vector<std::pair< std::vector<UInt>, SEI* > >::const_iterator it;
+  for(it = seiMessages.begin(); it != seiMessages.end(); it++)
+  {
+    std::vector<UInt> listOfRegions = (*it).first;
+    SEI *nestedSEI = (*it).second;
+    WRITE_CODE(listOfRegions.size(),             8, "num_regions_for_sei_message[i]");
+    for(Int j = 0; j < listOfRegions.size(); j++)
+    {
+      WRITE_CODE(listOfRegions[j],               8, "regional_nesting_sei_region_idx[i][j]");
+    }
+    writeSEImessageHdrPayload(bs, nestedSEI, sps);
+  }
+}
+#endif
 Void SEIWriter::xWriteByteAlign()
 {
   if( m_pcBitIf->getNumberOfWrittenBits() % 8 != 0)

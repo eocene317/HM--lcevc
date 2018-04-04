@@ -588,6 +588,23 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
       delete seiColourRemappingInfo;
     }
   }
+#if RNSEI
+  // insert one Regional Nesting SEI for the picture (if the file exists)
+  if (!m_pcCfg->getRegionalNestingSEIFileRoot().empty())
+  {
+    SEIRegionalNesting *seiRegionalNesting= new SEIRegionalNesting();
+    const Bool success = m_seiEncoder.initSEIRegionalNesting(seiRegionalNesting, slice->getPOC() );
+
+    if(success)
+    {
+      seiMessages.push_back(seiRegionalNesting);
+    }
+    else
+    {
+      delete seiRegionalNesting;
+    }
+  }
+#endif
 }
 
 Void TEncGOP::xCreateScalableNestingSEI (SEIMessages& seiMessages, SEIMessages& nestedSeiMessages)

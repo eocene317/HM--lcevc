@@ -96,6 +96,15 @@ public:
   Void initSEITimeCode(SEITimeCode *sei);
   Bool initSEIColourRemappingInfo(SEIColourRemappingInfo *sei, Int currPOC); // returns true on success, false on failure.
   Void initSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics *sei);
+#if RNSEI
+  Void readToneMappingInfoSEI(std::istream &fic, SEIToneMappingInfo *seiToneMappingInfo , Bool &failed );
+  Void readChromaResamplingFilterHintSEI(std::istream &fic, SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Bool &failed );
+  Void readKneeFunctionInfoSEI(std::istream &fic, SEIKneeFunctionInfo *seiKneeFunctionInfo, Bool &failed );
+  Void readColourRemapSEI(std::istream &fic, SEIColourRemappingInfo *seiColorRemappingInfo, Bool &failed );
+  Void readContentColourVolumeSEI(std::istream &fic, SEIContentColourVolume *seiContentColourVolume, Bool &failed );
+  Bool initSEIRegionalNesting(SEIRegionalNesting *sei, Int currPOC); // returns true on success, false on failure.
+  Void readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed );
+#endif
 
   // trailing SEIs
   Void initDecodedPictureHashSEI(SEIDecodedPictureHash *sei, TComPic *pcPic, std::string &rHashString, const BitDepths &bitDepths);

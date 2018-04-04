@@ -106,6 +106,9 @@ public:
 #if RWP_SEI_MESSAGE
     REGION_WISE_PACKING                  = 155, 
 #endif
+#if RNSEI
+    REGIONAL_NESTING                     = 157,
+#endif
   };
 
   SEI() {}
@@ -127,7 +130,6 @@ SEIMessages extractSeisByType(SEIMessages &seiList, SEI::PayloadType seiType);
 
 /// delete list of SEI messages (freeing the referenced objects)
 Void deleteSEIs (SEIMessages &seiList);
-
 
 
 class SEIBufferingPeriod : public SEI
@@ -1001,5 +1003,75 @@ public:
 };
 
 #endif
+#if RNSEI
+// Class that associates an SEI with one more regions
+class RegionalSEI
+{
+public:
+  RegionalSEI(): m_seiMessage(NULL) {}
+  RegionalSEI(SEI *sei, RNSEIWindowVec &regions) 
+  {    
+    if( checkRegionalNestedSEIPayloadType(sei->payloadType()) )  
+    {
+      m_seiMessage = sei;
+      m_regions = regions;
+    }
+    else
+    {
+     m_seiMessage = sei;
+    }    
+  }
+  ~RegionalSEI()
+  {
+    // m_seiMessage not deleted here; pointer should be passed to another object
+  }
+  SEI  *getSEI() { return m_seiMessage; } // TBD - const?
+  UInt getNumRegions() const { return m_regions.size(); }
+  const RNSEIWindowVec& getRegions() { return m_regions; }
+  Void addRegions(RNSEIWindowVec const &regions) { m_regions.insert(m_regions.end(), regions.begin(), regions.end()); }
+  static Bool checkRegionalNestedSEIPayloadType(SEI::PayloadType const payloadType)
+  {
+    switch(payloadType)
+    {
+    case SEI::USER_DATA_REGISTERED_ITU_T_T35:
+    case SEI::USER_DATA_UNREGISTERED:
+    case SEI::FILM_GRAIN_CHARACTERISTICS:
+    case SEI::POST_FILTER_HINT:
+    case SEI::TONE_MAPPING_INFO:
+    case SEI::CHROMA_RESAMPLING_FILTER_HINT:
+    case SEI::KNEE_FUNCTION_INFO: 
+    case SEI::COLOUR_REMAPPING_INFO:
+    case SEI::CONTENT_COLOUR_VOLUME:
+      return true;
+    default:
+      return false;
+    }
 
+}
+private:
+  SEI *m_seiMessage;
+  RNSEIWindowVec m_regions; 
+};
+class SEIRegionalNesting : public SEI
+{
+public:
+  SEIRegionalNesting(): m_rnId(0) {}
+  ~SEIRegionalNesting();
+  PayloadType payloadType() const { return REGIONAL_NESTING; }
+  UInt getNumRnSEIMessage() const  { return m_rnSeiMessages.size(); }
+  UInt getNumRectRegions()  const  { return m_regions.size(); }
+  UInt getRNId()            const  { return m_rnId; }
+  Void addRegion(RNSEIWindow *regn) { m_regions.push_back(*regn); }
+  Void clearRegions() { m_regions.clear(); }
+  Void addRegionalSEI(std::vector<UInt> listInd, SEI *sei) {m_rnSeiMessages.push_back(std::pair<std::vector<UInt>, SEI *>(listInd,sei));}
+  Void addRegionalSEI(RegionalSEI *regSEI);
+  const std::vector< std::pair< std::vector<UInt>, SEI* > >& getRnSEIMessages() const { return m_rnSeiMessages; }
+  const std::vector<RNSEIWindow> &getRegions() const { return m_regions; }
+
+private:
+  UInt m_rnId;
+  RNSEIWindowVec m_regions;
+  std::vector< std::pair< std::vector<UInt>, SEI* > > m_rnSeiMessages;
+};
+#endif
 //! \}

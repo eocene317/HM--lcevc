@@ -50,6 +50,9 @@ public:
   virtual ~SEIWriter() {};
 
   Void writeSEImessages(TComBitIf& bs, const SEIMessages &seiList, const TComSPS *sps, Bool isNested);
+#if RNSEI
+  Void writeSEImessageHdrPayload(TComBitIf& bs, const SEI *sei, const TComSPS *sps);
+#endif
 
 protected:
   Void xWriteSEIBufferingPeriod                   (const SEIBufferingPeriod& sei, const TComSPS *sps);
@@ -104,6 +107,9 @@ protected:
   Void xWriteSEICodedRegionCompletion             (const SEICodedRegionCompletion& sei);
   Void xWriteSEIAlternativeTransferCharacteristics(const SEIAlternativeTransferCharacteristics& sei);
   Void xWriteSEIAmbientViewingEnvironment         (const SEIAmbientViewingEnvironment& sei);
+#if RNSEI
+  Void xWriteSEIRegionalNesting                   (TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps);
+#endif
 
   Void xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSPS *sps);
   Void xWriteByteAlign();
