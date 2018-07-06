@@ -33,7 +33,7 @@
 
 /**
  \file     SEIread.h
- \brief    reading funtionality for SEI messages
+ \brief    reading functionality for SEI messages
  */
 
 #ifndef __SEIREAD__
@@ -58,10 +58,8 @@ public:
   Void parseSEImessage(TComInputBitstream* bs, SEIMessages& seis, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
 
 protected:
-  Void xReadSEImessage                        (SEIMessages& seis, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
-#if RNSEI
-  Void xReadSEImessageHdrPayload              (SEI* &sei, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
-#endif
+  Void xReadSEImessage                        (SEIMessages& seis, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream, const vector<SEI::PayloadType>& allowedSeiTypes, std::string const &typeName);
+  Void xReadSEIPayloadData                    (Int const payloadType, Int const payloadSize, SEI *&sei, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream, std::string const &typeName);
   Void xParseSEIBufferingPeriod               (SEIBufferingPeriod& sei,               UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIPictureTiming                 (SEIPictureTiming& sei,                 UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIPanScanRect                   (SEIPanScanRect& sei,                   UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
@@ -122,6 +120,7 @@ protected:
   Void sei_read_uvlc(std::ostream *pOS,                UInt& ruiCode, const TChar *pSymbolName);
   Void sei_read_svlc(std::ostream *pOS,                Int&  ruiCode, const TChar *pSymbolName);
   Void sei_read_flag(std::ostream *pOS,                UInt& ruiCode, const TChar *pSymbolName);
+  
 };
 
 

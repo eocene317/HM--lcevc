@@ -39,6 +39,85 @@
 #include "SEI.h"
 #include <iostream>
 
+const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
+  SEI::BUFFERING_PERIOD,
+  SEI::PICTURE_TIMING,
+  SEI::PAN_SCAN_RECT,
+  SEI::FILLER_PAYLOAD,
+  SEI::USER_DATA_REGISTERED_ITU_T_T35,
+  SEI::USER_DATA_UNREGISTERED,
+  SEI::RECOVERY_POINT,
+  SEI::SCENE_INFO,
+  SEI::PICTURE_SNAPSHOT,
+  SEI::PROGRESSIVE_REFINEMENT_SEGMENT_START,
+  SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END,
+  SEI::FILM_GRAIN_CHARACTERISTICS,
+  SEI::POST_FILTER_HINT,
+  SEI::TONE_MAPPING_INFO,
+  SEI::FRAME_PACKING,
+  SEI::DISPLAY_ORIENTATION,
+  SEI::GREEN_METADATA,
+  SEI::SOP_DESCRIPTION,
+  SEI::ACTIVE_PARAMETER_SETS,
+  SEI::DECODING_UNIT_INFO,
+  SEI::TEMPORAL_LEVEL0_INDEX,
+  SEI::SCALABLE_NESTING,
+  SEI::REGION_REFRESH_INFO,
+  SEI::NO_DISPLAY,
+  SEI::TIME_CODE,
+  SEI::MASTERING_DISPLAY_COLOUR_VOLUME,
+  SEI::SEGM_RECT_FRAME_PACKING,
+  SEI::TEMP_MOTION_CONSTRAINED_TILE_SETS,
+  SEI::CHROMA_RESAMPLING_FILTER_HINT,
+  SEI::KNEE_FUNCTION_INFO,
+  SEI::COLOUR_REMAPPING_INFO,
+  SEI::DEINTERLACE_FIELD_IDENTIFICATION,
+  SEI::CONTENT_LIGHT_LEVEL_INFO,
+  SEI::DEPENDENT_RAP_INDICATION,
+  SEI::CODED_REGION_COMPLETION,
+  SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS,
+  SEI::AMBIENT_VIEWING_ENVIRONMENT
+#if CCV_SEI_MESSAGE
+  , SEI::CONTENT_COLOUR_VOLUME
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+  , SEI::EQUIRECTANGULAR_PROJECTION
+  , SEI::SPHERE_ROTATION
+  , SEI::OMNI_VIEWPORT
+#endif
+#if CMP_SEI_MESSAGE
+  , SEI::CUBEMAP_PROJECTION
+#endif
+#if RWP_SEI_MESSAGE
+  , SEI::REGION_WISE_PACKING
+#endif
+#if RNSEI
+  , SEI::REGIONAL_NESTING
+#endif
+});
+
+const std::vector<SEI::PayloadType> SEI::suffix_sei_messages({
+  SEI::FILLER_PAYLOAD,
+  SEI::USER_DATA_REGISTERED_ITU_T_T35,
+  SEI::USER_DATA_UNREGISTERED,
+  SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END,
+  SEI::POST_FILTER_HINT,
+  SEI::DECODED_PICTURE_HASH,
+  SEI::CODED_REGION_COMPLETION,
+});
+
+const std::vector<SEI::PayloadType> SEI::regional_nesting_sei_messages({
+  SEI::USER_DATA_REGISTERED_ITU_T_T35,
+  SEI::USER_DATA_UNREGISTERED,
+  SEI::FILM_GRAIN_CHARACTERISTICS,
+  SEI::POST_FILTER_HINT,
+  SEI::TONE_MAPPING_INFO,
+  SEI::CHROMA_RESAMPLING_FILTER_HINT,
+  SEI::KNEE_FUNCTION_INFO,
+  SEI::COLOUR_REMAPPING_INFO,
+  SEI::CONTENT_COLOUR_VOLUME,
+});
+
 SEIMessages getSeisByType(SEIMessages &seiList, SEI::PayloadType seiType)
 {
   SEIMessages result;
@@ -113,6 +192,7 @@ void SEIPictureTiming::copyTo (SEIPictureTiming& target)
   target.m_numNalusInDuMinus1 = m_numNalusInDuMinus1;
   target.m_duCpbRemovalDelayMinus1 = m_duCpbRemovalDelayMinus1;
 }
+
 #if RNSEI
 std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region)
 {
@@ -121,14 +201,16 @@ std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region)
       region.getWindowBottomOffset() << "\n";
   return os;
 }
+
 SEIRegionalNesting::~SEIRegionalNesting()
 {
   // Delete SEI messages
   for(Int i = 0; i < m_rnSeiMessages.size(); i++)
   {
-    delete m_rnSeiMessages[i].second;
+    delete m_rnSeiMessages[i].m_seiMessage;
   }
 }
+
 Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
 {
   // Check if no conflict with region IDs of regions
@@ -148,7 +230,7 @@ Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
     {
       if( (*iterNew) == (*iterRef) )  // Check if same region present
       {
-        listOfIndices.push_back(iterRef - m_regions.begin());  // Add index
+        listOfIndices.push_back((UInt)(iterRef - m_regions.begin()));  // Add index
         foundRegion = true;
       }
       else if( iterRef->checkSameID(*iterNew) )  // Check if there is a region ID class
@@ -165,7 +247,7 @@ Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
     if(addNewRegion)
     {
       // Index is current size of the m_regions;
-      listOfIndices.push_back(m_regions.size());
+      listOfIndices.push_back((UInt)m_regions.size());
       m_regions.push_back((*iterNew));
     }
   }
@@ -174,7 +256,8 @@ Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
     std::cout << "Unable to add regions to the regional nesting SEI.\n";
     exit(1);
   }
-  addRegionalSEI(listOfIndices, regSEI->getSEI());
+  SEIListOfIndices seiWithListOfIndices(listOfIndices, regSEI->dissociateSEIObject());
+  addRegionalSEI(seiWithListOfIndices);
 }
 #endif
 

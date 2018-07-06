@@ -117,6 +117,10 @@ public:
   static const TChar *getSEIMessageString(SEI::PayloadType payloadType);
 
   virtual PayloadType payloadType() const = 0;
+
+  static const std::vector <SEI::PayloadType> prefix_sei_messages;
+  static const std::vector <SEI::PayloadType> suffix_sei_messages;
+  static const std::vector <SEI::PayloadType> regional_nesting_sei_messages;
 };
 
 
@@ -1023,10 +1027,18 @@ public:
   }
   ~RegionalSEI()
   {
-    // m_seiMessage not deleted here; pointer should be passed to another object
+    if(!m_seiMessage)
+    {
+      delete m_seiMessage;
+    }
   }
-  SEI  *getSEI() { return m_seiMessage; } // TBD - const?
-  UInt getNumRegions() const { return m_regions.size(); }
+  SEI *dissociateSEIObject()  // Dissociates SEI; receiver of this function in charge of memory deallocation.
+  {
+    SEI *temp = m_seiMessage; 
+    m_seiMessage = NULL;
+    return temp;
+  }
+  UInt getNumRegions() const { return (UInt) m_regions.size(); }
   const RNSEIWindowVec& getRegions() { return m_regions; }
   Void addRegions(RNSEIWindowVec const &regions) { m_regions.insert(m_regions.end(), regions.begin(), regions.end()); }
   static Bool checkRegionalNestedSEIPayloadType(SEI::PayloadType const payloadType)
@@ -1046,32 +1058,43 @@ public:
     default:
       return false;
     }
-
-}
+  }
 private:
   SEI *m_seiMessage;
   RNSEIWindowVec m_regions; 
 };
+
 class SEIRegionalNesting : public SEI
 {
 public:
   SEIRegionalNesting(): m_rnId(0) {}
   ~SEIRegionalNesting();
+
+  struct SEIListOfIndices
+  {
+    std::vector<UInt> m_listOfIndices;
+    SEI *m_seiMessage;
+    SEIListOfIndices() : m_seiMessage(NULL) {}
+    SEIListOfIndices(std::vector<UInt> listOfIndices, SEI* sei) : m_listOfIndices(listOfIndices), m_seiMessage(sei) {}
+  };
+
   PayloadType payloadType() const { return REGIONAL_NESTING; }
-  UInt getNumRnSEIMessage() const  { return m_rnSeiMessages.size(); }
-  UInt getNumRectRegions()  const  { return m_regions.size(); }
+  UInt getNumRnSEIMessage() const  { return (UInt) m_rnSeiMessages.size(); }
+  UInt getNumRectRegions()  const  { return (UInt) m_regions.size(); }
   UInt getRNId()            const  { return m_rnId; }
   Void addRegion(RNSEIWindow *regn) { m_regions.push_back(*regn); }
   Void clearRegions() { m_regions.clear(); }
-  Void addRegionalSEI(std::vector<UInt> listInd, SEI *sei) {m_rnSeiMessages.push_back(std::pair<std::vector<UInt>, SEI *>(listInd,sei));}
+  Void addRegionalSEI(SEIListOfIndices const &seiWithListOfRegionIndices) 
+  {
+    m_rnSeiMessages.push_back(seiWithListOfRegionIndices);
+  }
   Void addRegionalSEI(RegionalSEI *regSEI);
-  const std::vector< std::pair< std::vector<UInt>, SEI* > >& getRnSEIMessages() const { return m_rnSeiMessages; }
+  const std::vector< SEIListOfIndices >& getRnSEIMessages() const { return m_rnSeiMessages; }
   const std::vector<RNSEIWindow> &getRegions() const { return m_regions; }
-
 private:
   UInt m_rnId;
   RNSEIWindowVec m_regions;
-  std::vector< std::pair< std::vector<UInt>, SEI* > > m_rnSeiMessages;
+  std::vector< SEIListOfIndices > m_rnSeiMessages;
 };
 #endif
 //! \}

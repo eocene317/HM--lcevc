@@ -50,11 +50,10 @@ public:
   virtual ~SEIWriter() {};
 
   Void writeSEImessages(TComBitIf& bs, const SEIMessages &seiList, const TComSPS *sps, Bool isNested);
-#if RNSEI
-  Void writeSEImessageHdrPayload(TComBitIf& bs, const SEI *sei, const TComSPS *sps);
-#endif
 
 protected:
+  Void xWriteSEImessage                           (TComBitIf& bs, const SEI *sei, const TComSPS *sps);
+
   Void xWriteSEIBufferingPeriod                   (const SEIBufferingPeriod& sei, const TComSPS *sps);
   Void xWriteSEIPictureTiming                     (const SEIPictureTiming& sei, const TComSPS *sps);
   Void xWriteSEIPanScanRect                       (const SEIPanScanRect& sei);

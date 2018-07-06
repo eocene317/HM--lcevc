@@ -33,7 +33,7 @@
 
 /**
  \file     SEIread.cpp
- \brief    reading funtionality for SEI messages
+ \brief    reading functionality for SEI messages
  */
 
 #include "TLibCommon/CommonDef.h"
@@ -133,7 +133,19 @@ Void SEIReader::parseSEImessage(TComInputBitstream* bs, SEIMessages& seis, const
   assert(!m_pcBitstream->getNumBitsUntilByteAligned());
   do
   {
-    xReadSEImessage(seis, nalUnitType, sps, pDecodedMessageOutputStream);
+    if(nalUnitType == NAL_UNIT_PREFIX_SEI)
+    {
+      xReadSEImessage(seis, nalUnitType, sps, pDecodedMessageOutputStream, SEI::prefix_sei_messages, std::string("prefix SEI"));
+    }
+    else if (nalUnitType == NAL_UNIT_SUFFIX_SEI)
+    {
+      xReadSEImessage(seis, nalUnitType, sps, pDecodedMessageOutputStream, SEI::suffix_sei_messages, std::string("suffix SEI"));
+    }
+    else
+    {
+      std::cerr << "Unsupported SEI NAL unit type '" << nalUnitType << "'" << std::endl;
+      exit(EXIT_FAILURE);
+    }
 
     /* SEI messages are an integer number of bytes, something has failed
     * in the parsing if bitstream not byte-aligned */
@@ -143,47 +155,11 @@ Void SEIReader::parseSEImessage(TComInputBitstream* bs, SEIMessages& seis, const
 
   xReadRbspTrailingBits();
 }
-
-Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream)
+Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize, SEI *&sei, const NalUnitType nalUnitType, const TComSPS *sps, 
+  std::ostream *pDecodedMessageOutputStream, std::string const &typeName)
 {
-#if ENC_DEC_TRACE
-  xTraceSEIHeader();
-#endif
-  Int payloadType = 0;
-  UInt val = 0;
-
-  do
+  switch(payloadType)
   {
-    sei_read_code(NULL, 8, val, "payload_type");
-    payloadType += val;
-  } while (val==0xFF);
-
-  UInt payloadSize = 0;
-  do
-  {
-    sei_read_code(NULL, 8, val, "payload_size");
-    payloadSize += val;
-  } while (val==0xFF);
-
-#if ENC_DEC_TRACE
-  xTraceSEIMessageType((SEI::PayloadType)payloadType);
-#endif
-
-  /* extract the payload for this single SEI message.
-   * This allows greater safety in erroneous parsing of an SEI message
-   * from affecting subsequent messages.
-   * After parsing the payload, bs needs to be restored as the primary
-   * bitstream.
-   */
-  TComInputBitstream *bs = getBitstream();
-  setBitstream(bs->extractSubstream(payloadSize * 8));
-
-  SEI *sei = NULL;
-
-  if(nalUnitType == NAL_UNIT_PREFIX_SEI)
-  {
-    switch (payloadType)
-    {
     case SEI::BUFFERING_PERIOD:
       if (!sps)
       {
@@ -276,6 +252,10 @@ Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType
     case SEI::SOP_DESCRIPTION:
       sei = new SEISOPDescription;
       xParseSEISOPDescription((SEISOPDescription&) *sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+    case SEI::DECODED_PICTURE_HASH:
+      sei = new SEIDecodedPictureHash;
+      xParseSEIDecodedPictureHash((SEIDecodedPictureHash&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
     case SEI::ACTIVE_PARAMETER_SETS:
       sei = new SEIActiveParameterSets;
@@ -402,67 +382,69 @@ Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType
       for (UInt i = 0; i < payloadSize; i++)
       {
         UInt seiByte;
-        sei_read_code (NULL, 8, seiByte, "unknown prefix SEI payload byte");
+        std::string msg = std::string("unknown ")+typeName+std::string(" payload byte");
+        sei_read_code (NULL, 8, seiByte, msg.c_str());
       }
       printf ("Unknown prefix SEI message (payloadType = %d) was found!\n", payloadType);
       if (pDecodedMessageOutputStream)
       {
-        (*pDecodedMessageOutputStream) << "Unknown prefix SEI message (payloadType = " << payloadType << ") was found!\n";
+        (*pDecodedMessageOutputStream) << "Unknown "<< typeName << " message (payloadType = " << payloadType << ") was found!\n";
       }
       break;
     }
-  }
+}
+
+Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream, const vector<SEI::PayloadType>& allowedSeiTypes, std::string const &typeName)
+{
+#if ENC_DEC_TRACE
+  xTraceSEIHeader();
+#endif
+  Int payloadType = 0;
+  UInt val = 0;
+
+  do
+  {
+    sei_read_code(NULL, 8, val, "payload_type");
+    payloadType += val;
+  } while (val==0xFF);
+
+  UInt payloadSize = 0;
+  do
+  {
+    sei_read_code(NULL, 8, val, "payload_size");
+    payloadSize += val;
+  } while (val==0xFF);
+
+#if ENC_DEC_TRACE
+  xTraceSEIMessageType((SEI::PayloadType)payloadType);
+#endif
+
+  /* extract the payload for this single SEI message.
+   * This allows greater safety in erroneous parsing of an SEI message
+   * from affecting subsequent messages.
+   * After parsing the payload, bs needs to be restored as the primary
+   * bitstream.
+   */
+  TComInputBitstream *bs = getBitstream();
+  setBitstream(bs->extractSubstream(payloadSize * 8));
+
+  SEI *sei = NULL;
+
+  if (std::find(allowedSeiTypes.begin(), allowedSeiTypes.begin(), payloadType) !=  allowedSeiTypes.end())
+  {
+    xReadSEIPayloadData(payloadType, payloadSize, sei, nalUnitType, sps, pDecodedMessageOutputStream, typeName);
+  } 
   else
   {
-    switch (payloadType)
+    for (UInt i = 0; i < payloadSize; i++)
     {
-      case SEI::FILLER_PAYLOAD:
-        sei = new SEIFillerPayload;
-        xParseSEIFillerPayload((SEIFillerPayload&) *sei, payloadSize, pDecodedMessageOutputStream);
-        break;
-      case SEI::USER_DATA_REGISTERED_ITU_T_T35:
-        sei = new SEIUserDataRegistered;
-        xParseSEIUserDataRegistered((SEIUserDataRegistered&) *sei, payloadSize, pDecodedMessageOutputStream);
-        break;
-      case SEI::USER_DATA_UNREGISTERED:
-        sei = new SEIUserDataUnregistered;
-        xParseSEIUserDataUnregistered((SEIUserDataUnregistered&) *sei, payloadSize, pDecodedMessageOutputStream);
-        break;
-      case SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END:
-        sei = new SEIProgressiveRefinementSegmentEnd;
-        xParseSEIProgressiveRefinementSegmentEnd((SEIProgressiveRefinementSegmentEnd&) *sei, payloadSize, pDecodedMessageOutputStream);
-        break;
-      case SEI::POST_FILTER_HINT:
-        if (!sps)
-        {
-          printf ("Warning: post filter hint SEI message, but no active SPS is available. Ignoring.");
-        }
-        else
-        {
-          sei = new SEIPostFilterHint;
-          xParseSEIPostFilterHint((SEIPostFilterHint&) *sei, payloadSize, sps, pDecodedMessageOutputStream);
-        }
-        break;
-      case SEI::DECODED_PICTURE_HASH:
-        sei = new SEIDecodedPictureHash;
-        xParseSEIDecodedPictureHash((SEIDecodedPictureHash&) *sei, payloadSize, pDecodedMessageOutputStream);
-        break;
-      case SEI::CODED_REGION_COMPLETION:
-        sei = new SEICodedRegionCompletion;
-        xParseSEICodedRegionCompletion((SEICodedRegionCompletion&) *sei, payloadSize, pDecodedMessageOutputStream);
-        break;
-      default:
-        for (UInt i = 0; i < payloadSize; i++)
-        {
-          UInt seiByte;
-          sei_read_code( NULL, 8, seiByte, "unknown suffix SEI payload byte");
-        }
-        printf ("Unknown suffix SEI message (payloadType = %d) was found!\n", payloadType);
-        if (pDecodedMessageOutputStream)
-        {
-          (*pDecodedMessageOutputStream) << "Unknown suffix SEI message (payloadType = " << payloadType << ") was found!\n";
-        }
-        break;
+      UInt seiByte;
+      sei_read_code (NULL, 8, seiByte, "unknown SEI payload byte");
+    }
+    printf ("Unknown SEI message (payloadType = %d) was found!\n", payloadType);
+    if (pDecodedMessageOutputStream)
+    {
+      (*pDecodedMessageOutputStream) << "Unknown SEI message (payloadType = " << payloadType << ") was found!\n";
     }
   }
 
@@ -514,149 +496,6 @@ Void SEIReader::xReadSEImessage(SEIMessages& seis, const NalUnitType nalUnitType
   delete getBitstream();
   setBitstream(bs);
 }
-
-#if RNSEI
-Void SEIReader::xReadSEImessageHdrPayload(SEI* &sei, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream)
-{
-#if ENC_DEC_TRACE
-  xTraceSEIHeader();
-#endif
-  Int payloadType = 0;
-  UInt val = 0;
-
-  do
-  {
-    sei_read_code(NULL, 8, val, "payload_type");
-    payloadType += val;
-  } while (val==0xFF);
-
-  UInt payloadSize = 0;
-  do
-  {
-    sei_read_code(NULL, 8, val, "payload_size");
-    payloadSize += val;
-  } while (val==0xFF);
-
-#if ENC_DEC_TRACE
-  xTraceSEIMessageType((SEI::PayloadType)payloadType);
-#endif
-
-  /* extract the payload for this single SEI message.
-   * This allows greater safety in erroneous parsing of an SEI message
-   * from affecting subsequent messages.
-   * After parsing the payload, bs needs to be restored as the primary
-   * bitstream.
-   */
-  TComInputBitstream *bs = getBitstream();
-  setBitstream(bs->extractSubstream(payloadSize * 8));
-
-
-  {
-    switch (payloadType)
-    {
-    case SEI::USER_DATA_REGISTERED_ITU_T_T35:
-      sei = new SEIUserDataRegistered;
-      xParseSEIUserDataRegistered((SEIUserDataRegistered&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::USER_DATA_UNREGISTERED:
-      sei = new SEIUserDataUnregistered;
-      xParseSEIUserDataUnregistered((SEIUserDataUnregistered&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::FILM_GRAIN_CHARACTERISTICS:
-      sei = new SEIFilmGrainCharacteristics;
-      xParseSEIFilmGrainCharacteristics((SEIFilmGrainCharacteristics&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::POST_FILTER_HINT:
-      if (!sps)
-      {
-        printf ("Warning: post filter hint SEI message, but no active SPS is available. Ignoring.");
-      }
-      else
-      {
-        sei = new SEIPostFilterHint;
-        xParseSEIPostFilterHint((SEIPostFilterHint&) *sei, payloadSize, sps, pDecodedMessageOutputStream);
-      }
-      break;
-    case SEI::TONE_MAPPING_INFO:
-      sei = new SEIToneMappingInfo;
-      xParseSEIToneMappingInfo((SEIToneMappingInfo&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::CHROMA_RESAMPLING_FILTER_HINT:
-      sei = new SEIChromaResamplingFilterHint;
-      xParseSEIChromaResamplingFilterHint((SEIChromaResamplingFilterHint&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::KNEE_FUNCTION_INFO:
-      sei = new SEIKneeFunctionInfo;
-      xParseSEIKneeFunctionInfo((SEIKneeFunctionInfo&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::COLOUR_REMAPPING_INFO:
-      sei = new SEIColourRemappingInfo;
-      xParseSEIColourRemappingInfo((SEIColourRemappingInfo&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    case SEI::CONTENT_COLOUR_VOLUME:
-      sei = new SEIContentColourVolume;
-      xParseSEIContentColourVolume((SEIContentColourVolume&) *sei, payloadSize, pDecodedMessageOutputStream);
-      break;
-    default:
-      for (UInt i = 0; i < payloadSize; i++)
-      {
-        UInt seiByte;
-        sei_read_code (NULL, 8, seiByte, "unknown prefix SEI payload byte");
-      }
-      printf ("Unknown prefix SEI message (payloadType = %d) was found!\n", payloadType);
-      if (pDecodedMessageOutputStream)
-      {
-        (*pDecodedMessageOutputStream) << "Unknown prefix SEI message (payloadType = " << payloadType << ") was found!\n";
-      }
-      break;
-    }
-  }
-
-
-  /* By definition the underlying bitstream terminates in a byte-aligned manner.
-   * 1. Extract all bar the last MIN(bitsremaining,nine) bits as reserved_payload_extension_data
-   * 2. Examine the final 8 bits to determine the payload_bit_equal_to_one marker
-   * 3. Extract the remainingreserved_payload_extension_data bits.
-   *
-   * If there are fewer than 9 bits available, extract them.
-   */
-  Int payloadBitsRemaining = getBitstream()->getNumBitsLeft();
-  if (payloadBitsRemaining) /* more_data_in_payload() */
-  {
-    for (; payloadBitsRemaining > 9; payloadBitsRemaining--)
-    {
-      UInt reservedPayloadExtensionData;
-      sei_read_code ( pDecodedMessageOutputStream, 1, reservedPayloadExtensionData, "reserved_payload_extension_data");
-    }
-
-    /* 2 */
-    Int finalBits = getBitstream()->peekBits(payloadBitsRemaining);
-    Int finalPayloadBits = 0;
-    for (Int mask = 0xff; finalBits & (mask >> finalPayloadBits); finalPayloadBits++)
-    {
-      continue;
-    }
-
-    /* 3 */
-    for (; payloadBitsRemaining > 9 - finalPayloadBits; payloadBitsRemaining--)
-    {
-      UInt reservedPayloadExtensionData;
-      sei_read_flag ( 0, reservedPayloadExtensionData, "reserved_payload_extension_data");
-    }
-
-    UInt dummy;
-    sei_read_flag( 0, dummy, "payload_bit_equal_to_one"); payloadBitsRemaining--;
-    while (payloadBitsRemaining)
-    {
-      sei_read_flag( 0, dummy, "payload_bit_equal_to_zero"); payloadBitsRemaining--;
-    }
-  }
-
-  /* restore primary bitstream for sei_message */
-  delete getBitstream();
-  setBitstream(bs);
-}
-#endif
 
 
 Void SEIReader::xParseSEIBufferingPeriod(SEIBufferingPeriod& sei, UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream)
@@ -1319,7 +1158,14 @@ Void SEIReader::xParseSEIScalableNesting(SEIScalableNesting& sei, const NalUnitT
   // read nested SEI messages
   do
   {
-    xReadSEImessage(sei.m_nestedSEIs, nalUnitType, sps, pDecodedMessageOutputStream);
+    if(nalUnitType == NAL_UNIT_PREFIX_SEI)
+    {
+      xReadSEImessage(sei.m_nestedSEIs, nalUnitType, sps, pDecodedMessageOutputStream, SEI::prefix_sei_messages, std::string("scalable nested SEI"));
+    }
+    else
+    {
+      xReadSEImessage(sei.m_nestedSEIs, nalUnitType, sps, pDecodedMessageOutputStream, SEI::suffix_sei_messages, std::string("scalable nested SEI"));
+    }
   } while (m_pcBitstream->getNumBitsLeft() > 8);
 
   if (pDecodedMessageOutputStream)
@@ -1943,20 +1789,19 @@ Void SEIReader::xParseSEIRegionalNesting( SEIRegionalNesting& sei, UInt payloadS
   sei_read_code(pDecodedMessageOutputStream,  8, uiCode, "num_sei_messages_in_regional_nesting_minus1");      numSEIs = uiCode + 1;
   for(UInt i = 0; i < numSEIs; i++)
   {
-    std::vector<UInt> regionsForSEI;
+    SEIRegionalNesting::SEIListOfIndices seiWithRegionIndices;
     UInt numRegionsForSEI;
     sei_read_code(pDecodedMessageOutputStream,  8, uiCode, "num_regions_for_sei_message[i]"); numRegionsForSEI = uiCode;
     for(UInt j = 0; j < numRegionsForSEI; j++) 
     {
       sei_read_code(pDecodedMessageOutputStream,  8, uiCode, "regional_nesting_sei_region_idx[i][j]");
-      regionsForSEI.push_back(uiCode);
+      seiWithRegionIndices.m_listOfIndices.push_back(uiCode);
     }
-    SEIMessages seis;
 
-    SEI *seiReg = NULL;
-    xReadSEImessageHdrPayload(seiReg, sps, pDecodedMessageOutputStream);
-
-    sei.addRegionalSEI( regionsForSEI, seiReg) ;
+    SEIMessages seiReg;
+    xReadSEImessage(seiReg, NAL_UNIT_PREFIX_SEI, sps, pDecodedMessageOutputStream, SEI::regional_nesting_sei_messages, std::string(""));
+    seiWithRegionIndices.m_seiMessage = seiReg.front();
+    sei.addRegionalSEI( seiWithRegionIndices ) ;
   }
 }
 #endif
