@@ -657,6 +657,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   Int tmpSliceSegmentMode;
   Int tmpDecodedPictureHashSEIMappedType;
   string inputColourSpaceConvert;
+  string inputPathPrefix;
   UIProfileName UIProfile;
   Int saoOffsetBitShift[MAX_NUM_CHANNEL_TYPE];
 
@@ -734,6 +735,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 
   // File, I/O and source parameters
   ("InputFile,i",                                     m_inputFileName,                             string(""), "Original YUV input file name")
+  ("inputPathPrefix,-ipp",                            inputPathPrefix,                             string(""), "pathname to prepend to input filename")
   ("BitstreamFile,b",                                 m_bitstreamFileName,                         string(""), "Bitstream output file name")
   ("ReconFile,o",                                     m_reconFileName,                             string(""), "Reconstructed YUV output file name")
   ("SourceWidth,-wdt",                                m_iSourceWidth,                                       0, "Source picture width")
@@ -1260,6 +1262,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
    */
   m_inputFileWidth  = m_iSourceWidth;
   m_inputFileHeight = m_iSourceHeight;
+  m_inputFileName   = inputPathPrefix + m_inputFileName;
 
   m_framesToBeEncoded = ( m_framesToBeEncoded + m_temporalSubsampleRatio - 1 ) / m_temporalSubsampleRatio;
   m_adIntraLambdaModifier = cfg_adIntraLambdaModifier.values;
