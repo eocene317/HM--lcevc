@@ -1494,8 +1494,8 @@ Void TDecCavlc::parseSliceHeader (TComSlice* pcSlice, ParameterSetManager *param
     READ_UVLC(uiCode,"slice_segment_header_extension_length");
     for(Int i=0; i<uiCode; i++)
     {
-      UInt ignore;
-      READ_CODE(8,ignore,"slice_segment_header_extension_data_byte");
+      UInt ignored;
+      READ_CODE(8,ignored,"slice_segment_header_extension_data_byte");
     }
   }
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
