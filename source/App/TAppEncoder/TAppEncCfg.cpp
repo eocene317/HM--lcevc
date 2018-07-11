@@ -735,7 +735,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 
   // File, I/O and source parameters
   ("InputFile,i",                                     m_inputFileName,                             string(""), "Original YUV input file name")
-  ("inputPathPrefix,-ipp",                            inputPathPrefix,                             string(""), "pathname to prepend to input filename")
+  ("InputPathPrefix,-ipp",                            inputPathPrefix,                             string(""), "pathname to prepend to input filename")
   ("BitstreamFile,b",                                 m_bitstreamFileName,                         string(""), "Bitstream output file name")
   ("ReconFile,o",                                     m_reconFileName,                             string(""), "Reconstructed YUV output file name")
   ("SourceWidth,-wdt",                                m_iSourceWidth,                                       0, "Source picture width")
