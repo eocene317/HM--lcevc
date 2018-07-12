@@ -110,6 +110,26 @@ std::istringstream &operator>>(std::istringstream &in, GOPEntry &entry);     //i
 /// encoder configuration class
 class TEncCfg
 {
+public:
+
+struct TEncSEIKneeFunctionInformation
+{
+  struct KneePointPair
+  {
+    Int inputKneePoint;
+    Int outputKneePoint;
+  };
+
+  Int       m_kneeFunctionId;
+  Bool      m_kneeFunctionCancelFlag;
+  Bool      m_kneeFunctionPersistenceFlag;
+  Int       m_inputDRange;
+  Int       m_inputDispLuminance;
+  Int       m_outputDRange;
+  Int       m_outputDispLuminance;
+  std::vector<KneePointPair> m_kneeSEIKneePointPairs;
+};
+
 protected:
   //==== File I/O ========
   Int       m_iFrameRate;
@@ -339,16 +359,7 @@ protected:
   Int       m_timeCodeSEINumTs;
   TComSEITimeSet   m_timeSetArray[MAX_TIMECODE_SEI_SETS];
   Bool      m_kneeSEIEnabled;
-  Int       m_kneeSEIId;
-  Bool      m_kneeSEICancelFlag;
-  Bool      m_kneeSEIPersistenceFlag;
-  Int       m_kneeSEIInputDrange;
-  Int       m_kneeSEIInputDispLuminance;
-  Int       m_kneeSEIOutputDrange;
-  Int       m_kneeSEIOutputDispLuminance;
-  Int       m_kneeSEINumKneePointsMinus1;
-  Int*      m_kneeSEIInputKneePoint;
-  Int*      m_kneeSEIOutputKneePoint;
+  TEncSEIKneeFunctionInformation m_kneeFunctionInformationSEI;
   std::string m_colourRemapSEIFileRoot;          ///< SEI Colour Remapping File (initialized from external file)
   TComSEIMasteringDisplay m_masteringDisplay;
   Bool      m_alternativeTransferCharacteristicsSEIEnabled;
@@ -356,6 +367,80 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
+#if CCV_SEI_MESSAGE
+  Bool      m_ccvSEIEnabled;
+  Bool      m_ccvSEICancelFlag;
+  Bool      m_ccvSEIPersistenceFlag;
+  Bool      m_ccvSEIPrimariesPresentFlag;
+  Bool      m_ccvSEIMinLuminanceValuePresentFlag;
+  Bool      m_ccvSEIMaxLuminanceValuePresentFlag;
+  Bool      m_ccvSEIAvgLuminanceValuePresentFlag;
+  Double    m_ccvSEIPrimariesX[MAX_NUM_COMPONENT]; 
+  Double    m_ccvSEIPrimariesY[MAX_NUM_COMPONENT];
+  Double    m_ccvSEIMinLuminanceValue;
+  Double    m_ccvSEIMaxLuminanceValue;
+  Double    m_ccvSEIAvgLuminanceValue;
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+  Bool      m_erpSEIEnabled;          
+  Bool      m_erpSEICancelFlag;
+  Bool      m_erpSEIPersistenceFlag;
+  Bool      m_erpSEIGuardBandFlag;
+  UInt      m_erpSEIGuardBandType;
+  UInt      m_erpSEILeftGuardBandWidth;
+  UInt      m_erpSEIRightGuardBandWidth;
+  Bool      m_sphereRotationSEIEnabled;          
+  Bool      m_sphereRotationSEICancelFlag;
+  Bool      m_sphereRotationSEIPersistenceFlag;
+  Int       m_sphereRotationSEIYaw;
+  Int       m_sphereRotationSEIPitch;
+  Int       m_sphereRotationSEIRoll;
+  Bool      m_omniViewportSEIEnabled;          
+  UInt      m_omniViewportSEIId;
+  Bool      m_omniViewportSEICancelFlag;
+  Bool      m_omniViewportSEIPersistenceFlag;
+  UInt      m_omniViewportSEICntMinus1;
+  std::vector<Int>  m_omniViewportSEIAzimuthCentre;
+  std::vector<Int>  m_omniViewportSEIElevationCentre;
+  std::vector<Int>  m_omniViewportSEITiltCentre;
+  std::vector<UInt> m_omniViewportSEIHorRange;
+  std::vector<UInt> m_omniViewportSEIVerRange; 
+#endif
+#if CMP_SEI_MESSAGE
+  Bool                  m_cmpSEIEnabled;
+  Bool                  m_cmpSEICmpCancelFlag;
+  Bool                  m_cmpSEICmpPersistenceFlag;
+#endif
+#if RWP_SEI_MESSAGE
+  Bool                  m_rwpSEIEnabled;
+  Bool                  m_rwpSEIRwpCancelFlag;
+  Bool                  m_rwpSEIRwpPersistenceFlag;
+  Bool                  m_rwpSEIConstituentPictureMatchingFlag;
+  Int                   m_rwpSEINumPackedRegions;
+  Int                   m_rwpSEIProjPictureWidth;
+  Int                   m_rwpSEIProjPictureHeight;
+  Int                   m_rwpSEIPackedPictureWidth;
+  Int                   m_rwpSEIPackedPictureHeight;
+  std::vector<UChar>    m_rwpSEIRwpTransformType;
+  std::vector<Bool>     m_rwpSEIRwpGuardBandFlag;
+  std::vector<UInt>     m_rwpSEIProjRegionWidth;
+  std::vector<UInt>     m_rwpSEIProjRegionHeight;
+  std::vector<UInt>     m_rwpSEIRwpSEIProjRegionTop;
+  std::vector<UInt>     m_rwpSEIProjRegionLeft;
+  std::vector<UShort>   m_rwpSEIPackedRegionWidth;
+  std::vector<UShort>   m_rwpSEIPackedRegionHeight;
+  std::vector<UShort>   m_rwpSEIPackedRegionTop;
+  std::vector<UShort>   m_rwpSEIPackedRegionLeft;
+  std::vector<UChar>    m_rwpSEIRwpLeftGuardBandWidth;
+  std::vector<UChar>    m_rwpSEIRwpRightGuardBandWidth;
+  std::vector<UChar>    m_rwpSEIRwpTopGuardBandHeight;
+  std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
+  std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
+  std::vector<UChar>    m_rwpSEIRwpGuardBandType;
+#endif
+#if RNSEI
+  std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
+#endif
   //====== Weighted Prediction ========
   Bool      m_useWeightedPred;       //< Use of Weighting Prediction (P_SLICE)
   Bool      m_useWeightedBiPred;    //< Use of Bi-directional Weighting Prediction (B_SLICE)
@@ -857,26 +942,144 @@ public:
   const TComSEITimeSet &getTimeSet(Int index) const                  { return m_timeSetArray[index]; }
   Void  setKneeSEIEnabled(Int b)                                     { m_kneeSEIEnabled = b; }
   Bool  getKneeSEIEnabled()                                          { return m_kneeSEIEnabled; }
-  Void  setKneeSEIId(Int b)                                          { m_kneeSEIId = b; }
-  Int   getKneeSEIId()                                               { return m_kneeSEIId; }
-  Void  setKneeSEICancelFlag(Bool b)                                 { m_kneeSEICancelFlag=b; }
-  Bool  getKneeSEICancelFlag()                                       { return m_kneeSEICancelFlag; }
-  Void  setKneeSEIPersistenceFlag(Bool b)                            { m_kneeSEIPersistenceFlag = b; }
-  Bool  getKneeSEIPersistenceFlag()                                  { return m_kneeSEIPersistenceFlag; }
-  Void  setKneeSEIInputDrange(Int b)                                 { m_kneeSEIInputDrange = b; }
-  Int   getKneeSEIInputDrange()                                      { return m_kneeSEIInputDrange; }
-  Void  setKneeSEIInputDispLuminance(Int b)                          { m_kneeSEIInputDispLuminance = b; }
-  Int   getKneeSEIInputDispLuminance()                               { return m_kneeSEIInputDispLuminance; }
-  Void  setKneeSEIOutputDrange(Int b)                                { m_kneeSEIOutputDrange = b; }
-  Int   getKneeSEIOutputDrange()                                     { return m_kneeSEIOutputDrange; }
-  Void  setKneeSEIOutputDispLuminance(Int b)                         { m_kneeSEIOutputDispLuminance = b; }
-  Int   getKneeSEIOutputDispLuminance()                              { return m_kneeSEIOutputDispLuminance; }
-  Void  setKneeSEINumKneePointsMinus1(Int b)                         { m_kneeSEINumKneePointsMinus1 = b; }
-  Int   getKneeSEINumKneePointsMinus1()                              { return m_kneeSEINumKneePointsMinus1; }
-  Void  setKneeSEIInputKneePoint(Int *p)                             { m_kneeSEIInputKneePoint = p; }
-  Int*  getKneeSEIInputKneePoint()                                   { return m_kneeSEIInputKneePoint; }
-  Void  setKneeSEIOutputKneePoint(Int *p)                            { m_kneeSEIOutputKneePoint = p; }
-  Int*  getKneeSEIOutputKneePoint()                                  { return m_kneeSEIOutputKneePoint; }
+  Void  setKneeFunctionInformationSEI(const TEncSEIKneeFunctionInformation &seiknee) { m_kneeFunctionInformationSEI = seiknee; }
+  const TEncSEIKneeFunctionInformation &getKneeFunctionInformationSEI() const        { return m_kneeFunctionInformationSEI; }
+
+#if CCV_SEI_MESSAGE
+  Void     setCcvSEIEnabled(Bool b)                                  { m_ccvSEIEnabled = b; }
+  Bool     getCcvSEIEnabled()                                        { return m_ccvSEIEnabled; }
+  Void     setCcvSEICancelFlag(Bool b)                               { m_ccvSEICancelFlag = b; }
+  Bool     getCcvSEICancelFlag()                                     { return m_ccvSEICancelFlag; }
+  Void     setCcvSEIPersistenceFlag(Bool b)                          { m_ccvSEIPersistenceFlag = b; }
+  Bool     getCcvSEIPersistenceFlag()                                { return m_ccvSEIPersistenceFlag; }
+  Void     setCcvSEIPrimariesPresentFlag(Bool b)                     { m_ccvSEIPrimariesPresentFlag = b; }
+  Bool     getCcvSEIPrimariesPresentFlag()                           { return m_ccvSEIPrimariesPresentFlag; }
+  Void     setCcvSEIMinLuminanceValuePresentFlag(Bool b)             { m_ccvSEIMinLuminanceValuePresentFlag = b; }
+  Bool     getCcvSEIMinLuminanceValuePresentFlag()                   { return m_ccvSEIMinLuminanceValuePresentFlag; }
+  Void     setCcvSEIMaxLuminanceValuePresentFlag(Bool b)             { m_ccvSEIMaxLuminanceValuePresentFlag = b; }
+  Bool     getCcvSEIMaxLuminanceValuePresentFlag()                   { return m_ccvSEIMaxLuminanceValuePresentFlag; }
+  Void     setCcvSEIAvgLuminanceValuePresentFlag(Bool b)             { m_ccvSEIAvgLuminanceValuePresentFlag = b; }
+  Bool     getCcvSEIAvgLuminanceValuePresentFlag()                   { return m_ccvSEIAvgLuminanceValuePresentFlag; }
+  Void     setCcvSEIPrimariesX(Double dValue, Int index)             { m_ccvSEIPrimariesX[index] = dValue; }
+  Double   getCcvSEIPrimariesX(Int index)                            { return m_ccvSEIPrimariesX[index]; }
+  Void     setCcvSEIPrimariesY(Double dValue, Int index)             { m_ccvSEIPrimariesY[index] = dValue; }
+  Double   getCcvSEIPrimariesY(Int index)                            { return m_ccvSEIPrimariesY[index]; }
+  Void     setCcvSEIMinLuminanceValue  (Double dValue)               { m_ccvSEIMinLuminanceValue = dValue; }
+  Double   getCcvSEIMinLuminanceValue  ()                            { return m_ccvSEIMinLuminanceValue;  }
+  Void     setCcvSEIMaxLuminanceValue  (Double dValue)               { m_ccvSEIMaxLuminanceValue = dValue; }
+  Double   getCcvSEIMaxLuminanceValue  ()                            { return m_ccvSEIMaxLuminanceValue;  }
+  Void     setCcvSEIAvgLuminanceValue  (Double dValue)               { m_ccvSEIAvgLuminanceValue = dValue; }
+  Double   getCcvSEIAvgLuminanceValue  ()                            { return m_ccvSEIAvgLuminanceValue;  }
+#endif
+
+#if ERP_SR_OV_SEI_MESSAGE
+  Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
+  Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }
+  Void  setErpSEICancelFlag(Bool b)                                  { m_erpSEICancelFlag = b; }                                                         
+  Bool  getErpSEICancelFlag()                                        { return m_erpSEICancelFlag; }
+  Void  setErpSEIPersistenceFlag(Bool b)                             { m_erpSEIPersistenceFlag = b; }                                                         
+  Bool  getErpSEIPersistenceFlag()                                   { return m_erpSEIPersistenceFlag; }
+  Void  setErpSEIGuardBandFlag(Bool b)                               { m_erpSEIGuardBandFlag = b; }                                                         
+  Bool  getErpSEIGuardBandFlag()                                     { return m_erpSEIGuardBandFlag; }
+  Void  setErpSEIGuardBandType(UInt b)                               { m_erpSEIGuardBandType = b; } 
+  UInt  getErpSEIGuardBandType()                                     { return m_erpSEIGuardBandType; }  
+  Void  setErpSEILeftGuardBandWidth(UInt b)                          { m_erpSEILeftGuardBandWidth = b; } 
+  UInt  getErpSEILeftGuardBandWidth()                                { return m_erpSEILeftGuardBandWidth; }  
+  Void  setErpSEIRightGuardBandWidth(UInt b)                         { m_erpSEIRightGuardBandWidth = b; } 
+  UInt  getErpSEIRightGuardBandWidth()                               { return m_erpSEIRightGuardBandWidth; }      
+  Void  setSphereRotationSEIEnabled(Bool b)                          { m_sphereRotationSEIEnabled = b; }                                                         
+  Bool  getSphereRotationSEIEnabled()                                { return m_sphereRotationSEIEnabled; }
+  Void  setSphereRotationSEICancelFlag(Bool b)                       { m_sphereRotationSEICancelFlag = b; }                                                         
+  Bool  getSphereRotationSEICancelFlag()                             { return m_sphereRotationSEICancelFlag; }
+  Void  setSphereRotationSEIPersistenceFlag(Bool b)                  { m_sphereRotationSEIPersistenceFlag = b; }
+  Bool  getSphereRotationSEIPersistenceFlag()                        { return m_sphereRotationSEIPersistenceFlag; }
+  Void  setSphereRotationSEIYaw(Int b)                               { m_sphereRotationSEIYaw = b; }
+  Int   getSphereRotationSEIYaw()                                    { return m_sphereRotationSEIYaw; }
+  Void  setSphereRotationSEIPitch(Int b)                             { m_sphereRotationSEIPitch = b; }
+  Int   getSphereRotationSEIPitch()                                  { return m_sphereRotationSEIPitch; }
+  Void  setSphereRotationSEIRoll(Int b)                              { m_sphereRotationSEIRoll = b; }
+  Int   getSphereRotationSEIRoll()                                   { return m_sphereRotationSEIRoll; }
+  Void  setOmniViewportSEIEnabled(Bool b)                            { m_omniViewportSEIEnabled = b; }
+  Bool  getOmniViewportSEIEnabled()                                  { return m_omniViewportSEIEnabled; }
+  Void  setOmniViewportSEIId(UInt b)                                 { m_omniViewportSEIId = b; }
+  UInt  getOmniViewportSEIId()                                       { return m_omniViewportSEIId; }
+  Void  setOmniViewportSEICancelFlag(Bool b)                         { m_omniViewportSEICancelFlag = b; }
+  Bool  getOmniViewportSEICancelFlag()                               { return m_omniViewportSEICancelFlag; }
+  Void  setOmniViewportSEIPersistenceFlag(Bool b)                    { m_omniViewportSEIPersistenceFlag = b; }
+  Bool  getOmniViewportSEIPersistenceFlag()                          { return m_omniViewportSEIPersistenceFlag; }
+  Void  setOmniViewportSEICntMinus1(UInt b)                          { m_omniViewportSEICntMinus1 = b; }
+  UInt  getOmniViewportSEICntMinus1()                                { return m_omniViewportSEICntMinus1; }
+  Void  setOmniViewportSEIAzimuthCentre(const std::vector<Int>& vi)  { m_omniViewportSEIAzimuthCentre = vi; }
+  Int   getOmniViewportSEIAzimuthCentre(Int idx)                     { return m_omniViewportSEIAzimuthCentre[idx]; }
+  Void  setOmniViewportSEIElevationCentre(const std::vector<Int>& vi){ m_omniViewportSEIElevationCentre = vi; }
+  Int   getOmniViewportSEIElevationCentre(Int idx)                   { return m_omniViewportSEIElevationCentre[idx]; }
+  Void  setOmniViewportSEITiltCentre(const std::vector<Int>& vi)     { m_omniViewportSEITiltCentre = vi; }
+  Int   getOmniViewportSEITiltCentre(Int idx)                        { return m_omniViewportSEITiltCentre[idx]; }
+  Void  setOmniViewportSEIHorRange(const std::vector<UInt>& vi)      { m_omniViewportSEIHorRange = vi; }
+  UInt  getOmniViewportSEIHorRange(Int idx)                          { return m_omniViewportSEIHorRange[idx]; }
+  Void  setOmniViewportSEIVerRange(const std::vector<UInt>& vi)      { m_omniViewportSEIVerRange = vi; } 
+  UInt  getOmniViewportSEIVerRange(Int idx)                          { return m_omniViewportSEIVerRange[idx]; }
+#endif
+#if CMP_SEI_MESSAGE
+  Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }
+  Bool     getCmpSEIEnabled()                                        { return m_cmpSEIEnabled; }
+  Void     setCmpSEICmpCancelFlag(Bool b)                            { m_cmpSEICmpCancelFlag = b; }
+  Bool     getCmpSEICmpCancelFlag()                                  { return m_cmpSEICmpCancelFlag; }
+  Void     setCmpSEICmpPersistenceFlag(Bool b)                       { m_cmpSEICmpPersistenceFlag = b; }
+  Bool     getCmpSEICmpPersistenceFlag()                             { return m_cmpSEICmpPersistenceFlag; }
+#endif
+#if RWP_SEI_MESSAGE
+  Void     setRwpSEIEnabled(Bool b)                                                                     { m_rwpSEIEnabled = b; }
+  Bool     getRwpSEIEnabled()                                                                           { return m_rwpSEIEnabled; }
+  Void     setRwpSEIRwpCancelFlag(Bool b)                                                               { m_rwpSEIRwpCancelFlag = b; }
+  Bool     getRwpSEIRwpCancelFlag()                                                                     { return m_rwpSEIRwpCancelFlag; }
+  Void     setRwpSEIRwpPersistenceFlag (Bool b)                                                         { m_rwpSEIRwpPersistenceFlag = b; }
+  Bool     getRwpSEIRwpPersistenceFlag ()                                                               { return m_rwpSEIRwpPersistenceFlag; }
+  Void     setRwpSEIConstituentPictureMatchingFlag (Bool b)                                             { m_rwpSEIConstituentPictureMatchingFlag = b; }
+  Bool     getRwpSEIConstituentPictureMatchingFlag ()                                                   { return m_rwpSEIConstituentPictureMatchingFlag; }
+  Void     setRwpSEINumPackedRegions (Int value)                                                        { m_rwpSEINumPackedRegions = value; }
+  Int      getRwpSEINumPackedRegions ()                                                                 { return m_rwpSEINumPackedRegions; }
+  Void     setRwpSEIProjPictureWidth (Int value)                                                        { m_rwpSEIProjPictureWidth = value; }
+  Int      getRwpSEIProjPictureWidth ()                                                                 { return m_rwpSEIProjPictureWidth; }
+  Void     setRwpSEIProjPictureHeight (Int value)                                                       { m_rwpSEIProjPictureHeight = value; }
+  Int      getRwpSEIProjPictureHeight ()                                                                { return m_rwpSEIProjPictureHeight; }
+  Void     setRwpSEIPackedPictureWidth (Int value)                                                      { m_rwpSEIPackedPictureWidth = value; }
+  Int      getRwpSEIPackedPictureWidth ()                                                               { return m_rwpSEIPackedPictureWidth; }
+  Void     setRwpSEIPackedPictureHeight (Int value)                                                     { m_rwpSEIPackedPictureHeight = value; }
+  Int      getRwpSEIPackedPictureHeight ()                                                              { return m_rwpSEIPackedPictureHeight; }
+  Void     setRwpSEIRwpTransformType(const std::vector<UChar>& rwpTransformType)                        { m_rwpSEIRwpTransformType =rwpTransformType; }
+  UChar    getRwpSEIRwpTransformType(UInt idx) const                                                    { return m_rwpSEIRwpTransformType[idx]; } 
+  Void     setRwpSEIRwpGuardBandFlag(const std::vector<Bool>& rwpGuardBandFlag)                         { m_rwpSEIRwpGuardBandFlag = rwpGuardBandFlag; }
+  Bool     getRwpSEIRwpGuardBandFlag(UInt idx) const                                                    { return m_rwpSEIRwpGuardBandFlag[idx]; }
+  Void     setRwpSEIProjRegionWidth(const std::vector<UInt>& projRegionWidth)                           { m_rwpSEIProjRegionWidth = projRegionWidth; }
+  UInt     getRwpSEIProjRegionWidth(UInt idx) const                                                     { return m_rwpSEIProjRegionWidth[idx]; } 
+  Void     setRwpSEIProjRegionHeight(const std::vector<UInt>& projRegionHeight)                         { m_rwpSEIProjRegionHeight = projRegionHeight; } 
+  UInt     getRwpSEIProjRegionHeight(UInt idx) const                                                    { return m_rwpSEIProjRegionHeight[idx]; } 
+  Void     setRwpSEIRwpSEIProjRegionTop(const std::vector<UInt>& projRegionTop)                         { m_rwpSEIRwpSEIProjRegionTop = projRegionTop; }
+  UInt     getRwpSEIRwpSEIProjRegionTop(UInt idx) const                                                 { return m_rwpSEIRwpSEIProjRegionTop[idx]; } 
+  Void     setRwpSEIProjRegionLeft(const std::vector<UInt>& projRegionLeft)                             { m_rwpSEIProjRegionLeft = projRegionLeft; } 
+  UInt     getRwpSEIProjRegionLeft(UInt idx) const                                                      { return m_rwpSEIProjRegionLeft[idx]; } 
+  Void    setRwpSEIPackedRegionWidth(const std::vector<UShort>& packedRegionWidth)                      { m_rwpSEIPackedRegionWidth  = packedRegionWidth; }
+  UShort  getRwpSEIPackedRegionWidth(UInt idx) const                                                    { return m_rwpSEIPackedRegionWidth[idx]; } 
+  Void    setRwpSEIPackedRegionHeight(const std::vector<UShort>& packedRegionHeight)                    { m_rwpSEIPackedRegionHeight = packedRegionHeight; }
+  UShort  getRwpSEIPackedRegionHeight(UInt idx) const                                                   { return m_rwpSEIPackedRegionHeight[idx]; } 
+  Void    setRwpSEIPackedRegionTop(const std::vector<UShort>& packedRegionTop)                          { m_rwpSEIPackedRegionTop = packedRegionTop; }
+  UShort  getRwpSEIPackedRegionTop(UInt idx) const                                                      { return m_rwpSEIPackedRegionTop[idx]; } 
+  Void    setRwpSEIPackedRegionLeft(const std::vector<UShort>& packedRegionLeft)                        { m_rwpSEIPackedRegionLeft = packedRegionLeft; } 
+  UShort  getRwpSEIPackedRegionLeft(UInt idx) const                                                     { return m_rwpSEIPackedRegionLeft[idx]; }
+  Void    setRwpSEIRwpLeftGuardBandWidth(const std::vector<UChar>& rwpLeftGuardBandWidth)               { m_rwpSEIRwpLeftGuardBandWidth = rwpLeftGuardBandWidth; } 
+  UChar   getRwpSEIRwpLeftGuardBandWidth(UInt idx) const                                                { return m_rwpSEIRwpLeftGuardBandWidth[idx]; }
+  Void    setRwpSEIRwpRightGuardBandWidth(const std::vector<UChar>& rwpRightGuardBandWidth)             { m_rwpSEIRwpRightGuardBandWidth = rwpRightGuardBandWidth; } 
+  UChar   getRwpSEIRwpRightGuardBandWidth(UInt idx) const                                               { return m_rwpSEIRwpRightGuardBandWidth[idx]; } 
+  Void    setRwpSEIRwpTopGuardBandHeight(const std::vector<UChar>& rwpTopGuardBandHeight)               { m_rwpSEIRwpTopGuardBandHeight = rwpTopGuardBandHeight; } 
+  UChar   getRwpSEIRwpTopGuardBandHeight(UInt idx) const                                                { return m_rwpSEIRwpTopGuardBandHeight[idx]; }
+  Void    setRwpSEIRwpBottomGuardBandHeight(const std::vector<UChar>& rwpBottomGuardBandHeight)         { m_rwpSEIRwpBottomGuardBandHeight = rwpBottomGuardBandHeight; }
+  UChar   getRwpSEIRwpBottomGuardBandHeight(UInt idx) const                                             { return m_rwpSEIRwpBottomGuardBandHeight[idx]; } 
+  Void    setRwpSEIRwpGuardBandNotUsedForPredFlag(const std::vector<Bool>& rwpGuardBandNotUsedForPredFlag){ m_rwpSEIRwpGuardBandNotUsedForPredFlag = rwpGuardBandNotUsedForPredFlag; }
+  Bool    getRwpSEIRwpGuardBandNotUsedForPredFlag(UInt idx) const                                         { return m_rwpSEIRwpGuardBandNotUsedForPredFlag[idx]; }
+  Void    setRwpSEIRwpGuardBandType(const std::vector<UChar>& rwpGuardBandType)                           { m_rwpSEIRwpGuardBandType = rwpGuardBandType; }
+  UChar   getRwpSEIRwpGuardBandType(UInt idx) const                                                       { return m_rwpSEIRwpGuardBandType[idx]; } 
+#endif
   Void  setColourRemapInfoSEIFileRoot( const std::string &s )        { m_colourRemapSEIFileRoot = s; }
   const std::string &getColourRemapInfoSEIFileRoot() const           { return m_colourRemapSEIFileRoot; }
   Void  setMasteringDisplaySEI(const TComSEIMasteringDisplay &src)   { m_masteringDisplay = src; }
@@ -890,6 +1093,10 @@ public:
   UChar getSEIGreenMetadataType() const                              { return m_greenMetadataType; }
   Void  setSEIXSDMetricType(UChar v)                                 { m_xsdMetricType = v;    }
   UChar getSEIXSDMetricType() const                                  { return m_xsdMetricType; }
+#if RNSEI
+  Void  setRegionalNestingSEIFileRoot( const std::string &s )        { m_regionalNestingSEIFileRoot = s; }
+  const std::string &getRegionalNestingSEIFileRoot() const           { return m_regionalNestingSEIFileRoot; }
+#endif
 
   const TComSEIMasteringDisplay &getMasteringDisplaySEI() const      { return m_masteringDisplay; }
   Void         setUseWP               ( Bool b )                     { m_useWeightedPred   = b;    }

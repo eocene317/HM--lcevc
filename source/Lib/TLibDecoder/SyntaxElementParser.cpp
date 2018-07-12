@@ -63,6 +63,13 @@ Void xTraceFillerData ()
 
 
 #if DECODER_PARTIAL_CONFORMANCE_CHECK!=0
+
+Void SyntaxElementParser::xReadSCodeChk ( UInt   length, Int& val, const TChar *pSymbolName, const Int minValIncl, const Int maxValIncl )
+{
+  READ_SCODE(length, val, pSymbolName);
+  TDecConformanceCheck::checkRange(val, pSymbolName, minValIncl, maxValIncl);
+}
+
 Void SyntaxElementParser::xReadCodeChk ( UInt   length, UInt& val, const TChar *pSymbolName, const UInt minValIncl, const UInt maxValIncl )
 {
   READ_CODE(length, val, pSymbolName);
@@ -92,6 +99,42 @@ Void SyntaxElementParser::xReadFlagChk ( UInt&  val, const TChar *pSymbolName, c
 // Protected member functions
 // ====================================================================================================================
 #if RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
+Void SyntaxElementParser::xReadSCode (UInt uiLength, Int& rValue, const TChar *pSymbolName)
+#else
+Void SyntaxElementParser::xReadSCode (UInt uiLength, Int& rValue)
+#endif
+{
+  UInt val;
+  assert ( uiLength > 0 );
+  m_pcBitstream->read (uiLength, val);
+  if((val & (1 << (uiLength-1))) == 0)
+  {
+    rValue = val;
+  }
+  else
+  {
+    val &= (1<< (uiLength-1)) - 1;
+    rValue = ~val + 1;
+  }
+
+#if RExt__DECODER_DEBUG_BIT_STATISTICS
+  TComCodingStatistics::IncrementStatisticEP(pSymbolName, uiLength, rValue);
+#endif
+#if ENC_DEC_TRACE
+  fprintf( g_hTrace, "%8lld  ", g_nSymbolCounter++ );
+  if (uiLength < 10)
+  {
+    fprintf( g_hTrace, "%-50s i(%d)  : %d\n", pSymbolName, uiLength, rValue );
+  }
+  else
+  {
+    fprintf( g_hTrace, "%-50s i(%d) : %d\n", pSymbolName, uiLength, rValue );
+  }
+  fflush ( g_hTrace );
+#endif
+}
+
+#if RExt__DECODER_DEBUG_BIT_STATISTICS || ENC_DEC_TRACE
 Void SyntaxElementParser::xReadCode (UInt uiLength, UInt& rValue, const TChar *pSymbolName)
 #else
 Void SyntaxElementParser::xReadCode (UInt uiLength, UInt& rValue)
@@ -104,13 +147,13 @@ Void SyntaxElementParser::xReadCode (UInt uiLength, UInt& rValue)
 #endif
 #if ENC_DEC_TRACE
   fprintf( g_hTrace, "%8lld  ", g_nSymbolCounter++ );
-  if (length < 10)
+  if (uiLength < 10)
   {
-    fprintf( g_hTrace, "%-50s u(%d)  : %u\n", pSymbolName, length, rValue );
+    fprintf( g_hTrace, "%-50s u(%d)  : %u\n", pSymbolName, uiLength, rValue );
   }
   else
   {
-    fprintf( g_hTrace, "%-50s u(%d) : %u\n", pSymbolName, length, rValue );
+    fprintf( g_hTrace, "%-50s u(%d) : %u\n", pSymbolName, uiLength, rValue );
   }
   fflush ( g_hTrace );
 #endif

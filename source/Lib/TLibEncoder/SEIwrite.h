@@ -52,6 +52,8 @@ public:
   Void writeSEImessages(TComBitIf& bs, const SEIMessages &seiList, const TComSPS *sps, Bool isNested);
 
 protected:
+  Void xWriteSEImessage                           (TComBitIf& bs, const SEI *sei, const TComSPS *sps);
+
   Void xWriteSEIBufferingPeriod                   (const SEIBufferingPeriod& sei, const TComSPS *sps);
   Void xWriteSEIPictureTiming                     (const SEIPictureTiming& sei, const TComSPS *sps);
   Void xWriteSEIPanScanRect                       (const SEIPanScanRect& sei);
@@ -83,6 +85,20 @@ protected:
   Void xWriteSEITempMotionConstrainedTileSets     (const SEITempMotionConstrainedTileSets& sei);
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
+#if CCV_SEI_MESSAGE
+  Void xWriteSEIContentColourVolume               (const SEIContentColourVolume &sei);
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+  Void xWriteSEIEquirectangularProjection         (const SEIEquirectangularProjection &sei);
+  Void xWriteSEISphereRotation                    (const SEISphereRotation &sei);
+  Void xWriteSEIOmniViewport                      (const SEIOmniViewport& sei);
+#endif
+#if CMP_SEI_MESSAGE
+  Void xWriteSEICubemapProjection                 (const SEICubemapProjection &sei);
+#endif
+#if RWP_SEI_MESSAGE
+  Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
+#endif
   Void xWriteSEIColourRemappingInfo               (const SEIColourRemappingInfo& sei);
   Void xWriteSEIDeinterlaceFieldIdentification    (const SEIDeinterlaceFieldIdentification& sei);
   Void xWriteSEIContentLightLevelInfo             (const SEIContentLightLevelInfo& sei);
@@ -90,6 +106,9 @@ protected:
   Void xWriteSEICodedRegionCompletion             (const SEICodedRegionCompletion& sei);
   Void xWriteSEIAlternativeTransferCharacteristics(const SEIAlternativeTransferCharacteristics& sei);
   Void xWriteSEIAmbientViewingEnvironment         (const SEIAmbientViewingEnvironment& sei);
+#if RNSEI
+  Void xWriteSEIRegionalNesting                   (TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps);
+#endif
 
   Void xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSPS *sps);
   Void xWriteByteAlign();

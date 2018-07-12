@@ -37,6 +37,86 @@
 
 #include "CommonDef.h"
 #include "SEI.h"
+#include <iostream>
+
+const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
+  SEI::BUFFERING_PERIOD,
+  SEI::PICTURE_TIMING,
+  SEI::PAN_SCAN_RECT,
+  SEI::FILLER_PAYLOAD,
+  SEI::USER_DATA_REGISTERED_ITU_T_T35,
+  SEI::USER_DATA_UNREGISTERED,
+  SEI::RECOVERY_POINT,
+  SEI::SCENE_INFO,
+  SEI::PICTURE_SNAPSHOT,
+  SEI::PROGRESSIVE_REFINEMENT_SEGMENT_START,
+  SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END,
+  SEI::FILM_GRAIN_CHARACTERISTICS,
+  SEI::POST_FILTER_HINT,
+  SEI::TONE_MAPPING_INFO,
+  SEI::FRAME_PACKING,
+  SEI::DISPLAY_ORIENTATION,
+  SEI::GREEN_METADATA,
+  SEI::SOP_DESCRIPTION,
+  SEI::ACTIVE_PARAMETER_SETS,
+  SEI::DECODING_UNIT_INFO,
+  SEI::TEMPORAL_LEVEL0_INDEX,
+  SEI::SCALABLE_NESTING,
+  SEI::REGION_REFRESH_INFO,
+  SEI::NO_DISPLAY,
+  SEI::TIME_CODE,
+  SEI::MASTERING_DISPLAY_COLOUR_VOLUME,
+  SEI::SEGM_RECT_FRAME_PACKING,
+  SEI::TEMP_MOTION_CONSTRAINED_TILE_SETS,
+  SEI::CHROMA_RESAMPLING_FILTER_HINT,
+  SEI::KNEE_FUNCTION_INFO,
+  SEI::COLOUR_REMAPPING_INFO,
+  SEI::DEINTERLACE_FIELD_IDENTIFICATION,
+  SEI::CONTENT_LIGHT_LEVEL_INFO,
+  SEI::DEPENDENT_RAP_INDICATION,
+  SEI::CODED_REGION_COMPLETION,
+  SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS,
+  SEI::AMBIENT_VIEWING_ENVIRONMENT
+#if CCV_SEI_MESSAGE
+  , SEI::CONTENT_COLOUR_VOLUME
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+  , SEI::EQUIRECTANGULAR_PROJECTION
+  , SEI::SPHERE_ROTATION
+  , SEI::OMNI_VIEWPORT
+#endif
+#if CMP_SEI_MESSAGE
+  , SEI::CUBEMAP_PROJECTION
+#endif
+#if RWP_SEI_MESSAGE
+  , SEI::REGION_WISE_PACKING
+#endif
+#if RNSEI
+  , SEI::REGIONAL_NESTING
+#endif
+});
+
+const std::vector<SEI::PayloadType> SEI::suffix_sei_messages({
+  SEI::FILLER_PAYLOAD,
+  SEI::USER_DATA_REGISTERED_ITU_T_T35,
+  SEI::USER_DATA_UNREGISTERED,
+  SEI::PROGRESSIVE_REFINEMENT_SEGMENT_END,
+  SEI::POST_FILTER_HINT,
+  SEI::DECODED_PICTURE_HASH,
+  SEI::CODED_REGION_COMPLETION,
+});
+
+const std::vector<SEI::PayloadType> SEI::regional_nesting_sei_messages({
+  SEI::USER_DATA_REGISTERED_ITU_T_T35,
+  SEI::USER_DATA_UNREGISTERED,
+  SEI::FILM_GRAIN_CHARACTERISTICS,
+  SEI::POST_FILTER_HINT,
+  SEI::TONE_MAPPING_INFO,
+  SEI::CHROMA_RESAMPLING_FILTER_HINT,
+  SEI::KNEE_FUNCTION_INFO,
+  SEI::COLOUR_REMAPPING_INFO,
+  SEI::CONTENT_COLOUR_VOLUME,
+});
 
 SEIMessages getSeisByType(SEIMessages &seiList, SEI::PayloadType seiType)
 {
@@ -113,6 +193,74 @@ void SEIPictureTiming::copyTo (SEIPictureTiming& target)
   target.m_duCpbRemovalDelayMinus1 = m_duCpbRemovalDelayMinus1;
 }
 
+#if RNSEI
+std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region)
+{
+  os << region.getRegionId() << " " << region.getWindowLeftOffset() <<
+      region.getWindowRightOffset() << " " << region.getWindowTopOffset() << " "  <<
+      region.getWindowBottomOffset() << "\n";
+  return os;
+}
+
+SEIRegionalNesting::~SEIRegionalNesting()
+{
+  // Delete SEI messages
+  for(Int i = 0; i < m_rnSeiMessages.size(); i++)
+  {
+    delete m_rnSeiMessages[i].m_seiMessage;
+  }
+}
+
+Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
+{
+  // Check if no conflict with region IDs of regions
+  const RNSEIWindowVec newRegions = regSEI->getRegions();
+  RNSEIWindowVec regionsToAdd;
+  std::vector<UInt> listOfIndices;
+
+  // Loop through regions to add
+  for(RNSEIWindowVec::const_iterator iterNew = newRegions.begin();
+            iterNew != newRegions.end(); iterNew++)
+  {
+    Bool addNewRegion = m_regions.empty() ? true : false;
+    Bool foundRegion = false;
+    // Loop through regions already present
+    for(RNSEIWindowVec::const_iterator iterRef = m_regions.begin();
+            !foundRegion && iterRef != m_regions.end(); iterRef++)
+    {
+      if( (*iterNew) == (*iterRef) )  // Check if same region present
+      {
+        listOfIndices.push_back((UInt)(iterRef - m_regions.begin()));  // Add index
+        foundRegion = true;
+      }
+      else if( iterRef->checkSameID(*iterNew) )  // Check if there is a region ID class
+      {
+        // Two regions are different yet have same ID value; violates constraint
+        std::cout << "Two different regions have the same ID; please check.\n";
+        std::cout << "Region:" << (*iterNew) << "\n";
+        std::cout << "Region:" << (*iterRef) << "\n";
+        exit(1);
+      }
+    }        
+    addNewRegion = !foundRegion;
+    
+    if(addNewRegion)
+    {
+      // Index is current size of the m_regions;
+      listOfIndices.push_back((UInt)m_regions.size());
+      m_regions.push_back((*iterNew));
+    }
+  }
+  if(listOfIndices.empty())
+  {
+    std::cout << "Unable to add regions to the regional nesting SEI.\n";
+    exit(1);
+  }
+  SEIListOfIndices seiWithListOfIndices(listOfIndices, regSEI->dissociateSEIObject());
+  addRegionalSEI(seiWithListOfIndices);
+}
+#endif
+
 // Static member
 const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
 {
@@ -156,6 +304,23 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::CODED_REGION_COMPLETION:              return "Coded region completion";
     case SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS: return "Alternative transfer characteristics";
     case SEI::AMBIENT_VIEWING_ENVIRONMENT:          return "Ambient viewing environment";
+#if CCV_SEI_MESSAGE
+    case SEI::CONTENT_COLOUR_VOLUME:                return "Content Colour Volume";
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+    case SEI::EQUIRECTANGULAR_PROJECTION:           return "Equirectangular projection";
+    case SEI::SPHERE_ROTATION:                      return "Sphere rotation";
+    case SEI::OMNI_VIEWPORT:                        return "Omni viewport";
+#endif
+#if CMP_SEI_MESSAGE
+    case SEI::CUBEMAP_PROJECTION:                  return "Cubemap projection";
+#endif
+#if RWP_SEI_MESSAGE
+    case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
+#endif
+#if RNSEI
+    case SEI::REGIONAL_NESTING:                     return "Regional nesting";
+#endif
     default:                                        return "Unknown";
   }
 }

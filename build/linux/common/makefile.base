@@ -47,7 +47,8 @@ endif
 
 # default cpp flags for all configurations
 #CPPFLAGS          = -Wall $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS)
-CPPFLAGS          = $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS) -Wall -Wshadow -Wno-sign-compare -Werror
+CPPFLAGS          = $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS) -Wall -Wshadow -Wno-sign-compare -Werror -std=c++11
+CFLAGS          = $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS) -Wall -Wshadow -Wno-sign-compare -Werror
 
 ########## 
 # enforce 32-bit build : 1=yes, 0=no
@@ -71,9 +72,11 @@ endif
 #
 # debug cpp flags
 DEBUG_CPPFLAGS    = -g  -D_DEBUG
+DEBUG_CFLAGS    = -g  -D_DEBUG
 #
 # release cpp
 RELEASE_CPPFLAGS  =  -O3 -Wuninitialized
+RELEASE_CFLAGS  =  -O3 -Wuninitialized
 
 
 #########################################################
@@ -219,14 +222,14 @@ define COMPILE_AND_DEPEND_DEBUG
                 rm -f $(OBJ_DIR)/$*.d.d
 endef
 define COMPILE_AND_DEPEND_RELEASE_C
-        $(CC) -c -MMD -MF $(OBJ_DIR)/$*.r.d -MT $(OBJ_DIR)/$*.r.o $(CPPFLAGS) $(RELEASE_CPPFLAGS) -o $@ $(CURDIR)/$<
+        $(CC) -c -MMD -MF $(OBJ_DIR)/$*.r.d -MT $(OBJ_DIR)/$*.r.o $(CFLAGS) $(RELEASE_CFLAGS) -o $@ $(CURDIR)/$<
         @cp $(OBJ_DIR)/$*.r.d $(OBJ_DIR)/$*.r.P; \
                 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(OBJ_DIR)/$*.r.d >> $(OBJ_DIR)/$*.r.P; \
                 rm -f $(OBJ_DIR)/$*.r.d
 endef
 define COMPILE_AND_DEPEND_DEBUG_C
-        $(CC) -c -MMD -MF $(OBJ_DIR)/$*.d.d -MT $(OBJ_DIR)/$*.d.o $(CPPFLAGS) $(DEBUG_CPPFLAGS) -o $@ $(CURDIR)/$<
+        $(CC) -c -MMD -MF $(OBJ_DIR)/$*.d.d -MT $(OBJ_DIR)/$*.d.o $(CFLAGS) $(DEBUG_CFLAGS) -o $@ $(CURDIR)/$<
         @cp $(OBJ_DIR)/$*.d.d $(OBJ_DIR)/$*.d.P; \
                 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(OBJ_DIR)/$*.d.d >> $(OBJ_DIR)/$*.d.P; \

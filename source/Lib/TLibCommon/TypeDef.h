@@ -44,6 +44,7 @@
 
 #include <vector>
 #include <utility>
+#include <iostream>
 
 //! \ingroup TLibCommon
 //! \{
@@ -94,7 +95,12 @@
 #endif
 
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
+#define CCV_SEI_MESSAGE                                   1 // Content Colour Volume SEI message
+#define RWP_SEI_MESSAGE                                   1 // region-wise SEI message 
+#define CMP_SEI_MESSAGE                                   1 // cubemap projection SEI message
+#define ERP_SR_OV_SEI_MESSAGE                             1 // equirectangular projection, sphere rotation, and omni viewport SEI message
 
+#define RNSEI                                             1  ///< Support for signalling regional nesting SEI message
 // ====================================================================================================================
 // Tool Switches
 // ====================================================================================================================
@@ -898,6 +904,80 @@ struct WCGChromaQPControl
   Double chromaQpOffset;  ///< Chroma QP Offset (0.0:default)
 };
 
+class Window
+{
+private:
+  Bool m_enabledFlag;
+  Int  m_winLeftOffset;
+  Int  m_winRightOffset;
+  Int  m_winTopOffset;
+  Int  m_winBottomOffset;
+public:
+  Window()
+  : m_enabledFlag    (false)
+  , m_winLeftOffset  (0)
+  , m_winRightOffset (0)
+  , m_winTopOffset   (0)
+  , m_winBottomOffset(0)
+  { }
+
+  Bool getWindowEnabledFlag() const   { return m_enabledFlag;                          }
+  Int  getWindowLeftOffset() const    { return m_enabledFlag ? m_winLeftOffset : 0;    }
+  Void setWindowLeftOffset(Int val)   { m_winLeftOffset = val; m_enabledFlag = true;   }
+  Int  getWindowRightOffset() const   { return m_enabledFlag ? m_winRightOffset : 0;   }
+  Void setWindowRightOffset(Int val)  { m_winRightOffset = val; m_enabledFlag = true;  }
+  Int  getWindowTopOffset() const     { return m_enabledFlag ? m_winTopOffset : 0;     }
+  Void setWindowTopOffset(Int val)    { m_winTopOffset = val; m_enabledFlag = true;    }
+  Int  getWindowBottomOffset() const  { return m_enabledFlag ? m_winBottomOffset: 0;   }
+  Void setWindowBottomOffset(Int val) { m_winBottomOffset = val; m_enabledFlag = true; }
+
+  Void setWindow(Int offsetLeft, Int offsetLRight, Int offsetLTop, Int offsetLBottom)
+  {
+    m_enabledFlag     = true;
+    m_winLeftOffset   = offsetLeft;
+    m_winRightOffset  = offsetLRight;
+    m_winTopOffset    = offsetLTop;
+    m_winBottomOffset = offsetLBottom;
+  }
+  Bool operator == (const Window &rhs) const
+  {
+    return ( m_enabledFlag && rhs.m_enabledFlag && 
+      m_winLeftOffset == rhs.m_winLeftOffset &&
+      m_winRightOffset == rhs.m_winRightOffset &&
+      m_winTopOffset == rhs.m_winTopOffset &&
+      m_winBottomOffset == rhs.m_winBottomOffset
+      );
+  }
+};
+
+#if RNSEI
+class RNSEIWindow : public Window
+{
+private:
+  UInt m_regionId;
+public:
+  RNSEIWindow() : Window(), m_regionId(0) {}
+  Int  getRegionId() const     { return getWindowEnabledFlag() ? m_regionId : 0;    }
+  Void setRegionId(UInt const val)   { m_regionId = val; }
+  // Check two RNSEIWindows are identical
+  Bool operator == (RNSEIWindow const &rhs) const
+  {
+    return ( (m_regionId == rhs.m_regionId) &&
+      Window(*this) == Window(rhs) );
+  }
+  // Check if two windows are identical, even though regions may be different
+  Bool checkSameRegion(RNSEIWindow const &rhs) const
+  {
+    return ( Window(*this) == Window(rhs) );
+  }
+  Bool checkSameID(RNSEIWindow const &rhs) const
+  {
+    return ( m_regionId == rhs.m_regionId );
+  }
+  friend std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region);
+};
+typedef std::vector<RNSEIWindow> RNSEIWindowVec;
+#endif
 //! \}
 
 #endif

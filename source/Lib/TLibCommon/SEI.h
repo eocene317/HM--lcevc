@@ -92,6 +92,23 @@ public:
     CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
+#if CCV_SEI_MESSAGE
+    CONTENT_COLOUR_VOLUME                = 149, 
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+    EQUIRECTANGULAR_PROJECTION           = 150,
+    SPHERE_ROTATION                      = 154,
+    OMNI_VIEWPORT                        = 156,
+#endif
+#if CMP_SEI_MESSAGE
+    CUBEMAP_PROJECTION                   = 151,
+#endif
+#if RWP_SEI_MESSAGE
+    REGION_WISE_PACKING                  = 155, 
+#endif
+#if RNSEI
+    REGIONAL_NESTING                     = 157,
+#endif
   };
 
   SEI() {}
@@ -100,6 +117,10 @@ public:
   static const TChar *getSEIMessageString(SEI::PayloadType payloadType);
 
   virtual PayloadType payloadType() const = 0;
+
+  static const std::vector <SEI::PayloadType> prefix_sei_messages;
+  static const std::vector <SEI::PayloadType> suffix_sei_messages;
+  static const std::vector <SEI::PayloadType> regional_nesting_sei_messages;
 };
 
 
@@ -113,7 +134,6 @@ SEIMessages extractSeisByType(SEIMessages &seiList, SEI::PayloadType seiType);
 
 /// delete list of SEI messages (freeing the referenced objects)
 Void deleteSEIs (SEIMessages &seiList);
-
 
 
 class SEIBufferingPeriod : public SEI
@@ -743,6 +763,130 @@ public:
   std::vector<Int> m_kneeOutputKneePoint;
 };
 
+#if CCV_SEI_MESSAGE
+class SEIContentColourVolume : public SEI
+{
+public:
+  PayloadType payloadType() const { return CONTENT_COLOUR_VOLUME; }
+  SEIContentColourVolume() {}
+  virtual ~SEIContentColourVolume() {}
+
+  Bool    m_ccvCancelFlag;
+  Bool    m_ccvPersistenceFlag;
+  Bool    m_ccvPrimariesPresentFlag;
+  Bool    m_ccvMinLuminanceValuePresentFlag;
+  Bool    m_ccvMaxLuminanceValuePresentFlag;
+  Bool    m_ccvAvgLuminanceValuePresentFlag;
+  Int     m_ccvPrimariesX[MAX_NUM_COMPONENT];
+  Int     m_ccvPrimariesY[MAX_NUM_COMPONENT];
+  UInt    m_ccvMinLuminanceValue;
+  UInt    m_ccvMaxLuminanceValue;
+  UInt    m_ccvAvgLuminanceValue;
+};
+#endif
+
+#if ERP_SR_OV_SEI_MESSAGE
+class SEIEquirectangularProjection : public SEI
+{
+public:
+  PayloadType payloadType() const { return EQUIRECTANGULAR_PROJECTION; }
+
+  SEIEquirectangularProjection()  {}
+  virtual ~SEIEquirectangularProjection() {}
+
+  Bool   m_erpCancelFlag;
+  Bool   m_erpPersistenceFlag;
+  Bool   m_erpGuardBandFlag;
+  UChar  m_erpGuardBandType;
+  UChar  m_erpLeftGuardBandWidth;
+  UChar  m_erpRightGuardBandWidth;
+};
+
+class SEISphereRotation : public SEI
+{
+public:
+  PayloadType payloadType() const { return SPHERE_ROTATION; }
+
+  SEISphereRotation()  {}
+  virtual ~SEISphereRotation() {}
+
+  Bool  m_sphereRotationCancelFlag;
+  Bool  m_sphereRotationPersistenceFlag;
+  Int   m_sphereRotationYaw;
+  Int   m_sphereRotationPitch;
+  Int   m_sphereRotationRoll;
+};
+
+class SEIOmniViewport : public SEI
+{
+public:
+  PayloadType payloadType() const { return OMNI_VIEWPORT; }
+
+  SEIOmniViewport() {}
+  virtual ~SEIOmniViewport() {}
+
+  struct OmniViewport
+  {
+    Int  azimuthCentre;
+    Int  elevationCentre;
+    Int  tiltCentre;
+    UInt horRange;
+    UInt verRange;
+  };
+
+  UInt  m_omniViewportId;
+  Bool  m_omniViewportCancelFlag;
+  Bool  m_omniViewportPersistenceFlag;
+  UChar m_omniViewportCntMinus1;
+  std::vector<OmniViewport> m_omniViewportRegions;  
+};
+#endif
+
+#if CMP_SEI_MESSAGE 
+class SEICubemapProjection : public SEI
+{
+public:
+  PayloadType payloadType() const { return CUBEMAP_PROJECTION; }
+  SEICubemapProjection() {}
+  virtual ~SEICubemapProjection() {}
+  Bool                  m_cmpCancelFlag;
+  Bool                  m_cmpPersistenceFlag;
+};
+#endif
+
+#if RWP_SEI_MESSAGE 
+class SEIRegionWisePacking : public SEI
+{
+public:
+  PayloadType payloadType() const { return REGION_WISE_PACKING; }
+  SEIRegionWisePacking() {}
+  virtual ~SEIRegionWisePacking() {}
+  Bool                  m_rwpCancelFlag;
+  Bool                  m_rwpPersistenceFlag;
+  Bool                  m_constituentPictureMatchingFlag;
+  Int                   m_numPackedRegions;
+  Int                   m_projPictureWidth;
+  Int                   m_projPictureHeight;
+  Int                   m_packedPictureWidth;
+  Int                   m_packedPictureHeight;
+  std::vector<UChar>    m_rwpTransformType;
+  std::vector<Bool>     m_rwpGuardBandFlag;
+  std::vector<UInt>     m_projRegionWidth;
+  std::vector<UInt>     m_projRegionHeight;
+  std::vector<UInt>     m_rwpProjRegionTop;
+  std::vector<UInt>     m_projRegionLeft;
+  std::vector<UShort>   m_packedRegionWidth;
+  std::vector<UShort>   m_packedRegionHeight;
+  std::vector<UShort>   m_packedRegionTop;
+  std::vector<UShort>   m_packedRegionLeft;
+  std::vector<UChar>    m_rwpLeftGuardBandWidth;
+  std::vector<UChar>    m_rwpRightGuardBandWidth;
+  std::vector<UChar>    m_rwpTopGuardBandHeight;
+  std::vector<UChar>    m_rwpBottomGuardBandHeight;
+  std::vector<Bool>     m_rwpGuardBandNotUsedForPredFlag;
+  std::vector<UChar>    m_rwpGuardBandType;
+};
+#endif
 
 class SEIColourRemappingInfo : public SEI
 {
@@ -863,5 +1007,94 @@ public:
 };
 
 #endif
+#if RNSEI
+// Class that associates an SEI with one more regions
+class RegionalSEI
+{
+public:
+  RegionalSEI(): m_seiMessage(NULL) {}
+  RegionalSEI(SEI *sei, RNSEIWindowVec &regions) 
+  {    
+    if( checkRegionalNestedSEIPayloadType(sei->payloadType()) )  
+    {
+      m_seiMessage = sei;
+      m_regions = regions;
+    }
+    else
+    {
+     m_seiMessage = sei;
+    }    
+  }
+  ~RegionalSEI()
+  {
+    if(!m_seiMessage)
+    {
+      delete m_seiMessage;
+    }
+  }
+  SEI *dissociateSEIObject()  // Dissociates SEI; receiver of this function in charge of memory deallocation.
+  {
+    SEI *temp = m_seiMessage; 
+    m_seiMessage = NULL;
+    return temp;
+  }
+  UInt getNumRegions() const { return (UInt) m_regions.size(); }
+  const RNSEIWindowVec& getRegions() { return m_regions; }
+  Void addRegions(RNSEIWindowVec const &regions) { m_regions.insert(m_regions.end(), regions.begin(), regions.end()); }
+  static Bool checkRegionalNestedSEIPayloadType(SEI::PayloadType const payloadType)
+  {
+    switch(payloadType)
+    {
+    case SEI::USER_DATA_REGISTERED_ITU_T_T35:
+    case SEI::USER_DATA_UNREGISTERED:
+    case SEI::FILM_GRAIN_CHARACTERISTICS:
+    case SEI::POST_FILTER_HINT:
+    case SEI::TONE_MAPPING_INFO:
+    case SEI::CHROMA_RESAMPLING_FILTER_HINT:
+    case SEI::KNEE_FUNCTION_INFO: 
+    case SEI::COLOUR_REMAPPING_INFO:
+    case SEI::CONTENT_COLOUR_VOLUME:
+      return true;
+    default:
+      return false;
+    }
+  }
+private:
+  SEI *m_seiMessage;
+  RNSEIWindowVec m_regions; 
+};
 
+class SEIRegionalNesting : public SEI
+{
+public:
+  SEIRegionalNesting(): m_rnId(0) {}
+  ~SEIRegionalNesting();
+
+  struct SEIListOfIndices
+  {
+    std::vector<UInt> m_listOfIndices;
+    SEI *m_seiMessage;
+    SEIListOfIndices() : m_seiMessage(NULL) {}
+    SEIListOfIndices(std::vector<UInt> listOfIndices, SEI* sei) : m_listOfIndices(listOfIndices), m_seiMessage(sei) {}
+  };
+
+  PayloadType payloadType() const { return REGIONAL_NESTING; }
+  UInt getNumRnSEIMessage() const  { return (UInt) m_rnSeiMessages.size(); }
+  UInt getNumRectRegions()  const  { return (UInt) m_regions.size(); }
+  UInt getRNId()            const  { return m_rnId; }
+  Void addRegion(RNSEIWindow *regn) { m_regions.push_back(*regn); }
+  Void clearRegions() { m_regions.clear(); }
+  Void addRegionalSEI(SEIListOfIndices const &seiWithListOfRegionIndices) 
+  {
+    m_rnSeiMessages.push_back(seiWithListOfRegionIndices);
+  }
+  Void addRegionalSEI(RegionalSEI *regSEI);
+  const std::vector< SEIListOfIndices >& getRnSEIMessages() const { return m_rnSeiMessages; }
+  const std::vector<RNSEIWindow> &getRegions() const { return m_regions; }
+private:
+  UInt m_rnId;
+  RNSEIWindowVec m_regions;
+  std::vector< SEIListOfIndices > m_rnSeiMessages;
+};
+#endif
 //! \}

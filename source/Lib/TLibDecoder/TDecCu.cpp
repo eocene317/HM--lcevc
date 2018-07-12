@@ -291,12 +291,10 @@ Void TDecCu::xDecodeCU( TComDataCU*const pcCU, const UInt uiAbsPartIdx, const UI
 #if MCTS_ENC_CHECK
     UInt numSpatialMergeCandidates = 0;
     m_ppcCU[uiDepth]->getInterMergeCandidates( 0, 0, cMvFieldNeighbours, uhInterDirNeighbours, numValidMergeCand, numSpatialMergeCandidates, uiMergeIndex );
-#if MCTS_ENC_CHECK
     if ( m_pConformanceCheck->getTMctsCheck() && m_ppcCU[uiDepth]->isLastColumnCTUInTile() && (uiMergeIndex >= numSpatialMergeCandidates) )
     {
       m_pConformanceCheck->flagTMctsError("Merge Index using non-spatial merge candidate (Skip)");
     }
-#endif
 #else
     m_ppcCU[uiDepth]->getInterMergeCandidates( 0, 0, cMvFieldNeighbours, uhInterDirNeighbours, numValidMergeCand, uiMergeIndex );
 #endif

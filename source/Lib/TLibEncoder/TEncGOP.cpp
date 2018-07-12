@@ -448,6 +448,54 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIKneeFunctionInfo(sei);
     seiMessages.push_back(sei);
   }
+
+#if CCV_SEI_MESSAGE
+  if (m_pcCfg->getCcvSEIEnabled())
+  {
+    SEIContentColourVolume *seiContentColourVolume = new SEIContentColourVolume;
+    m_seiEncoder.initSEIContentColourVolume(seiContentColourVolume);
+    seiMessages.push_back(seiContentColourVolume);
+  }
+#endif
+
+#if ERP_SR_OV_SEI_MESSAGE
+  if (m_pcCfg->getErpSEIEnabled())
+  {
+    SEIEquirectangularProjection *sei = new SEIEquirectangularProjection;
+    m_seiEncoder.initSEIErp(sei);
+    seiMessages.push_back(sei);
+  }
+
+  if (m_pcCfg->getSphereRotationSEIEnabled())
+  {
+    SEISphereRotation *sei = new SEISphereRotation;
+    m_seiEncoder.initSEISphereRotation(sei);
+    seiMessages.push_back(sei);
+  }
+
+  if (m_pcCfg->getOmniViewportSEIEnabled())
+  {
+    SEIOmniViewport *sei = new SEIOmniViewport;
+    m_seiEncoder.initSEIOmniViewport(sei);
+    seiMessages.push_back(sei);
+  }
+#endif
+#if CMP_SEI_MESSAGE
+  if (m_pcCfg->getCmpSEIEnabled())
+  {
+    SEICubemapProjection *seiCubemapProjection = new SEICubemapProjection;
+    m_seiEncoder.initSEICubemapProjection(seiCubemapProjection);
+    seiMessages.push_back(seiCubemapProjection);
+  }
+#endif
+#if RWP_SEI_MESSAGE
+  if (m_pcCfg->getRwpSEIEnabled())
+  {
+    SEIRegionWisePacking *seiRegionWisePacking = new SEIRegionWisePacking;
+    m_seiEncoder.initSEIRegionWisePacking(seiRegionWisePacking);
+    seiMessages.push_back(seiRegionWisePacking);
+  }
+#endif
     
   if(m_pcCfg->getMasteringDisplaySEI().colourVolumeSEIEnabled)
   {
@@ -540,6 +588,23 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
       delete seiColourRemappingInfo;
     }
   }
+#if RNSEI
+  // insert one Regional Nesting SEI for the picture (if the file exists)
+  if (!m_pcCfg->getRegionalNestingSEIFileRoot().empty())
+  {
+    SEIRegionalNesting *seiRegionalNesting= new SEIRegionalNesting();
+    const Bool success = m_seiEncoder.initSEIRegionalNesting(seiRegionalNesting, slice->getPOC() );
+
+    if(success)
+    {
+      seiMessages.push_back(seiRegionalNesting);
+    }
+    else
+    {
+      delete seiRegionalNesting;
+    }
+  }
+#endif
 }
 
 Void TEncGOP::xCreateScalableNestingSEI (SEIMessages& seiMessages, SEIMessages& nestedSeiMessages)

@@ -171,6 +171,37 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::AMBIENT_VIEWING_ENVIRONMENT:
     xWriteSEIAmbientViewingEnvironment(*static_cast<const SEIAmbientViewingEnvironment*>(&sei));
     break;
+#if CCV_SEI_MESSAGE
+  case SEI::CONTENT_COLOUR_VOLUME:
+    xWriteSEIContentColourVolume(*static_cast<const SEIContentColourVolume*>(&sei));
+    break;
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+  case SEI::EQUIRECTANGULAR_PROJECTION:
+    xWriteSEIEquirectangularProjection(*static_cast<const SEIEquirectangularProjection*>(&sei));
+    break;
+  case SEI::SPHERE_ROTATION:
+    xWriteSEISphereRotation(*static_cast<const SEISphereRotation*>(&sei));
+    break;
+  case SEI::OMNI_VIEWPORT:
+    xWriteSEIOmniViewport(*static_cast<const SEIOmniViewport*>(&sei));
+    break;
+#endif
+#if CMP_SEI_MESSAGE
+  case SEI::CUBEMAP_PROJECTION:
+    xWriteSEICubemapProjection(*static_cast<const SEICubemapProjection*>(&sei));
+    break;
+#endif
+#if RWP_SEI_MESSAGE
+  case SEI::REGION_WISE_PACKING:
+    xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
+    break;
+#endif
+#if RNSEI
+  case SEI::REGIONAL_NESTING:
+    xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
+    break;
+#endif
   default:
     assert(!"Trying to write unhandled SEI message");
     break;
@@ -192,44 +223,7 @@ Void SEIWriter::writeSEImessages(TComBitIf& bs, const SEIMessages &seiList, cons
 
   for (SEIMessages::const_iterator sei=seiList.begin(); sei!=seiList.end(); sei++)
   {
-    // calculate how large the payload data is
-    // TODO: this would be far nicer if it used vectored buffers
-    bs_count.resetBits();
-    setBitstream(&bs_count);
-
-#if ENC_DEC_TRACE
-    Bool traceEnable = g_HLSTraceEnable;
-    g_HLSTraceEnable = false;
-#endif
-    xWriteSEIpayloadData(bs_count, **sei, sps);
-#if ENC_DEC_TRACE
-    g_HLSTraceEnable = traceEnable;
-#endif
-    UInt payload_data_num_bits = bs_count.getNumberOfWrittenBits();
-    assert(0 == payload_data_num_bits % 8);
-
-    setBitstream(&bs);
-    UInt payloadType = (*sei)->payloadType();
-    for (; payloadType >= 0xff; payloadType -= 0xff)
-    {
-      WRITE_CODE(0xff, 8, "payload_type");
-    }
-    WRITE_CODE(payloadType, 8, "payload_type");
-
-    UInt payloadSize = payload_data_num_bits/8;
-    for (; payloadSize >= 0xff; payloadSize -= 0xff)
-    {
-      WRITE_CODE(0xff, 8, "payload_size");
-    }
-    WRITE_CODE(payloadSize, 8, "payload_size");
-
-    /* payloadData */
-#if ENC_DEC_TRACE
-    if (g_HLSTraceEnable)
-      xTraceSEIMessageType((*sei)->payloadType());
-#endif
-
-    xWriteSEIpayloadData(bs, **sei, sps);
+    xWriteSEImessage(bs, *sei, sps);
   }
   if (!isNested)
   {
@@ -237,6 +231,54 @@ Void SEIWriter::writeSEImessages(TComBitIf& bs, const SEIMessages &seiList, cons
   }
 }
 
+Void SEIWriter::xWriteSEImessage(TComBitIf& bs, const SEI *sei, const TComSPS *sps)
+{
+#if ENC_DEC_TRACE
+  if (g_HLSTraceEnable)
+    xTraceSEIHeader();
+#endif
+
+  TComBitCounter bs_count;
+
+  // calculate how large the payload data is
+  // TODO: this would be far nicer if it used vectored buffers
+  bs_count.resetBits();
+  setBitstream(&bs_count);
+
+#if ENC_DEC_TRACE
+  Bool traceEnable = g_HLSTraceEnable;
+  g_HLSTraceEnable = false;
+#endif
+  xWriteSEIpayloadData(bs_count, *sei, sps);
+#if ENC_DEC_TRACE
+  g_HLSTraceEnable = traceEnable;
+#endif
+  UInt payload_data_num_bits = bs_count.getNumberOfWrittenBits();
+  assert(0 == payload_data_num_bits % 8);
+
+  setBitstream(&bs);
+  UInt payloadType = sei->payloadType();
+  for (; payloadType >= 0xff; payloadType -= 0xff)
+  {
+    WRITE_CODE(0xff, 8, "payload_type");
+  }
+  WRITE_CODE(payloadType, 8, "payload_type");
+
+  UInt payloadSize = payload_data_num_bits/8;
+  for (; payloadSize >= 0xff; payloadSize -= 0xff)
+  {
+    WRITE_CODE(0xff, 8, "payload_size");
+  }
+  WRITE_CODE(payloadSize, 8, "payload_size");
+
+  /* payloadData */
+#if ENC_DEC_TRACE
+  if (g_HLSTraceEnable)
+    xTraceSEIMessageType((*sei)->payloadType());
+#endif
+
+  xWriteSEIpayloadData(bs, *sei, sps);
+}
 
 Void SEIWriter::xWriteSEIBufferingPeriod(const SEIBufferingPeriod& sei, const TComSPS *sps)
 {
@@ -967,6 +1009,149 @@ Void SEIWriter::xWriteSEIKneeFunctionInfo(const SEIKneeFunctionInfo &sei)
   }
 }
 
+#if CCV_SEI_MESSAGE
+Void SEIWriter::xWriteSEIContentColourVolume(const SEIContentColourVolume &sei)
+{
+  WRITE_FLAG(sei.m_ccvCancelFlag, "ccv_cancel_flag");
+  if (!sei.m_ccvCancelFlag)
+  {
+    WRITE_FLAG(sei.m_ccvPersistenceFlag, "ccv_persistence_flag");
+    WRITE_FLAG(sei.m_ccvPrimariesPresentFlag, "ccv_primaries_present_flag");
+    WRITE_FLAG(sei.m_ccvMinLuminanceValuePresentFlag, "ccv_min_luminance_value_present_flag");
+    WRITE_FLAG(sei.m_ccvMaxLuminanceValuePresentFlag, "ccv_max_luminance_value_present_flag");
+    WRITE_FLAG(sei.m_ccvAvgLuminanceValuePresentFlag, "ccv_avg_luminance_value_present_flag");
+    
+    if (sei.m_ccvPrimariesPresentFlag == true) 
+    {
+      for (Int i = 0; i < MAX_NUM_COMPONENT; i++) 
+      {
+        WRITE_SCODE((Int) sei.m_ccvPrimariesX[i], 32, "ccv_primaries_x[i]");
+        WRITE_SCODE((Int) sei.m_ccvPrimariesY[i], 32, "ccv_primaries_y[i]");
+      }
+    }
+
+    if (sei.m_ccvMinLuminanceValuePresentFlag == true) 
+    {
+      WRITE_CODE( (UInt)sei.m_ccvMinLuminanceValue, 32,  "ccv_min_luminance_value" );
+    }
+    if (sei.m_ccvMinLuminanceValuePresentFlag == true) 
+    {
+      WRITE_CODE( (UInt)sei.m_ccvMaxLuminanceValue, 32,  "ccv_max_luminance_value" );
+    }
+    if (sei.m_ccvMinLuminanceValuePresentFlag == true) 
+    {
+      WRITE_CODE( (UInt)sei.m_ccvAvgLuminanceValue, 32,  "ccv_avg_luminance_value" );
+    }
+  }
+}
+#endif
+
+#if ERP_SR_OV_SEI_MESSAGE
+Void SEIWriter::xWriteSEIEquirectangularProjection(const SEIEquirectangularProjection &sei)
+{
+  WRITE_FLAG( sei.m_erpCancelFlag, "erp_cancel_flag" );
+  if( !sei.m_erpCancelFlag )
+  {
+    WRITE_FLAG( sei.m_erpPersistenceFlag, "erp_persistence_flag" );
+    WRITE_FLAG( sei.m_erpGuardBandFlag,   "erp_guard_band_flag" );
+    WRITE_CODE( 0, 2, "erp_reserved_zero_2bits" );
+    if ( sei.m_erpGuardBandFlag == 1)
+    {
+      WRITE_CODE( sei.m_erpGuardBandType,       3, "erp_guard_band_type" );  
+      WRITE_CODE( sei.m_erpLeftGuardBandWidth,  8, "erp_left_guard_band_width" );  
+      WRITE_CODE( sei.m_erpRightGuardBandWidth, 8, "erp_right_guard_band_width" );  
+    }
+  }
+}
+
+Void SEIWriter::xWriteSEISphereRotation(const SEISphereRotation &sei)
+{
+  WRITE_FLAG( sei.m_sphereRotationCancelFlag, "sphere_rotation_cancel_flag" );
+  if( !sei.m_sphereRotationCancelFlag )
+  {
+    WRITE_FLAG( sei.m_sphereRotationPersistenceFlag,    "sphere_rotation_persistence_flag" );
+    WRITE_CODE( 0,                                   6, "sphere_rotation_reserved_zero_6bits" );
+    WRITE_SCODE(sei.m_sphereRotationYaw,            32, "sphere_rotation_yaw" );  
+    WRITE_SCODE(sei.m_sphereRotationPitch,          32, "sphere_rotation_pitch" );  
+    WRITE_SCODE(sei.m_sphereRotationRoll,           32, "sphere_rotation_roll" );  
+  }
+}
+
+Void SEIWriter::xWriteSEIOmniViewport(const SEIOmniViewport &sei)
+{
+  WRITE_CODE( sei.m_omniViewportId,     10,    "omni_viewport_id" );
+  WRITE_FLAG( sei.m_omniViewportCancelFlag, "omni_viewport_cancel_flag" );
+  if ( !sei.m_omniViewportCancelFlag )
+  {
+    WRITE_FLAG( sei.m_omniViewportPersistenceFlag, "omni_viewport_persistence_flag" );
+    const UInt numRegions = (UInt) sei.m_omniViewportRegions.size();
+    WRITE_CODE( numRegions - 1, 4, "omni_viewport_cnt_minus1" );
+    for(UInt region=0; region<numRegions; region++)
+    {
+      const SEIOmniViewport::OmniViewport &viewport=sei.m_omniViewportRegions[region];
+      WRITE_SCODE( viewport.azimuthCentre,     32,  "omni_viewport_azimuth_centre"   );  
+      WRITE_SCODE( viewport.elevationCentre,   32,  "omni_viewport_elevation_centre" );  
+      WRITE_SCODE( viewport.tiltCentre,        32,  "omni_viewport_tilt_center" );  
+      WRITE_CODE( viewport.horRange,           32, "omni_viewport_hor_range[i]" );
+      WRITE_CODE( viewport.verRange,           32, "omni_viewport_ver_range[i]" );
+    }
+  }
+}
+#endif
+#if CMP_SEI_MESSAGE
+Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
+{
+  WRITE_FLAG(sei.m_cmpCancelFlag, "cmp_cancel_flag");
+  if (!sei.m_cmpCancelFlag)
+  {
+    WRITE_FLAG(sei.m_cmpPersistenceFlag, "cmp_persistence_flag");
+  }
+}
+#endif
+#if RWP_SEI_MESSAGE
+Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
+{
+  WRITE_FLAG( sei.m_rwpCancelFlag,                                           "rwp_cancel_flag" );
+  if(!sei.m_rwpCancelFlag)
+  {
+    WRITE_FLAG( sei.m_rwpPersistenceFlag,                                    "rwp_persistence_flag" );
+    WRITE_FLAG( sei.m_constituentPictureMatchingFlag,                        "constituent_picture_matching_flag" );
+    WRITE_CODE( 0, 5,                                                        "rwp_reserved_zero_5bits" );
+    WRITE_CODE( (UInt)sei.m_numPackedRegions,                 8,             "num_packed_regions" );
+    WRITE_CODE( (UInt)sei.m_projPictureWidth,                 32,            "proj_picture_width" );
+    WRITE_CODE( (UInt)sei.m_projPictureHeight,                32,            "proj_picture_height" );
+    WRITE_CODE( (UInt)sei.m_packedPictureWidth,               16,            "packed_picture_width" );
+    WRITE_CODE( (UInt)sei.m_packedPictureHeight,              16,            "packed_picture_height" );
+    for( Int i=0; i < sei.m_numPackedRegions; i++ )
+    { 
+      WRITE_CODE( 0, 4,                                                      "rwp_reserved_zero_4bits" );
+      WRITE_CODE( (UInt)sei.m_rwpTransformType[i],            3,             "rwp_tTransform_type" );
+      WRITE_FLAG( sei.m_rwpGuardBandFlag[i],                                 "rwp_guard_band_flag" );
+      WRITE_CODE( (UInt)sei.m_projRegionWidth[i],             32,            "proj_region_width" );
+      WRITE_CODE( (UInt)sei.m_projRegionHeight[i],            32,            "proj_region_height" );
+      WRITE_CODE( (UInt)sei.m_rwpProjRegionTop[i],            32,            "rwp_proj_regionTop" );
+      WRITE_CODE( (UInt)sei.m_projRegionLeft[i],              32,            "proj_region_left" );
+      WRITE_CODE( (UInt)sei.m_packedRegionWidth[i],           16,            "packed_region_width" );
+      WRITE_CODE( (UInt)sei.m_packedRegionHeight[i],          16,            "packed_region_height" );
+      WRITE_CODE( (UInt)sei.m_packedRegionTop[i],             16,            "packed_region_top" );
+      WRITE_CODE( (UInt)sei.m_packedRegionLeft[i],            16,            "packed_region_left" );
+      if( sei.m_rwpGuardBandFlag[i] )
+      {
+        WRITE_CODE( (UInt)sei.m_rwpLeftGuardBandWidth[i],     8,             "rwp_left_guard_band_width");
+        WRITE_CODE( (UInt)sei.m_rwpRightGuardBandWidth[i],    8,             "rwp_right_guard_band_width");
+        WRITE_CODE( (UInt)sei.m_rwpTopGuardBandHeight[i],     8,             "rwp_top_guard_band_height");
+        WRITE_CODE( (UInt)sei. m_rwpBottomGuardBandHeight[i], 8,             "rwp_bottom_guard_band_height");
+        WRITE_FLAG( sei.m_rwpGuardBandNotUsedForPredFlag[i],                 "rwp_guard_band_not_used_forPred_flag" );
+        for( Int j=0; j < 4; j++ )
+        {
+          WRITE_CODE( (UInt)sei.m_rwpGuardBandType[i*4 + j],  3,             "rwp_guard_band_type");
+        }
+        WRITE_CODE( 0, 3,                                                    "rwp_guard_band_reserved_zero_3bits" );
+      }
+    }
+  }
+}
+#endif
 
 Void SEIWriter::xWriteSEIColourRemappingInfo(const SEIColourRemappingInfo& sei)
 {
@@ -1068,7 +1253,38 @@ Void SEIWriter::xWriteSEIAmbientViewingEnvironment(const SEIAmbientViewingEnviro
   WRITE_CODE(sei.m_ambientLightY,      16, "ambient_light_y" );
 }
 
-
+#if RNSEI
+Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps)
+{
+  WRITE_CODE(sei.getRNId(),            16, "regional_nesting_id");
+  WRITE_CODE(sei.getNumRectRegions(),   8, "regional_nesting_num_rect_regions");
+  const RNSEIWindowVec regions = sei.getRegions();
+  for(RNSEIWindowVec::const_iterator it = regions.begin(); it != regions.end(); it++)
+  {
+    assert((*it).getWindowEnabledFlag());
+    WRITE_CODE((*it).getRegionId(),            8, "regional_nesting_rect_region_id[i]");
+    WRITE_CODE((*it).getWindowLeftOffset(),   16, "regional_nesting_rect_left_offset[i]");
+    WRITE_CODE((*it).getWindowRightOffset(),  16, "regional_nesting_rect_right_offset[i]");
+    WRITE_CODE((*it).getWindowTopOffset(),    16, "regional_nesting_rect_top_offset[i]");
+    WRITE_CODE((*it).getWindowBottomOffset(), 16, "regional_nesting_rect_bottom_offset[i]");
+  }
+  assert(sei.getNumRnSEIMessage() >= 1);
+  WRITE_CODE(sei.getNumRnSEIMessage()-1,   8, "num_sei_messages_in_regional_nesting_minus1");
+  const std::vector<SEIRegionalNesting::SEIListOfIndices> seiMessages = sei.getRnSEIMessages();
+  std::vector<SEIRegionalNesting::SEIListOfIndices>::const_iterator it;
+  for(it = seiMessages.begin(); it != seiMessages.end(); it++)
+  {
+    std::vector<UInt> listOfRegions = (*it).m_listOfIndices;
+    SEI *nestedSEI = (*it).m_seiMessage;
+    WRITE_CODE((UInt)listOfRegions.size(),       8, "num_regions_for_sei_message[i]");
+    for(Int j = 0; j < listOfRegions.size(); j++)
+    {
+      WRITE_CODE(listOfRegions[j],               8, "regional_nesting_sei_region_idx[i][j]");
+    }
+    xWriteSEImessage(bs, nestedSEI, sps);
+  }
+}
+#endif
 Void SEIWriter::xWriteByteAlign()
 {
   if( m_pcBitIf->getNumberOfWrittenBits() % 8 != 0)

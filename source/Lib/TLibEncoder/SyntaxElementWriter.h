@@ -50,18 +50,18 @@
 //! \{
 
 #if ENC_DEC_TRACE
-
-#define WRITE_CODE( value, length, name)    xWriteCodeTr ( value, length, name )
-#define WRITE_UVLC( value,         name)    xWriteUvlcTr ( value,         name )
-#define WRITE_SVLC( value,         name)    xWriteSvlcTr ( value,         name )
-#define WRITE_FLAG( value,         name)    xWriteFlagTr ( value,         name )
+#define WRITE_SCODE( value, length, name)   xWriteSCodeTr ( value, length, name )
+#define WRITE_CODE( value, length, name)    xWriteCodeTr  ( value, length, name )
+#define WRITE_UVLC( value,         name)    xWriteUvlcTr  ( value,         name )
+#define WRITE_SVLC( value,         name)    xWriteSvlcTr  ( value,         name )
+#define WRITE_FLAG( value,         name)    xWriteFlagTr  ( value,         name )
 
 #else
-
-#define WRITE_CODE( value, length, name)     xWriteCode ( value, length )
-#define WRITE_UVLC( value,         name)     xWriteUvlc ( value )
-#define WRITE_SVLC( value,         name)     xWriteSvlc ( value )
-#define WRITE_FLAG( value,         name)     xWriteFlag ( value )
+#define WRITE_SCODE( value, length, name)    xWriteSCode ( value, length )
+#define WRITE_CODE( value, length, name)     xWriteCode  ( value, length )
+#define WRITE_UVLC( value,         name)     xWriteUvlc  ( value )
+#define WRITE_SVLC( value,         name)     xWriteSvlc  ( value )
+#define WRITE_FLAG( value,         name)     xWriteFlag  ( value )
 
 #endif
 
@@ -77,11 +77,13 @@ protected:
 
   Void  setBitstream          ( TComBitIf* p )  { m_pcBitIf = p;  }
 
+  Void  xWriteSCode           ( Int  iCode,  UInt uiLength );
   Void  xWriteCode            ( UInt uiCode, UInt uiLength );
   Void  xWriteUvlc            ( UInt uiCode );
   Void  xWriteSvlc            ( Int  iCode   );
   Void  xWriteFlag            ( UInt uiCode );
 #if ENC_DEC_TRACE
+  Void  xWriteSCodeTr         ( Int value,  UInt  length, const TChar *pSymbolName);
   Void  xWriteCodeTr          ( UInt value, UInt  length, const TChar *pSymbolName);
   Void  xWriteUvlcTr          ( UInt value,               const TChar *pSymbolName);
   Void  xWriteSvlcTr          ( Int  value,               const TChar *pSymbolName);

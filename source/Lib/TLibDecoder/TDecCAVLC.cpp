@@ -207,9 +207,9 @@ Void TDecCavlc::parsePPS(TComPPS* pcPPS)
 
   READ_CODE(3, uiCode, "num_extra_slice_header_bits");                pcPPS->setNumExtraSliceHeaderBits(uiCode);
 
-  READ_FLAG ( uiCode, "sign_data_hiding_enabled_flag" );              pcPPS->setSignDataHidingEnabledFlag( uiCode );
+  READ_FLAG( uiCode, "sign_data_hiding_enabled_flag" );               pcPPS->setSignDataHidingEnabledFlag( uiCode );
 
-  READ_FLAG( uiCode,   "cabac_init_present_flag" );            pcPPS->setCabacInitPresentFlag( uiCode ? true : false );
+  READ_FLAG( uiCode,   "cabac_init_present_flag" );                   pcPPS->setCabacInitPresentFlag( uiCode ? true : false );
 
   READ_UVLC_CHK(uiCode, "num_ref_idx_l0_default_active_minus1", 0, 14);
   assert(uiCode <= 14);
@@ -1494,8 +1494,8 @@ Void TDecCavlc::parseSliceHeader (TComSlice* pcSlice, ParameterSetManager *param
     READ_UVLC(uiCode,"slice_segment_header_extension_length");
     for(Int i=0; i<uiCode; i++)
     {
-      UInt ignore;
-      READ_CODE(8,ignore,"slice_segment_header_extension_data_byte");
+      UInt ignored;
+      READ_CODE(8,ignored,"slice_segment_header_extension_data_byte");
     }
   }
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
@@ -1771,26 +1771,9 @@ Void TDecCavlc::parseCrossComponentPrediction( class TComTU& /*rTu*/, ComponentI
   assert(0);
 }
 
-Void TDecCavlc::parseDeltaQP( TComDataCU* pcCU, UInt uiAbsPartIdx, UInt uiDepth )
+Void TDecCavlc::parseDeltaQP( TComDataCU* /*pcCU*/, UInt /*uiAbsPartIdx*/, UInt /*uiDepth*/ )
 {
-  Int  iDQp;
-
-#if RExt__DECODER_DEBUG_BIT_STATISTICS
-  READ_SVLC(iDQp, "delta_qp");
-#else
-  xReadSvlc( iDQp );
-#endif
-
-  Int qpBdOffsetY = pcCU->getSlice()->getSPS()->getQpBDOffset(CHANNEL_TYPE_LUMA);
-  const Int qp = (((Int) pcCU->getRefQP( uiAbsPartIdx ) + iDQp + 52 + 2*qpBdOffsetY )%(52+ qpBdOffsetY)) -  qpBdOffsetY;
-
-  const UInt maxCUDepth        = pcCU->getSlice()->getSPS()->getMaxTotalCUDepth();
-  const UInt maxCuDQPDepth     = pcCU->getSlice()->getPPS()->getMaxCuDQPDepth();
-  const UInt doubleDepthDifference = ((maxCUDepth - maxCuDQPDepth)<<1);
-  const UInt uiAbsQpCUPartIdx = (uiAbsPartIdx>>doubleDepthDifference)<<doubleDepthDifference ;
-  const UInt uiQpCUDepth =   min(uiDepth,pcCU->getSlice()->getPPS()->getMaxCuDQPDepth()) ;
-
-  pcCU->setQPSubParts( qp, uiAbsQpCUPartIdx, uiQpCUDepth );
+  assert(0);
 }
 
 Void TDecCavlc::parseChromaQpAdjustment( TComDataCU* /*pcCU*/, UInt /*uiAbsPartIdx*/, UInt /*uiDepth*/ )

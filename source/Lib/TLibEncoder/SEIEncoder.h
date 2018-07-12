@@ -78,10 +78,33 @@ public:
   Void initSEISegmentedRectFramePacking(SEISegmentedRectFramePacking *sei);
   Void initSEITempMotionConstrainedTileSets (SEITempMotionConstrainedTileSets *sei, const TComPPS *pps);
   Void initSEIKneeFunctionInfo(SEIKneeFunctionInfo *sei);
+#if CCV_SEI_MESSAGE
+  Void initSEIContentColourVolume(SEIContentColourVolume *sei);
+#endif
+#if ERP_SR_OV_SEI_MESSAGE
+  Void initSEIErp(SEIEquirectangularProjection *sei);
+  Void initSEISphereRotation(SEISphereRotation *sei);
+  Void initSEIOmniViewport(SEIOmniViewport *sei);
+#endif
+#if CMP_SEI_MESSAGE
+  Void initSEICubemapProjection(SEICubemapProjection *sei);
+#endif
+#if RWP_SEI_MESSAGE
+  Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
+#endif
   Void initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *sei, Int iHorFilterIndex, Int iVerFilterIndex);
   Void initSEITimeCode(SEITimeCode *sei);
   Bool initSEIColourRemappingInfo(SEIColourRemappingInfo *sei, Int currPOC); // returns true on success, false on failure.
   Void initSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics *sei);
+#if RNSEI
+  Void readToneMappingInfoSEI(std::istream &fic, SEIToneMappingInfo *seiToneMappingInfo , Bool &failed );
+  Void readChromaResamplingFilterHintSEI(std::istream &fic, SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Bool &failed );
+  Void readKneeFunctionInfoSEI(std::istream &fic, SEIKneeFunctionInfo *seiKneeFunctionInfo, Bool &failed );
+  Void readColourRemapSEI(std::istream &fic, SEIColourRemappingInfo *seiColorRemappingInfo, Bool &failed );
+  Void readContentColourVolumeSEI(std::istream &fic, SEIContentColourVolume *seiContentColourVolume, Bool &failed );
+  Bool initSEIRegionalNesting(SEIRegionalNesting *sei, Int currPOC); // returns true on success, false on failure.
+  Void readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed );
+#endif
 
   // trailing SEIs
   Void initDecodedPictureHashSEI(SEIDecodedPictureHash *sei, TComPic *pcPic, std::string &rHashString, const BitDepths &bitDepths);
