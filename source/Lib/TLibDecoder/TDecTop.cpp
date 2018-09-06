@@ -302,8 +302,11 @@ Void TDecTop::xCreateLostPicture(Int iLostPoc)
   }
 }
 
-
+#if MCTS_EXTRACTION
+Void TDecTop::xActivateParameterSets(Bool bSkipCabacAndReconstruction)
+#else
 Void TDecTop::xActivateParameterSets()
+#endif
 {
   if (m_bFirstSliceInPicture)
   {
@@ -383,18 +386,24 @@ Void TDecTop::xActivateParameterSets()
     // transfer any SEI messages that have been received to the picture
     m_pcPic->setSEIs(m_SEIs);
     m_SEIs.clear();
-
-    // Recursive structure
-    m_cCuDecoder.create ( sps->getMaxTotalCUDepth(), sps->getMaxCUWidth(), sps->getMaxCUHeight(), sps->getChromaFormatIdc() );
-#if MCTS_ENC_CHECK
-    m_cCuDecoder.init   ( &m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction, &m_conformanceCheck );
-#else
-    m_cCuDecoder.init(&m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction);
+#if MCTS_EXTRACTION
+  if (!bSkipCabacAndReconstruction)
+  {
 #endif
-    m_cTrQuant.init     ( sps->getMaxTrSize() );
+      // Recursive structure
+      m_cCuDecoder.create ( sps->getMaxTotalCUDepth(), sps->getMaxCUWidth(), sps->getMaxCUHeight(), sps->getChromaFormatIdc() );
+  #if MCTS_ENC_CHECK
+      m_cCuDecoder.init   ( &m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction, &m_conformanceCheck );
+  #else
+      m_cCuDecoder.init(&m_cEntropyDecoder, &m_cTrQuant, &m_cPrediction);
+  #endif
+      m_cTrQuant.init     ( sps->getMaxTrSize() );
 
-    m_cSliceDecoder.create();
+      m_cSliceDecoder.create();
+    }
+#if MCTS_EXTRACTION
   }
+#endif
   else
   {
     // make the slice-pilot a real slice, and set up the slice-pilot for the next slice
@@ -483,7 +492,11 @@ Void TDecTop::xAnalysePrefixSEImessages()
 }
 #endif
 
-Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay )
+#if MCTS_EXTRACTION
+Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay, Bool bSkipCabacAndReconstruction)
+#else
+Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay)
+#endif
 {
   m_apcSlicePilot->initSlice(); // the slice pilot is an object to prepare for a new slice
                                 // it is not associated with picture, sps or pps structures.
@@ -637,7 +650,11 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
   }
 
   // actual decoding starts here
+#if MCTS_EXTRACTION
+  xActivateParameterSets(bSkipCabacAndReconstruction);
+#else
   xActivateParameterSets();
+#endif
 
 
   TComSlice* pcSlice = m_pcPic->getPicSym()->getSlice(m_uiSliceIdx);
@@ -664,7 +681,15 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
 
   if (!pcSlice->getDependentSliceSegmentFlag())
   {
-    pcSlice->checkCRA(pcSlice->getRPS(), m_pocCRA, m_associatedIRAPType, m_cListPic );
+    pcSlice->checkCRA(pcSlice->getRPS(), m_pocCRA, m_associatedIRAPType, m_cListPic);
+#if MCTS_EXTRACTION
+    if (bSkipCabacAndReconstruction)
+    {
+      m_bFirstSliceInPicture = false;
+      m_uiSliceIdx++;
+      return false;
+    }
+#endif
     // Set reference list
     pcSlice->setRefPicList( m_cListPic, true );
 
@@ -775,7 +800,11 @@ Void TDecTop::xDecodePPS(const std::vector<UChar> &naluData)
   m_parameterSetManager.storePPS( pps, naluData);
 }
 
+#if MCTS_EXTRACTION
+Bool TDecTop::decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay, Bool bSkipCabacAndReconstruction)
+#else
 Bool TDecTop::decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay)
+#endif
 {
   // ignore all NAL units of layers > 0
   if (nalu.m_nuhLayerId > 0)
@@ -833,7 +862,11 @@ Bool TDecTop::decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay)
     case NAL_UNIT_CODED_SLICE_RADL_R:
     case NAL_UNIT_CODED_SLICE_RASL_N:
     case NAL_UNIT_CODED_SLICE_RASL_R:
+#if MCTS_EXTRACTION
+      return xDecodeSlice(nalu, iSkipFrame, iPOCLastDisplay, bSkipCabacAndReconstruction);
+#else
       return xDecodeSlice(nalu, iSkipFrame, iPOCLastDisplay);
+#endif
       break;
 
     case NAL_UNIT_EOS:

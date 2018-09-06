@@ -922,7 +922,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SaoEncodingRateChroma",                           m_saoEncodingRateChroma,                            0.5, "The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma")
   ("MaxNumOffsetsPerPic",                             m_maxNumOffsetsPerPic,                             2048, "Max number of SAO offset per picture (Default: 2048)")
   ("SAOLcuBoundary",                                  m_saoCtuBoundary,                                 false, "0: right/bottom CTU boundary areas skipped from SAO parameter estimation, 1: non-deblocked pixels are used for those areas")
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  ("ResetEncoderStateAfterIRAP",                      m_resetEncoderStateAfterIRAP,                    false, "When true, resets the encoder's decisions after an IRAP (POC order). Disabled by default.")
+#else
   ("SAOResetEncoderStateAfterIRAP",                   m_saoResetEncoderStateAfterIRAP,                  false, "When true, resets the encoder's SAO state after an IRAP (POC order). Disabled by default.")
+#endif
   ("SliceMode",                                       tmpSliceMode,                            Int(NO_SLICES), "0: Disable all Recon slice limits, 1: Enforce max # of CTUs, 2: Enforce max # of bytes, 3:specify tiles per dependent slice")
   ("SliceArgument",                                   m_sliceArgument,                                      0, "Depending on SliceMode being:"
                                                                                                                "\t1: max number of CTUs per slice"
@@ -1104,6 +1108,9 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEITempMotionConstrainedTileSets",                m_tmctsSEIEnabled,                                false, "Control generation of temporal motion constrained tile sets SEI message")
 #if MCTS_ENC_CHECK
   ("SEITMCTSTileConstraint",                          m_tmctsSEITileConstraint,                         false, "Constrain motion vectors at tile boundaries")
+#endif
+#if MCTS_EXTRACTION
+  ("SEITMCTSExtractionInfo",                          m_tmctsExtractionSEIEnabled,                      false, "Control generation of MCTS extraction info SEI messages")
 #endif
   ("SEITimeCodeEnabled",                              m_timeCodeSEIEnabled,                             false, "Control generation of time code information SEI message")
   ("SEITimeCodeNumClockTs",                           m_timeCodeSEINumTs,                                   0, "Number of clock time sets [0..3]")
@@ -2141,10 +2148,14 @@ Void TAppEncCfg::xCheckParameter()
   {
     xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size for periodic IDR pictures");
   }
+#if !ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+#if !FIXSAORESETAFTERIRAP
   if (m_saoResetEncoderStateAfterIRAP)
   {
     xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size when SAOResetEncoderStateAfterIRAP is enabled");
   }
+#endif
+#endif
   xConfirmPara( m_uiMaxCUDepth < 1,                                                         "MaxPartitionDepth must be greater than zero");
   xConfirmPara( (m_uiMaxCUWidth  >> m_uiMaxCUDepth) < 4,                                    "Minimum partition width size should be larger than or equal to 8");
   xConfirmPara( (m_uiMaxCUHeight >> m_uiMaxCUDepth) < 4,                                    "Minimum partition height size should be larger than or equal to 8");
@@ -2732,6 +2743,15 @@ Void TAppEncCfg::xCheckParameter()
   {
     printf("Warning: Constrained Encoding for Temporal Motion Constrained Tile Sets is enabled. Disabling filtering across tile boundaries!\n");
     m_bLFCrossTileBoundaryFlag = false;
+  }
+#endif
+
+#if MCTS_EXTRACTION
+  if ((m_tmctsSEIEnabled) && (m_tmctsSEITileConstraint) && (m_tmctsExtractionSEIEnabled) && (m_sliceSegmentMode != 3) && (m_sliceSegmentArgument != 1) )
+  {
+    printf("Warning: SEITMCTSExtractionInfo is enabled. Enabling segmentation with one slice per tile.");
+    m_sliceMode = FIXED_NUMBER_OF_TILES;
+    m_sliceArgument = 1;
   }
 #endif
 

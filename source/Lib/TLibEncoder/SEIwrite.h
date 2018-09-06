@@ -83,6 +83,9 @@ protected:
   Void xWriteSEIMasteringDisplayColourVolume      (const SEIMasteringDisplayColourVolume& sei);
   Void xWriteSEISegmentedRectFramePacking         (const SEISegmentedRectFramePacking& sei);
   Void xWriteSEITempMotionConstrainedTileSets     (const SEITempMotionConstrainedTileSets& sei);
+#if MCTS_EXTRACTION
+  Void xWriteSEIMCTSExtractionInfoSet             (const SEIMCTSExtractionInfoSet& sei);
+#endif
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
 #if CCV_SEI_MESSAGE

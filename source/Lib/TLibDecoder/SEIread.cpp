@@ -304,6 +304,12 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEITempMotionConstrainedTileSets;
       xParseSEITempMotionConstraintsTileSets((SEITempMotionConstrainedTileSets&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
+#if MCTS_EXTRACTION
+    case SEI::MCTS_EXTRACTION_INFO_SET:
+      sei = new SEIMCTSExtractionInfoSet;
+      xParseSEIMCTSExtractionInfoSet((SEIMCTSExtractionInfoSet&)*sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+#endif
     case SEI::CHROMA_RESAMPLING_FILTER_HINT:
       sei = new SEIChromaResamplingFilterHint;
       xParseSEIChromaResamplingFilterHint((SEIChromaResamplingFilterHint&) *sei, payloadSize, pDecodedMessageOutputStream);
@@ -1343,6 +1349,99 @@ Void SEIReader::xParseSEITempMotionConstraintsTileSets(SEITempMotionConstrainedT
   }
 }
 
+#if MCTS_EXTRACTION
+Void SEIReader::xParseSEIMCTSExtractionInfoSet(SEIMCTSExtractionInfoSet& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  UInt code;
+  UInt numInfoSetsMinus1;
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+
+  sei_read_uvlc(pDecodedMessageOutputStream, code, "num_sets_in_message_minus1"); numInfoSetsMinus1 = code;
+  for (Int i = 0; i <= numInfoSetsMinus1; i++)
+  {
+    SEIMCTSExtractionInfoSet::MCTSExtractionInfo EIS;
+
+    sei_read_uvlc(pDecodedMessageOutputStream, code, "num_mcts_sets_minus1[ i ]");
+    EIS.m_idxOfMctsInSet.resize(code + 1);
+    for (Int j = 0; j < EIS.m_idxOfMctsInSet.size(); j++)
+    {
+      sei_read_uvlc(pDecodedMessageOutputStream, code, "num_mcts_in_set_minus1[ i ][ j ]");
+      EIS.m_idxOfMctsInSet[j].resize(code + 1);
+      for (Int k = 0; k < EIS.m_idxOfMctsInSet[j].size(); k++)
+      {
+        sei_read_uvlc(pDecodedMessageOutputStream, code, "idx_of_mcts_in_set[ i ][ j ][ k ]"); EIS.m_idxOfMctsInSet[j][k] = code;
+      }
+    }
+    sei_read_flag(pDecodedMessageOutputStream, code, "slice_reordering_enabled_flag[ i ]");  EIS.m_sliceReorderingEnabledFlag = (code != 0);
+    if (EIS.m_sliceReorderingEnabledFlag) 
+    {
+      sei_read_uvlc(pDecodedMessageOutputStream, code, "num_slice_segments_minus1[ i ]");
+      EIS.m_outputSliceSegmentAddress.resize(code + 1);
+      for (Int j = 0; j < EIS.m_outputSliceSegmentAddress.size(); j++)
+      {
+        sei_read_uvlc(pDecodedMessageOutputStream, code, "output_slice_segment_address[ i ][ j ]"); EIS.m_outputSliceSegmentAddress[j] = code;
+      }
+    }
+
+    sei_read_uvlc(pDecodedMessageOutputStream, code, "num_vps_in_info_set_minus1[i]");
+    EIS.m_vpsRbspData.resize(code + 1);
+    EIS.m_vpsRbspDataLength.resize(code + 1);
+    for (Int j = 0; j < EIS.m_vpsRbspDataLength.size(); j++)
+    {
+      sei_read_uvlc(pDecodedMessageOutputStream, code, "vps_rbsp_data_length[i][j]"); EIS.m_vpsRbspDataLength[j] = code;
+    }
+    sei_read_uvlc(pDecodedMessageOutputStream, code, "num_sps_in_info_set_minus1[i]");
+    EIS.m_spsRbspData.resize(code + 1);
+    EIS.m_spsRbspDataLength.resize(code + 1);
+    for (Int j = 0; j < EIS.m_spsRbspDataLength.size(); j++)
+    {
+      sei_read_uvlc(pDecodedMessageOutputStream, code, "sps_rbsp_data_length[i][j]"); EIS.m_spsRbspDataLength[j] = code;
+    }
+    sei_read_uvlc(pDecodedMessageOutputStream, code, "num_pps_in_info_set_minus1[i]");
+    EIS.m_ppsRbspData.resize(code + 1);
+    EIS.m_ppsNuhTemporalIdPlus1.resize(code + 1);
+    EIS.m_ppsRbspDataLength.resize(code + 1);
+    for (Int j = 0; j < EIS.m_ppsRbspDataLength.size(); j++)
+    {
+      sei_read_uvlc(pDecodedMessageOutputStream, code, "pps_nuh_temporal_id_plus1[i][j]"); EIS.m_ppsNuhTemporalIdPlus1[j] = code;
+      sei_read_uvlc(pDecodedMessageOutputStream, code, "sps_rbsp_data_length[i][j]"); EIS.m_ppsRbspDataLength[j] = code;
+    }
+
+    // byte alignment
+    while (m_pcBitstream->getNumBitsRead() % 8 != 0)
+    {
+      sei_read_flag(pDecodedMessageOutputStream, code, "mcts_alignment_bit_equal_to_zero");
+    }
+
+    for (Int j = 0; j < EIS.m_vpsRbspData.size(); j++)
+    {
+      EIS.m_vpsRbspData[j].resize(EIS.m_vpsRbspDataLength[j]);
+      for (Int k = 0; k < EIS.m_vpsRbspDataLength[j]; k++) 
+      {
+        sei_read_code(pDecodedMessageOutputStream, 8, code, "vps_rbsp_data_byte[ i ][ j ][ k ]"); EIS.m_vpsRbspData[j][k] = code;
+      }
+    }
+    for (Int j = 0; j < EIS.m_spsRbspData.size(); j++)
+    {
+      EIS.m_spsRbspData[j].resize(EIS.m_spsRbspDataLength[j]);
+      for (Int k = 0; k < EIS.m_spsRbspDataLength[j]; k++) 
+      {
+        sei_read_code(pDecodedMessageOutputStream, 8, code, "sps_rbsp_data_byte[ i ][ j ][ k ]"); EIS.m_spsRbspData[j][k] = code;
+      }
+    }
+    for (Int j = 0; j < EIS.m_ppsRbspData.size(); j++)
+    {
+      EIS.m_ppsRbspData[j].resize(EIS.m_ppsRbspDataLength[j]);
+      for (Int k = 0; k < EIS.m_ppsRbspDataLength[j]; k++) 
+      {
+        sei_read_code(pDecodedMessageOutputStream, 8, code, "pps_rbsp_data_byte[ i ][ j ][ k ]"); EIS.m_ppsRbspData[j][k] = code;
+      }
+    }
+    sei.m_MCTSExtractionInfoSets.push_back(EIS);
+  }
+}
+
+#endif
 
 Void SEIReader::xParseSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {

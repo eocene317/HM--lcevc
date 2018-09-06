@@ -107,6 +107,9 @@ private:
   UInt                    m_ltRefPicPocLsbSps[MAX_NUM_LONG_TERM_REF_PICS];
   Bool                    m_ltRefPicUsedByCurrPicFlag[MAX_NUM_LONG_TERM_REF_PICS];
   Int                     m_iLastIDR;
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  Int                     m_RASPOCforResetEncoder; // an IDR POC number, after which the next POC (in output order) will be reset. If MAX_INT, then no reset is pending.
+#endif
   Int                     m_iGopSize;
   Int                     m_iNumPicCoded;
   Bool                    m_bFirst;
@@ -183,6 +186,12 @@ public:
   TEncAnalyze& getAnalyzePData()   { return m_gcAnalyzeP; }
   TEncAnalyze& getAnalyzeBData()   { return m_gcAnalyzeB; }
 
+#if MCTS_EXTRACTION
+    Void generateVPS_RBSP(TComBitIf* rbsp, const TComVPS *vps);
+    Void generateSPS_RBSP(TComBitIf* rbsp, const TComSPS *sps);
+    Void generatePPS_RBSP(TComBitIf* rbsp, const TComPPS *pps);
+#endif
+
 protected:
   TEncRateCtrl* getRateCtrl()       { return m_pcRateCtrl;  }
 
@@ -211,8 +220,11 @@ protected:
   Double xCalculateRVM();
 
   Void xWriteAccessUnitDelimiter (AccessUnit &accessUnit, TComSlice *slice);
-
+#if MCTS_EXTRACTION
+  Void xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps);
+#else
   Void xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TComSPS *sps, const TComPPS *pps);
+#endif
   Void xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessages, SEIMessages& nestedSeiMessages, TComSlice *slice);
   Void xCreatePictureTimingSEI  (Int IRAPGOPid, SEIMessages& seiMessages, SEIMessages& nestedSeiMessages, SEIMessages& duInfoSeiMessages, TComSlice *slice, Bool isField, std::deque<DUData> &duData);
   Void xUpdateDuData(AccessUnit &testAU, std::deque<DUData> &duData);

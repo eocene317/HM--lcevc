@@ -277,7 +277,11 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setMaxNumOffsetsPerPic                               ( m_maxNumOffsetsPerPic);
 
   m_cTEncTop.setSaoCtuBoundary                                    ( m_saoCtuBoundary);
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  m_cTEncTop.setResetEncoderStateAfterIRAP                        ( m_resetEncoderStateAfterIRAP );
+#else
   m_cTEncTop.setSaoResetEncoderStateAfterIRAP                     ( m_saoResetEncoderStateAfterIRAP);
+#endif
   m_cTEncTop.setPCMInputBitDepthFlag                              ( m_bPCMInputBitDepthFlag);
   m_cTEncTop.setPCMFilterDisableFlag                              ( m_bPCMFilterDisableFlag);
 
@@ -335,6 +339,9 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setTMCTSSEIEnabled                                   ( m_tmctsSEIEnabled );
 #if MCTS_ENC_CHECK
   m_cTEncTop.setTMCTSSEITileConstraint                            ( m_tmctsSEITileConstraint );
+#endif
+#if MCTS_EXTRACTION
+  m_cTEncTop.setTMCTSExtractionSEIEnabled                         ( m_tmctsExtractionSEIEnabled);
 #endif
   m_cTEncTop.setTimeCodeSEIEnabled                                ( m_timeCodeSEIEnabled );
   m_cTEncTop.setNumberOfTimeSets                                  ( m_timeCodeSEINumTs );

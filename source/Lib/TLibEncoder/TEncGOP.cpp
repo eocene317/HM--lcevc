@@ -73,6 +73,10 @@ Int getLSB(Int poc, Int maxLSB)
 TEncGOP::TEncGOP()
 {
   m_iLastIDR            = 0;
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  m_RASPOCforResetEncoder = MAX_INT;
+#endif
+
   m_iGopSize            = 0;
   m_iNumPicCoded        = 0; //Niko
   m_bFirst              = true;
@@ -143,6 +147,26 @@ Void TEncGOP::init ( TEncTop* pcTEncTop )
   m_totalCoded         = 0;
 
 }
+
+#if MCTS_EXTRACTION
+Void TEncGOP::generateVPS_RBSP(TComBitIf* rbsp, const TComVPS *vps)
+{
+  m_pcEntropyCoder->setBitstream(rbsp);
+  m_pcEntropyCoder->encodeVPS(vps);
+}
+
+Void TEncGOP::generateSPS_RBSP(TComBitIf* rbsp, const TComSPS *sps)
+{
+  m_pcEntropyCoder->setBitstream(rbsp);
+  m_pcEntropyCoder->encodeSPS(sps);
+}
+
+Void TEncGOP::generatePPS_RBSP(TComBitIf* rbsp, const TComPPS *pps)
+{
+  m_pcEntropyCoder->setBitstream(rbsp);
+  m_pcEntropyCoder->encodePPS(pps);
+}
+#endif
 
 Int TEncGOP::xWriteVPS (AccessUnit &accessUnit, const TComVPS *vps)
 {
@@ -388,8 +412,11 @@ Void TEncGOP::xWriteDuSEIMessages (SEIMessages& duInfoSeiMessages, AccessUnit &a
   deleteSEIs(duInfoSeiMessages);
 }
 
-
+#if MCTS_EXTRACTION
+Void TEncGOP::xCreateIRAPLeadingSEIMessages(SEIMessages& seiMessages, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps)
+#else
 Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TComSPS *sps, const TComPPS *pps)
+#endif
 {
   OutputNALUnit nalu(NAL_UNIT_PREFIX_SEI);
 
@@ -434,7 +461,14 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEITempMotionConstrainedTileSets(sei, pps);
     seiMessages.push_back(sei);
   }
-
+#if MCTS_EXTRACTION
+  if (m_pcCfg->getTMCTSExtractionSEIEnabled())
+  {
+    SEIMCTSExtractionInfoSet *sei = new SEIMCTSExtractionInfoSet;
+    m_seiEncoder.initSEIMCTSExtractionInfo(sei, vps, sps, pps);
+    seiMessages.push_back(sei);
+  }
+#endif
   if(m_pcCfg->getTimeCodeSEIEnabled())
   {
     SEITimeCode *seiTimeCode = new SEITimeCode;
@@ -1149,6 +1183,7 @@ printHash(const HashType hashType, const std::string &digestStr)
   }
 }
 
+
 // ====================================================================================================================
 // Public member functions
 // ====================================================================================================================
@@ -1410,7 +1445,33 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       pcSlice->setSliceType ( P_SLICE );
     }
+
+
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+    if (pcSlice->getPOC() > m_RASPOCforResetEncoder && m_pcCfg->getResetEncoderStateAfterIRAP())
+    {
+      printf("Resetting\n");
+      // need to reset encoder decisions.
+      m_pcSliceEncoder->resetEncoderDecisions();
+
+      if (pcSlice->getSPS()->getUseSAO())
+      {
+        m_pcSAO->resetEncoderDecisions();
+      }
+      m_RASPOCforResetEncoder=MAX_INT;
+    }
+    if (pcSlice->isIRAP())
+    {
+      m_RASPOCforResetEncoder = pcSlice->getPOC();
+    }
+#endif
+
     pcSlice->setEncCABACTableIdx(m_pcSliceEncoder->getEncCABACTableIdx());
+#if MCTS_EXTRACTION
+    SliceType  encCABACTableIdx = pcSlice->getEncCABACTableIdx();
+    Bool encCabacInitFlag = (pcSlice->getSliceType() != encCABACTableIdx && encCABACTableIdx != I_SLICE) ? true : false;
+    pcSlice->setCabacInitFlag(encCabacInitFlag);
+#endif
 
     if (pcSlice->getSliceType() == B_SLICE)
     {
@@ -1706,7 +1767,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       // create prefix SEI messages at the beginning of the sequence
       assert(leadingSeiMessages.empty());
+#if MCTS_EXTRACTION
+      xCreateIRAPLeadingSEIMessages(leadingSeiMessages, m_pcEncTop->getVPS(),  pcSlice->getSPS(), pcSlice->getPPS());
+#else
       xCreateIRAPLeadingSEIMessages(leadingSeiMessages, pcSlice->getSPS(), pcSlice->getPPS());
+#endif
 
       m_bSeqFirst = false;
     }
@@ -1736,8 +1801,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
                           m_pcCfg->getTestSAODisableAtPictureLevel(),
                           m_pcCfg->getSaoEncodingRate(),
                           m_pcCfg->getSaoEncodingRateChroma(),
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+                          m_pcCfg->getSaoCtuBoundary());
+#else
                           m_pcCfg->getSaoCtuBoundary(),
                           m_pcCfg->getSaoResetEncoderStateAfterIRAP());
+#endif
       m_pcSAO->PCMLFDisableProcess(pcPic);
       m_pcEncTop->getRDGoOnSbacCoder()->setBitstream(NULL);
 
@@ -1797,7 +1866,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       }
 
       pcSlice->setEncCABACTableIdx(m_pcSliceEncoder->getEncCABACTableIdx());
-
+#if MCTS_EXTRACTION
+      encCABACTableIdx = pcSlice->getEncCABACTableIdx();
+      encCabacInitFlag = (pcSlice->getSliceType() != encCABACTableIdx && encCABACTableIdx != I_SLICE) ? true : false;
+      pcSlice->setCabacInitFlag(encCabacInitFlag);
+#endif
       tmpBitsBeforeWriting = m_pcEntropyCoder->getNumberOfWrittenBits();
       m_pcEntropyCoder->encodeSliceHeader(pcSlice);
       actualHeadBits += ( m_pcEntropyCoder->getNumberOfWrittenBits() - tmpBitsBeforeWriting );

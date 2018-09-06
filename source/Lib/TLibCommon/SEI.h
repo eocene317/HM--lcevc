@@ -109,6 +109,9 @@ public:
 #if RNSEI
     REGIONAL_NESTING                     = 157,
 #endif
+#if MCTS_EXTRACTION
+    MCTS_EXTRACTION_INFO_SET             = 158,
+#endif
   };
 
   SEI() {}
@@ -1005,6 +1008,31 @@ public:
   UShort m_ambientLightX;
   UShort m_ambientLightY;
 };
+#if MCTS_EXTRACTION
+class SEIMCTSExtractionInfoSet : public SEI
+{
+public:
+  struct MCTSExtractionInfo
+  {
+    std::vector< std::vector<UInt> > m_idxOfMctsInSet;
+    Bool m_sliceReorderingEnabledFlag;
+    std::vector<UInt> m_outputSliceSegmentAddress;
+    std::vector<UInt> m_vpsRbspDataLength;
+    std::vector<UInt> m_spsRbspDataLength;
+    std::vector<UInt> m_ppsNuhTemporalIdPlus1;
+    std::vector<UInt> m_ppsRbspDataLength;
+    std::vector< std::vector<uint8_t> > m_vpsRbspData;
+    std::vector< std::vector<uint8_t> > m_spsRbspData;
+    std::vector< std::vector<uint8_t> > m_ppsRbspData;
+    UInt mctsWidth;
+    UInt mctsHeight;
+  };
+    PayloadType payloadType() const { return MCTS_EXTRACTION_INFO_SET; }
+    SEIMCTSExtractionInfoSet() { }
+    virtual ~SEIMCTSExtractionInfoSet() { }
+    std::vector<MCTSExtractionInfo> m_MCTSExtractionInfoSets;
+};
+#endif
 
 #endif
 #if RNSEI

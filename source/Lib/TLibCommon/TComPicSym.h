@@ -107,6 +107,9 @@ private:
 
 #if REDUCED_ENCODER_MEMORY
 public:
+#if MCTS_EXTRACTION
+  friend class MctsExtractorTComPicSym;
+#endif
   struct DPBPerCtuData
   {
     Bool isInter(const UInt absPartAddr)                const { return m_pePredMode[absPartAddr] == MODE_INTER; }
@@ -192,6 +195,16 @@ protected:
   UInt               xCalculateNextCtuRSAddr( UInt uiCurrCtuRSAddr );
 
 };// END CLASS DEFINITION TComPicSym
+
+
+#if MCTS_EXTRACTION
+// Mcts Extractor helper class
+class MctsExtractorTComPicSym {
+public:
+  Void               setNumberOfCtusInFrame(TComPicSym *picsym, UInt numOfCtusInFrame) { picsym->m_numCtusInFrame = numOfCtusInFrame; }  ///< allows setting numOfCtusInFrame which controls memory allocations of several variables in TComPic, TComPicSym, TComLoopFilter and others. Make sure to have equal values of numOfCtusInFrame at time of creation and destruction of an object lifetime to avoid memory leaks.
+};
+#endif
+
 
 //! \}
 
