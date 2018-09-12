@@ -1269,6 +1269,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
    */
   m_inputFileWidth  = m_iSourceWidth;
   m_inputFileHeight = m_iSourceHeight;
+
+  if (!inputPathPrefix.empty() && inputPathPrefix.back() != '/' && inputPathPrefix.back() != '\\' )
+  {
+    inputPathPrefix += "/";
+  }
   m_inputFileName   = inputPathPrefix + m_inputFileName;
 
   m_framesToBeEncoded = ( m_framesToBeEncoded + m_temporalSubsampleRatio - 1 ) / m_temporalSubsampleRatio;
