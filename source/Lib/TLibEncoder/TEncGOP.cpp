@@ -1447,7 +1447,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 #if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
     if (pcSlice->getPOC() > m_RASPOCforResetEncoder && m_pcCfg->getResetEncoderStateAfterIRAP())
     {
-      printf("Resetting\n");
       // need to reset encoder decisions.
       m_pcSliceEncoder->resetEncoderDecisions();
 
