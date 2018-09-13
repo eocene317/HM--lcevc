@@ -108,6 +108,7 @@ protected:
   ChromaFormat m_InputChromaFormatIDC;
 
   Bool      m_printMSEBasedSequencePSNR;
+  Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
 #if JVET_F0064_MSSSIM

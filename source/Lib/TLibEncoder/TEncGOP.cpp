@@ -38,6 +38,7 @@
 #include <list>
 #include <algorithm>
 #include <functional>
+#include <inttypes.h>
 
 #include "TEncTop.h"
 #include "TEncGOP.h"
@@ -2506,6 +2507,18 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
   printf(" [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", result.psnr[COMPONENT_Y], result.psnr[COMPONENT_Cb], result.psnr[COMPONENT_Cr] );
 
+  if (outputLogCtrl.printHexPerPOCPSNRs)
+  {
+    uint64_t xPsnr[MAX_NUM_COMPONENT];
+    for (int i = 0; i < MAX_NUM_COMPONENT; i++)
+    {
+      copy(reinterpret_cast<uint8_t *>(&result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&result.psnr[i]) + sizeof(result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&xPsnr[i]));
+    }
+    printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
+  }
+
 #if JVET_F0064_MSSSIM
   if (outputLogCtrl.printMSSSIM)
   {
@@ -2911,6 +2924,18 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
   *PSNR_Y = result.psnr[COMPONENT_Y];
 
   printf("\n                                      Interlaced frame %d: [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", pcPicOrgSecondField->getPOC()/2 , result.psnr[COMPONENT_Y], result.psnr[COMPONENT_Cb], result.psnr[COMPONENT_Cr] );
+
+  if (outputLogCtrl.printHexPerPOCPSNRs)
+  {
+    uint64_t xPsnr[MAX_NUM_COMPONENT];
+    for (int i = 0; i < MAX_NUM_COMPONENT; i++)
+    {
+      copy(reinterpret_cast<uint8_t *>(&result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&result.psnr[i]) + sizeof(result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&xPsnr[i]));
+    }
+    printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
+  }
 
 #if JVET_F0064_MSSSIM
   if (outputLogCtrl.printMSSSIM)

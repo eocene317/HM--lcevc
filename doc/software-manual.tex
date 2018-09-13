@@ -689,6 +689,12 @@ Specifies the chroma format to use for processing. Permitted values (depending o
 When 0, the PSNR output is a linear average of the frame PSNRs; when 1, additional PSNRs are output which are formed from the average MSE of all the frames. The latter is useful when coding near-losslessly, where occasional frames become lossless.
 \\
 
+\Option{PrintHexPSNR} &
+%\ShortOption{\None} &
+\Default{false} &
+When 1, each POC line will include the 64-bit hexadecimal representation of the PSNR for each channel. This allows some types of simulations to be split into sub-simulations and the results later combined without loss of accuracy.
+\\
+
 \Option{PrintFrameMSE} &
 %\ShortOption{\None} &
 \Default{false} &

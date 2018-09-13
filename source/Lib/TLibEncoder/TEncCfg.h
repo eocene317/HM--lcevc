@@ -144,6 +144,7 @@ protected:
   Double    m_dIntraQpFactor;                                 ///< Intra Q Factor. If negative, use a default equation: 0.57*(1.0 - Clip3( 0.0, 0.5, 0.05*(Double)(isField ? (GopSize-1)/2 : GopSize-1) ))
 
   Bool      m_printMSEBasedSequencePSNR;
+  Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
 #if JVET_F0064_MSSSIM
@@ -550,6 +551,9 @@ public:
 
   Bool      getPrintMSEBasedSequencePSNR    ()         const { return m_printMSEBasedSequencePSNR;  }
   Void      setPrintMSEBasedSequencePSNR    (Bool value)     { m_printMSEBasedSequencePSNR = value; }
+
+  Bool      getPrintHexPsnr                 ()         const { return m_printHexPsnr;               }
+  Void      setPrintHexPsnr                 (Bool value)     { m_printHexPsnr = value;              }
 
   Bool      getPrintFrameMSE                ()         const { return m_printFrameMSE;              }
   Void      setPrintFrameMSE                (Bool value)     { m_printFrameMSE = value;             }

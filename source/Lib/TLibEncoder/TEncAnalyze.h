@@ -74,6 +74,7 @@ public:
 #if JCTVC_Y0037_XPSNR
     Bool printXPSNR;
 #endif
+    Bool printHexPerPOCPSNRs;
   };
 
   struct ResultData
