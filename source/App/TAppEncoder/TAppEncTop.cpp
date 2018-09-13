@@ -105,6 +105,15 @@ Void TAppEncTop::xInitLibCfg()
 #if JVET_F0064_MSSSIM
   m_cTEncTop.setPrintMSSSIM                                       ( m_printMSSSIM );
 #endif
+
+#if JCTVC_Y0037_XPSNR
+  m_cTEncTop.setXPSNREnableFlag                                   ( m_bXPSNREnableFlag);
+  for (Int id = 0 ; id < MAX_NUM_COMPONENT; id++)
+  {
+    m_cTEncTop.setXPSNRWeight                                     ( m_dXPSNRWeight[id], ComponentID(id));
+  }
+#endif
+
   m_cTEncTop.setCabacZeroWordPaddingEnabled                       ( m_cabacZeroWordPaddingEnabled );
 
   m_cTEncTop.setFrameRate                                         ( m_iFrameRate );

@@ -188,6 +188,9 @@ public:
     outputLogCtrl.printMSSSIM=m_printMSSSIM;
 #endif
     outputLogCtrl.printSequenceMSE=m_printSequenceMSE;
+#if JCTVC_Y0037_XPSNR
+    outputLogCtrl.printXPSNR=m_bXPSNREnableFlag;
+#endif
     return outputLogCtrl;
   }
 

@@ -90,6 +90,7 @@
 #define JVET_G0101_QP_SWITCHING                           1 ///< After switching POC, increase base QP instead of frame level QP.
 
 #define JVET_F0064_MSSSIM                                 1 ///< Calculate MS-SSIM scores
+#define JCTVC_Y0037_XPSNR                                 1 ///< Enable xPSNR (Cross-Component PSNR) computation
 
 #ifndef EXTENSION_360_VIDEO
 #define EXTENSION_360_VIDEO                               0   ///< extension for 360/spherical video coding support; this macro should be controlled by makefile, as it would be used to control whether the library is built and linked

@@ -760,6 +760,12 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 #if JVET_F0064_MSSSIM  
   ("PrintMSSSIM",                                     m_printMSSSIM,                                    false, "0 (default) do not print MS-SSIM scores, 1 = print MS-SSIM scores for each frame and for the whole sequence")
 #endif
+#if JCTVC_Y0037_XPSNR
+  ("xPSNREnableFlag,-xPS",                            m_bXPSNREnableFlag,                               false, "Cross-Component xPSNR computation")
+  ("xPSNRYWeight,-xPS0",                              m_dXPSNRWeight[COMPONENT_Y],             ( Double )1.0, "xPSNR weighting factor for Y (default: 1.0)")
+  ("xPSNRCbWeight,-xPS1",                             m_dXPSNRWeight[COMPONENT_Cb],            ( Double )1.0, "xPSNR weighting factor for Cb (default: 1.0)")
+  ("xPSNRCrWeight,-xPS2",                             m_dXPSNRWeight[COMPONENT_Cr],            ( Double )1.0, "xPSNR weighting factor for Cr (default: 1.0)")
+#endif
   ("CabacZeroWordPaddingEnabled",                     m_cabacZeroWordPaddingEnabled,                     true, "0 do not add conforming cabac-zero-words to bit streams, 1 (default) = add cabac-zero-words as required")
   ("ChromaFormatIDC,-cf",                             tmpChromaFormat,                                      0, "ChromaFormatIDC (400|420|422|444 or set 0 (default) for same as InputChromaFormat)")
   ("ConformanceMode",                                 m_conformanceWindowMode,                              0, "Deprecated alias of ConformanceWindowMode")
@@ -2841,6 +2847,13 @@ Void TAppEncCfg::xPrintParameter()
   printf("Frame MSE output                       : %s\n", (m_printFrameMSE    ? "Enabled" : "Disabled") );
 #if JVET_F0064_MSSSIM  
   printf("MS-SSIM output                         : %s\n", (m_printMSSSIM      ? "Enabled" : "Disabled") );
+#endif
+#if JCTVC_Y0037_XPSNR
+  printf("xPSNR calculation                      : %s\n", (m_bXPSNREnableFlag ? "Enabled" : "Disabled"));
+  if (m_bXPSNREnableFlag)
+  {
+    printf("xPSNR Weights                          : (%8.3f, %8.3f, %8.3f)\n", m_dXPSNRWeight[COMPONENT_Y], m_dXPSNRWeight[COMPONENT_Cb], m_dXPSNRWeight[COMPONENT_Cr]);
+  }
 #endif
   printf("Cabac-zero-word-padding                : %s\n", (m_cabacZeroWordPaddingEnabled? "Enabled" : "Disabled") );
   if (m_isField)

@@ -113,6 +113,12 @@ protected:
 #if JVET_F0064_MSSSIM
   Bool      m_printMSSSIM;
 #endif
+
+#if JCTVC_Y0037_XPSNR
+  Bool      m_bXPSNREnableFlag;                              ///< xPSNR enable flag
+  Double    m_dXPSNRWeight[MAX_NUM_COMPONENT];               ///< xPSNR per component weights
+#endif
+
   Bool      m_cabacZeroWordPaddingEnabled;
   Bool      m_bClipInputVideoToRec709Range;
   Bool      m_bClipOutputVideoToRec709Range;

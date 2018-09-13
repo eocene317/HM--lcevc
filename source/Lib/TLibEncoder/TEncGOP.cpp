@@ -2278,34 +2278,120 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
   //===== calculate PSNR =====
 
-  for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
+#if JCTVC_Y0037_XPSNR
+  if (outputLogCtrl.printXPSNR && pcPicD->getChromaFormat() != CHROMA_400)
   {
-    const ComponentID ch=ComponentID(chan);
-    const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
-    const Pel*  pOrg       = pOrgPicYuv->getAddr(ch);
-    const Int   iOrgStride = pOrgPicYuv->getStride(ch);
-    Pel*  pRec             = picd.getAddr(ch);
-    const Int   iRecStride = picd.getStride(ch);
-    const Int   iWidth  = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
-    const Int   iHeight = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
-
-    Int   iSize   = iWidth*iHeight;
-
-    UInt64 uiSSDtemp=0;
-    for(Int y = 0; y < iHeight; y++ )
+    TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+    Pel*   pOrg[MAX_NUM_COMPONENT];
+    Double dWeightPel[MAX_NUM_COMPONENT];
+    Int    iWeightSize[MAX_NUM_COMPONENT] = {1, 1, 1};
+    Pel*   pRec[MAX_NUM_COMPONENT];
+    Int    iOrgStride[MAX_NUM_COMPONENT], iRecStride[MAX_NUM_COMPONENT];
+    Int    iWidth[MAX_NUM_COMPONENT], iHeight[MAX_NUM_COMPONENT], iSize[MAX_NUM_COMPONENT];
+    UInt64 uiSSDtemp[MAX_NUM_COMPONENT];
+    UInt   uiShiftWidth[MAX_NUM_COMPONENT], uiShiftHeight[MAX_NUM_COMPONENT];
+    Intermediate_Int iDiff;
+    
+    for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
-      for(Int x = 0; x < iWidth; x++ )
-      {
-        Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
-        uiSSDtemp   += iDiff * iDiff;
-      }
-      pOrg += iOrgStride;
-      pRec += iRecStride;
+      const ComponentID ch=ComponentID(chan);
+      
+      iOrgStride[ch]    = pOrgPicYuv->getStride(ch);
+      iRecStride[ch]    = picd.getStride(ch);
+      iWidth[ch]        = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
+      iHeight[ch]       = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
+      iSize[ch]         = iWidth[ch]*iHeight[ch];
+      uiSSDtemp[ch]     = 0;
+      uiShiftWidth[ch]  = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444) ? 0 : 1;
+      uiShiftHeight[ch] = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444 || pcPicD->getChromaFormat() == CHROMA_422) ? 0 : 1;
+      dWeightPel[ch]    = m_pcCfg->getXPSNRWeight(ch);
+      pOrg[ch]          = pOrgPicYuv->getAddr(ch);
+      pRec[ch]          = picd.getAddr(ch);
     }
-    const Int maxval = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch)) - 8);
-    const Double fRefValue = (Double) maxval * maxval * iSize;
-    result.psnr[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
-    result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize);
+    
+    Double dSSDtemp=0;
+    std::vector<Double> vecSSEChroma(iSize[COMPONENT_Cb], Double(0));
+    for(Int y = 0, t= 0; y < iHeight[COMPONENT_Cb]; y++ )
+    {
+      for(Int x = 0; x < iWidth[COMPONENT_Cb]; x++, t++)
+      {
+        UInt64 uiSE_cb, uiSE_cr;
+        iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cb][x] - (Intermediate_Int)pRec[COMPONENT_Cb][x] );
+        uiSE_cb = iDiff * iDiff;
+        iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cr][x] - (Intermediate_Int)pRec[COMPONENT_Cr][x] );
+        uiSE_cr = iDiff * iDiff;
+        uiSSDtemp[COMPONENT_Cb] += uiSE_cb;
+        uiSSDtemp[COMPONENT_Cr] += uiSE_cr;
+        vecSSEChroma[t] = dWeightPel[COMPONENT_Cb] * (Double) uiSE_cb + dWeightPel[COMPONENT_Cr] * (Double) uiSE_cr;
+      }
+      pOrg[COMPONENT_Cb]  += iOrgStride[COMPONENT_Cb];
+      pRec[COMPONENT_Cb]  += iRecStride[COMPONENT_Cb];
+      pOrg[COMPONENT_Cr]  += iOrgStride[COMPONENT_Cr];
+      pRec[COMPONENT_Cr]  += iRecStride[COMPONENT_Cr];
+    }
+    
+    for(Int y = 0; y < iHeight[COMPONENT_Y]; y++ )
+    {
+      UInt y_step_chroma = (y >> uiShiftHeight[COMPONENT_Cb]) * iWidth[COMPONENT_Cb];
+      for(Int x = 0; x < iWidth[COMPONENT_Y]; x++)
+      {
+        UInt64 uiSE_y;
+        UInt x_step_chroma = (x >> uiShiftWidth[COMPONENT_Cb]);
+        iDiff   = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Y][x] - (Intermediate_Int)pRec[COMPONENT_Y][x] );
+        uiSE_y  = iDiff * iDiff;
+        uiSSDtemp[COMPONENT_Y] += uiSE_y;
+        dSSDtemp += sqrt(dWeightPel[COMPONENT_Y] * (Double) uiSE_y + vecSSEChroma[y_step_chroma+x_step_chroma]);
+      }
+      pOrg[COMPONENT_Y]  += iOrgStride[COMPONENT_Y];
+      pRec[COMPONENT_Y]  += iRecStride[COMPONENT_Y];
+    }
+    
+    Double fWValue = 0;
+    for( Int chan = 0; chan<pcPicD->getNumberValidComponents(); chan++)
+    {
+      const ComponentID ch=ComponentID(chan);
+      const UInt maxval  = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch)) - 8);
+      const Double fRefValue = (Double) maxval * maxval * iSize[ch];
+      result.psnr[ch]        = ( uiSSDtemp[ch] ? 10.0 * log10( fRefValue / (Double)uiSSDtemp[ch] ) : 999.99 );
+      result.MSEyuvframe[ch]  = (Double)uiSSDtemp[ch]/(iSize[ch]);
+      fWValue += (Double) iWeightSize[ch] * (Double) iSize[ch];
+    }
+    const Double maxval    = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(COMPONENT_Y)) - 8);
+    fWValue = Double( maxval * fWValue);
+    result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
+  }
+  else
+#endif
+  {
+    for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
+    {
+      const ComponentID ch=ComponentID(chan);
+      const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+      const Pel*  pOrg       = pOrgPicYuv->getAddr(ch);
+      const Int   iOrgStride = pOrgPicYuv->getStride(ch);
+      Pel*  pRec             = picd.getAddr(ch);
+      const Int   iRecStride = picd.getStride(ch);
+      const Int   iWidth  = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
+      const Int   iHeight = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
+
+      Int   iSize   = iWidth*iHeight;
+
+      UInt64 uiSSDtemp=0;
+      for(Int y = 0; y < iHeight; y++ )
+      {
+        for(Int x = 0; x < iWidth; x++ )
+        {
+          Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
+          uiSSDtemp   += iDiff * iDiff;
+        }
+        pOrg += iOrgStride;
+        pRec += iRecStride;
+      }
+      const Int maxval = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch)) - 8);
+      const Double fRefValue = (Double) maxval * maxval * iSize;
+      result.psnr[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
+      result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize);
+    }
   }
 #if EXTENSION_360_VIDEO
   m_ext360.calculatePSNRs(pcPic);
@@ -2425,6 +2511,12 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   {
     printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }  
+#endif
+#if JCTVC_Y0037_XPSNR
+  if (outputLogCtrl.printXPSNR)
+  {
+    printf(" [xPSNR %6.4lf dB]", result.xpsnr);
+  }
 #endif
   if (outputLogCtrl.printFrameMSE)
   {
@@ -2649,45 +2741,135 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
   assert(apcPicRecFields[0]->getChromaFormat()==apcPicRecFields[1]->getChromaFormat());
   const UInt numValidComponents=apcPicRecFields[0]->getNumberValidComponents();
 
-  for(Int chan=0; chan<numValidComponents; chan++)
+#if JCTVC_Y0037_XPSNR
+  if (outputLogCtrl.printXPSNR && apcPicRecFields[0]->getChromaFormat() != CHROMA_400 && apcPicRecFields[1]->getChromaFormat() != CHROMA_400)
   {
-    const ComponentID ch=ComponentID(chan);
-    assert(apcPicRecFields[0]->getWidth(ch)==apcPicRecFields[1]->getWidth(ch));
-    assert(apcPicRecFields[0]->getHeight(ch)==apcPicRecFields[1]->getHeight(ch));
-
-    UInt64 uiSSDtemp=0;
-    const Int   iWidth  = apcPicRecFields[0]->getWidth (ch) - (m_pcEncTop->getPad(0) >> apcPicRecFields[0]->getComponentScaleX(ch));
-    const Int   iHeight = apcPicRecFields[0]->getHeight(ch) - ((m_pcEncTop->getPad(1) >> 1) >> apcPicRecFields[0]->getComponentScaleY(ch));
-
-    Int   iSize   = iWidth*iHeight;
-
+    // For interlace images, we need to scan the two fields independently
+    Pel*   pOrg[MAX_NUM_COMPONENT];
+    Double dWeightPel[MAX_NUM_COMPONENT];
+    Int    iWeightSize[MAX_NUM_COMPONENT] = {1, 1, 1};
+    Pel*   pRec[MAX_NUM_COMPONENT];
+    Int    iOrgStride[MAX_NUM_COMPONENT], iRecStride[MAX_NUM_COMPONENT];
+    Int    iWidth[MAX_NUM_COMPONENT], iHeight[MAX_NUM_COMPONENT], iSize[MAX_NUM_COMPONENT];
+    UInt64 uiSSDtemp[MAX_NUM_COMPONENT];
+    UInt   uiShiftWidth[MAX_NUM_COMPONENT], uiShiftHeight[MAX_NUM_COMPONENT];
+    Intermediate_Int iDiff;
+    Double dSSDtemp = 0.0;
+    Double fWValue  = 0.0;
     for(UInt fieldNum=0; fieldNum<2; fieldNum++)
     {
       TComPic *pcPic=apcPicOrgFields[fieldNum];
       TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
+      TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
 
-      const Pel*  pOrg    = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
-      Pel*  pRec    = pcPicD->getAddr(ch);
-      const Int   iStride = pcPicD->getStride(ch);
-
-
-      for(Int y = 0; y < iHeight; y++ )
+      for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
       {
-        for(Int x = 0; x < iWidth; x++ )
+        const ComponentID ch=ComponentID(chan);
+        iOrgStride[ch]    = pOrgPicYuv->getStride(ch);
+        iRecStride[ch]    = pcPicD->getStride(ch);
+        iWidth[ch]        = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
+        iHeight[ch]       = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> 1) >> pcPic->getComponentScaleY(ch));
+        iSize[ch]         = iWidth[ch]*iHeight[ch];
+        uiSSDtemp[ch]     = 0;
+        uiShiftWidth[ch]  = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444) ? 0 : 1;
+        uiShiftHeight[ch] = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444 || pcPicD->getChromaFormat() == CHROMA_422) ? 0 : 1;
+        dWeightPel[ch]    = m_pcCfg->getXPSNRWeight(ch);
+        pOrg[ch]          = pOrgPicYuv->getAddr(ch);
+        pRec[ch]          = pcPicD->getAddr(ch);
+      }
+      std::vector<Double> vecSSEChroma(iSize[COMPONENT_Cb], Double(0));
+
+      for(Int y = 0, t= 0; y < iHeight[COMPONENT_Cb]; y++ )
+      {
+        for(Int x = 0; x < iWidth[COMPONENT_Cb]; x++, t++)
         {
-          Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
-          uiSSDtemp   += iDiff * iDiff;
+          UInt64 uiSE_cb, uiSE_cr;
+          iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cb][x] - (Intermediate_Int)pRec[COMPONENT_Cb][x] );
+          uiSE_cb = iDiff * iDiff;
+          iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cr][x] - (Intermediate_Int)pRec[COMPONENT_Cr][x] );
+          uiSE_cr = iDiff * iDiff;
+          uiSSDtemp[COMPONENT_Cb] += uiSE_cb;
+          uiSSDtemp[COMPONENT_Cr] += uiSE_cr;
+          vecSSEChroma[t] = dWeightPel[COMPONENT_Cb] * (Double) uiSE_cb + dWeightPel[COMPONENT_Cr] * (Double) uiSE_cr;
         }
-        pOrg += iStride;
-        pRec += iStride;
+        pOrg[COMPONENT_Cb]  += iOrgStride[COMPONENT_Cb];
+        pRec[COMPONENT_Cb]  += iRecStride[COMPONENT_Cb];
+        pOrg[COMPONENT_Cr]  += iOrgStride[COMPONENT_Cr];
+        pRec[COMPONENT_Cr]  += iRecStride[COMPONENT_Cr];
+      }
+
+      for(Int y = 0; y < iHeight[COMPONENT_Y]; y++ )
+      {
+        UInt y_step_chroma = (y >> uiShiftHeight[COMPONENT_Cb]) * iWidth[COMPONENT_Cb];
+        for(Int x = 0; x < iWidth[COMPONENT_Y]; x++)
+        {
+          UInt64 uiSE_y;
+          UInt x_step_chroma = (x >> uiShiftWidth[COMPONENT_Cb]);
+          iDiff   = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Y][x] - (Intermediate_Int)pRec[COMPONENT_Y][x] );
+          uiSE_y  = iDiff * iDiff;
+          uiSSDtemp[COMPONENT_Y] += uiSE_y;
+          dSSDtemp += sqrt(dWeightPel[COMPONENT_Y] * (Double) uiSE_y + vecSSEChroma[y_step_chroma+x_step_chroma]);
+        }
+        pOrg[COMPONENT_Y]  += iOrgStride[COMPONENT_Y];
+        pRec[COMPONENT_Y]  += iRecStride[COMPONENT_Y];
+      }
+
+      for( Int chan = 0; chan<pcPicD->getNumberValidComponents(); chan++)
+      {
+        const ComponentID ch=ComponentID(chan);
+        const UInt maxval  = 255 << (sps.getBitDepth(toChannelType(ch)) - 8);
+        const Double fRefValue = (Double) maxval * maxval * iSize[ch];
+        result.psnr[ch]        = ( uiSSDtemp[ch] ? 10.0 * log10( fRefValue / (Double)uiSSDtemp[ch] ) : 999.99 );
+        result.MSEyuvframe[ch]  = (Double)uiSSDtemp[ch]/(iSize[ch]);
+        fWValue += (Double) iWeightSize[ch] * (Double) iSize[ch];
       }
     }
-    const Int maxval = 255 << (sps.getBitDepth(toChannelType(ch)) - 8);
-    const Double fRefValue = (Double) maxval * maxval * iSize*2;
-    result.psnr[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
-    result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize*2);
+    const Double maxval    = 255 << (sps.getBitDepth(toChannelType(COMPONENT_Y)) - 8);
+    fWValue = Double( maxval * fWValue);
+    result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
   }
+  else
+#endif
+  {
+    for(Int chan=0; chan<numValidComponents; chan++)
+    {
+      const ComponentID ch=ComponentID(chan);
+      assert(apcPicRecFields[0]->getWidth(ch)==apcPicRecFields[1]->getWidth(ch));
+      assert(apcPicRecFields[0]->getHeight(ch)==apcPicRecFields[1]->getHeight(ch));
 
+      UInt64 uiSSDtemp=0;
+      const Int   iWidth  = apcPicRecFields[0]->getWidth (ch) - (m_pcEncTop->getPad(0) >> apcPicRecFields[0]->getComponentScaleX(ch));
+      const Int   iHeight = apcPicRecFields[0]->getHeight(ch) - ((m_pcEncTop->getPad(1) >> 1) >> apcPicRecFields[0]->getComponentScaleY(ch));
+
+      Int   iSize   = iWidth*iHeight;
+
+      for(UInt fieldNum=0; fieldNum<2; fieldNum++)
+      {
+        TComPic *pcPic=apcPicOrgFields[fieldNum];
+        TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
+
+        const Pel*  pOrg    = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
+        Pel*  pRec    = pcPicD->getAddr(ch);
+        const Int   iStride = pcPicD->getStride(ch);
+
+
+        for(Int y = 0; y < iHeight; y++ )
+        {
+          for(Int x = 0; x < iWidth; x++ )
+          {
+            Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
+            uiSSDtemp   += iDiff * iDiff;
+          }
+          pOrg += iStride;
+          pRec += iStride;
+        }
+      }
+      const Int maxval = 255 << (sps.getBitDepth(toChannelType(ch)) - 8);
+      const Double fRefValue = (Double) maxval * maxval * iSize*2;
+      result.psnr[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
+      result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize*2);
+    }
+  }
 #if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
   if (outputLogCtrl.printMSSSIM)

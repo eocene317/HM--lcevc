@@ -707,6 +707,30 @@ When 1, the Mean Square Error (MSE) values of the entire sequence will also be o
 When 1, the multi-scale structural similarity (MS-SSIM) will also be output alongside the PSNR values.
 \\
 
+\Option{xPSNREnableFlag (-xPS} &
+%\ShortOption{\None} &
+\Default{false} &
+When 1, the cross component PSNR is calculated, using the weights provided with xPSNRYWeight, xPSNRCbWeight and xPSNRCrWeight.
+\\
+
+\Option{xPSNRYWeight (-xPS0)} &
+%\ShortOption{\None} &
+\Default{1.0} &
+Specifies the xPSNR weighting factor for Y.
+\\
+
+\Option{xPSNRCbWeight (-xPS1)} &
+%\ShortOption{\None} &
+\Default{1.0} &
+Specifies the xPSNR weighting factor for Cb.
+\\
+
+\Option{xPSNRCrWeight (-xPS2)} &
+%\ShortOption{\None} &
+\Default{1.0} &
+Specifies the xPSNR weighting factor for Cr.
+\\
+
 \Option{SummaryOutFilename} &
 %\ShortOption{\None} &
 \Default{false} &
