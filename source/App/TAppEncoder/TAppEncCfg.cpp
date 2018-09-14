@@ -930,7 +930,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("MaxNumOffsetsPerPic",                             m_maxNumOffsetsPerPic,                             2048, "Max number of SAO offset per picture (Default: 2048)")
   ("SAOLcuBoundary",                                  m_saoCtuBoundary,                                 false, "0: right/bottom CTU boundary areas skipped from SAO parameter estimation, 1: non-deblocked pixels are used for those areas")
 #if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
-  ("ResetEncoderStateAfterIRAP",                      m_resetEncoderStateAfterIRAP,                    false, "When true, resets the encoder's decisions after an IRAP (POC order). Disabled by default.")
+  ("ResetEncoderStateAfterIRAP",                      m_resetEncoderStateAfterIRAP,                     true, "When true, resets the encoder's decisions after an IRAP (POC order). Disabled by default.")
 #else
   ("SAOResetEncoderStateAfterIRAP",                   m_saoResetEncoderStateAfterIRAP,                  false, "When true, resets the encoder's SAO state after an IRAP (POC order). Disabled by default.")
 #endif
