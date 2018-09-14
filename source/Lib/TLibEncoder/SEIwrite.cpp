@@ -956,14 +956,14 @@ Void SEIWriter::xWriteSEITempMotionConstrainedTileSets(const SEITempMotionConstr
 Void SEIWriter::xWriteSEIMCTSExtractionInfoSet(const SEIMCTSExtractionInfoSet& sei)
 {
   assert(!sei.m_MCTSExtractionInfoSets.empty());
-  WRITE_UVLC((sei.m_MCTSExtractionInfoSets.size() - 1), "num_sets_in_message_minus1");
+  WRITE_UVLC(((UInt)sei.m_MCTSExtractionInfoSets.size() - 1), "num_sets_in_message_minus1");
   for (std::vector<SEIMCTSExtractionInfoSet::MCTSExtractionInfo>::const_iterator MCTSEISiter = sei.m_MCTSExtractionInfoSets.begin();
          MCTSEISiter != sei.m_MCTSExtractionInfoSets.end(); MCTSEISiter++)
   {
-    WRITE_UVLC((MCTSEISiter->m_idxOfMctsInSet.size() - 1), "num_mcts_sets_minus1[ i ]");
+    WRITE_UVLC(((UInt)MCTSEISiter->m_idxOfMctsInSet.size() - 1), "num_mcts_sets_minus1[ i ]");
     for ( Int j = 0; j < MCTSEISiter->m_idxOfMctsInSet.size(); j++)
     {
-      WRITE_UVLC((MCTSEISiter->m_idxOfMctsInSet[j].size() - 1), "num_mcts_in_set_minus1[ i ][ j ]");
+      WRITE_UVLC(((UInt)MCTSEISiter->m_idxOfMctsInSet[j].size() - 1), "num_mcts_in_set_minus1[ i ][ j ]");
       for (Int k = 0; k < MCTSEISiter->m_idxOfMctsInSet[j].size(); k++)
       {
         WRITE_UVLC((MCTSEISiter->m_idxOfMctsInSet[j][k]), "idx_of_mcts_in_set[ i ][ j ][ k ]");
@@ -972,23 +972,23 @@ Void SEIWriter::xWriteSEIMCTSExtractionInfoSet(const SEIMCTSExtractionInfoSet& s
     WRITE_FLAG((MCTSEISiter->m_sliceReorderingEnabledFlag? 1 : 0 ), "slice_reordering_enabled_flag[ i ]");
     if ( MCTSEISiter->m_sliceReorderingEnabledFlag )
     {
-      WRITE_UVLC((MCTSEISiter->m_outputSliceSegmentAddress.size() - 1), "num_slice_segments_minus1[ i ]");
+      WRITE_UVLC(((UInt)MCTSEISiter->m_outputSliceSegmentAddress.size() - 1), "num_slice_segments_minus1[ i ]");
       for (Int j = 0; j < MCTSEISiter->m_outputSliceSegmentAddress.size(); j++)
       {
         WRITE_UVLC((MCTSEISiter->m_outputSliceSegmentAddress[j]), "output_slice_segment_address[ i ][ j ]");
       }
     }
-    WRITE_UVLC((MCTSEISiter->m_vpsRbspDataLength.size() - 1), "num_vps_in_info_set_minus1[i]");
+    WRITE_UVLC(((UInt)MCTSEISiter->m_vpsRbspDataLength.size() - 1), "num_vps_in_info_set_minus1[i]");
     for (Int j = 0; j < MCTSEISiter->m_vpsRbspDataLength.size(); j++)
     {
       WRITE_UVLC((MCTSEISiter->m_vpsRbspDataLength[j]), "vps_rbsp_data_length[i][j]");
     }
-    WRITE_UVLC((MCTSEISiter->m_spsRbspDataLength.size() - 1), "num_sps_in_info_set_minus1[i]");
+    WRITE_UVLC(((UInt)MCTSEISiter->m_spsRbspDataLength.size() - 1), "num_sps_in_info_set_minus1[i]");
     for (Int j = 0; j < MCTSEISiter->m_spsRbspDataLength.size(); j++)
     {
       WRITE_UVLC((MCTSEISiter->m_spsRbspDataLength[j]), "sps_rbsp_data_length[i][j]");
     }
-    WRITE_UVLC((MCTSEISiter->m_ppsRbspDataLength.size() - 1), "num_sps_in_info_set_minus1[i]");
+    WRITE_UVLC(((UInt)MCTSEISiter->m_ppsRbspDataLength.size() - 1), "num_sps_in_info_set_minus1[i]");
     for (Int j = 0; j < MCTSEISiter->m_ppsRbspDataLength.size(); j++)
     {
       WRITE_UVLC((MCTSEISiter->m_ppsNuhTemporalIdPlus1[j]), "pps_nuh_temporal_id_plus1[i][j]");
