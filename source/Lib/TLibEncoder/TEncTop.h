@@ -179,11 +179,26 @@ public:
                TComList<TComPicYuv*>& rcListPicYuvRecOut,
                std::list<AccessUnit>& accessUnitsOut, Int& iNumEncoded, Bool isTff);
 
+  TEncAnalyze::OutputLogControl getOutputLogControl() const
+  {
+    TEncAnalyze::OutputLogControl outputLogCtrl;
+    outputLogCtrl.printFrameMSE=m_printFrameMSE;
+    outputLogCtrl.printMSEBasedSNR=m_printMSEBasedSequencePSNR;
 #if JVET_F0064_MSSSIM
-  Void printSummary(Bool isField) { m_cGOPEncoder.printOutSummary (m_uiNumAllPicCoded, isField, m_printMSEBasedSequencePSNR, m_printSequenceMSE, m_printMSSSIM, m_spsMap.getFirstPS()->getBitDepths()); }
-#else
-  Void printSummary(Bool isField) { m_cGOPEncoder.printOutSummary (m_uiNumAllPicCoded, isField, m_printMSEBasedSequencePSNR, m_printSequenceMSE, m_spsMap.getFirstPS()->getBitDepths()); }
+    outputLogCtrl.printMSSSIM=m_printMSSSIM;
 #endif
+    outputLogCtrl.printSequenceMSE=m_printSequenceMSE;
+#if JCTVC_Y0037_XPSNR
+    outputLogCtrl.printXPSNR=m_bXPSNREnableFlag;
+#endif
+    outputLogCtrl.printHexPerPOCPSNRs=m_printHexPsnr;
+    return outputLogCtrl;
+  }
+
+  Void printSummary(Bool isField)
+  {
+    m_cGOPEncoder.printOutSummary (m_uiNumAllPicCoded, isField, getOutputLogControl(), m_spsMap.getFirstPS()->getBitDepths());
+  }
 
 };
 

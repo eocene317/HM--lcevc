@@ -321,6 +321,9 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
 #if RNSEI
     case SEI::REGIONAL_NESTING:                     return "Regional nesting";
 #endif
+#if MCTS_EXTRACTION
+    case SEI::MCTS_EXTRACTION_INFO_SET:             return "MCTS extraction information";
+#endif
     default:                                        return "Unknown";
   }
 }

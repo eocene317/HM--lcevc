@@ -100,11 +100,21 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setLowerBitRateConstraintFlag                        ( m_lowerBitRateConstraintFlag );
 
   m_cTEncTop.setPrintMSEBasedSequencePSNR                         ( m_printMSEBasedSequencePSNR);
+  m_cTEncTop.setPrintHexPsnr                                      ( m_printHexPsnr);
   m_cTEncTop.setPrintFrameMSE                                     ( m_printFrameMSE);
   m_cTEncTop.setPrintSequenceMSE                                  ( m_printSequenceMSE);
 #if JVET_F0064_MSSSIM
   m_cTEncTop.setPrintMSSSIM                                       ( m_printMSSSIM );
 #endif
+
+#if JCTVC_Y0037_XPSNR
+  m_cTEncTop.setXPSNREnableFlag                                   ( m_bXPSNREnableFlag);
+  for (Int id = 0 ; id < MAX_NUM_COMPONENT; id++)
+  {
+    m_cTEncTop.setXPSNRWeight                                     ( m_dXPSNRWeight[id], ComponentID(id));
+  }
+#endif
+
   m_cTEncTop.setCabacZeroWordPaddingEnabled                       ( m_cabacZeroWordPaddingEnabled );
 
   m_cTEncTop.setFrameRate                                         ( m_iFrameRate );
@@ -277,7 +287,11 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setMaxNumOffsetsPerPic                               ( m_maxNumOffsetsPerPic);
 
   m_cTEncTop.setSaoCtuBoundary                                    ( m_saoCtuBoundary);
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  m_cTEncTop.setResetEncoderStateAfterIRAP                        ( m_resetEncoderStateAfterIRAP );
+#else
   m_cTEncTop.setSaoResetEncoderStateAfterIRAP                     ( m_saoResetEncoderStateAfterIRAP);
+#endif
   m_cTEncTop.setPCMInputBitDepthFlag                              ( m_bPCMInputBitDepthFlag);
   m_cTEncTop.setPCMFilterDisableFlag                              ( m_bPCMFilterDisableFlag);
 
@@ -335,6 +349,9 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setTMCTSSEIEnabled                                   ( m_tmctsSEIEnabled );
 #if MCTS_ENC_CHECK
   m_cTEncTop.setTMCTSSEITileConstraint                            ( m_tmctsSEITileConstraint );
+#endif
+#if MCTS_EXTRACTION
+  m_cTEncTop.setTMCTSExtractionSEIEnabled                         ( m_tmctsExtractionSEIEnabled);
 #endif
   m_cTEncTop.setTimeCodeSEIEnabled                                ( m_timeCodeSEIEnabled );
   m_cTEncTop.setNumberOfTimeSets                                  ( m_timeCodeSEINumTs );

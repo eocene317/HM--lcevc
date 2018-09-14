@@ -76,6 +76,7 @@
 
 #define PRINT_RPS_INFO                                    0 ///< Enable/disable the printing of bits used to send the RPS.
 
+#define MCTS_EXTRACTION                                   1 ///< Additional project for MCTS Extraction as in JCTVC-AC1005
 // ====================================================================================================================
 // Tool Switches - transitory (these macros are likely to be removed in future revisions)
 // ====================================================================================================================
@@ -89,6 +90,7 @@
 #define JVET_G0101_QP_SWITCHING                           1 ///< After switching POC, increase base QP instead of frame level QP.
 
 #define JVET_F0064_MSSSIM                                 1 ///< Calculate MS-SSIM scores
+#define JCTVC_Y0037_XPSNR                                 1 ///< Enable xPSNR (Cross-Component PSNR) computation
 
 #ifndef EXTENSION_360_VIDEO
 #define EXTENSION_360_VIDEO                               0   ///< extension for 360/spherical video coding support; this macro should be controlled by makefile, as it would be used to control whether the library is built and linked
@@ -101,6 +103,10 @@
 #define ERP_SR_OV_SEI_MESSAGE                             1 // equirectangular projection, sphere rotation, and omni viewport SEI message
 
 #define RNSEI                                             1  ///< Support for signalling regional nesting SEI message
+
+#define FIXSAORESETAFTERIRAP                              1 // Fix the reset mechanism for SAO after an IRAP for the case of IRAP period equal to gop size.
+#define ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP            1 // Add support to reseting encoder decisions after IRAP, to enable independent/parallel coding of randomaccess configuration intra-periods.
+
 // ====================================================================================================================
 // Tool Switches
 // ====================================================================================================================

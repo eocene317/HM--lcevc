@@ -38,6 +38,7 @@
 #include <list>
 #include <algorithm>
 #include <functional>
+#include <inttypes.h>
 
 #include "TEncTop.h"
 #include "TEncGOP.h"
@@ -73,6 +74,10 @@ Int getLSB(Int poc, Int maxLSB)
 TEncGOP::TEncGOP()
 {
   m_iLastIDR            = 0;
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  m_RASPOCforResetEncoder = MAX_INT;
+#endif
+
   m_iGopSize            = 0;
   m_iNumPicCoded        = 0; //Niko
   m_bFirst              = true;
@@ -143,6 +148,26 @@ Void TEncGOP::init ( TEncTop* pcTEncTop )
   m_totalCoded         = 0;
 
 }
+
+#if MCTS_EXTRACTION
+Void TEncGOP::generateVPS_RBSP(TComBitIf* rbsp, const TComVPS *vps)
+{
+  m_pcEntropyCoder->setBitstream(rbsp);
+  m_pcEntropyCoder->encodeVPS(vps);
+}
+
+Void TEncGOP::generateSPS_RBSP(TComBitIf* rbsp, const TComSPS *sps)
+{
+  m_pcEntropyCoder->setBitstream(rbsp);
+  m_pcEntropyCoder->encodeSPS(sps);
+}
+
+Void TEncGOP::generatePPS_RBSP(TComBitIf* rbsp, const TComPPS *pps)
+{
+  m_pcEntropyCoder->setBitstream(rbsp);
+  m_pcEntropyCoder->encodePPS(pps);
+}
+#endif
 
 Int TEncGOP::xWriteVPS (AccessUnit &accessUnit, const TComVPS *vps)
 {
@@ -388,8 +413,11 @@ Void TEncGOP::xWriteDuSEIMessages (SEIMessages& duInfoSeiMessages, AccessUnit &a
   deleteSEIs(duInfoSeiMessages);
 }
 
-
+#if MCTS_EXTRACTION
+Void TEncGOP::xCreateIRAPLeadingSEIMessages(SEIMessages& seiMessages, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps)
+#else
 Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TComSPS *sps, const TComPPS *pps)
+#endif
 {
   OutputNALUnit nalu(NAL_UNIT_PREFIX_SEI);
 
@@ -434,7 +462,14 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEITempMotionConstrainedTileSets(sei, pps);
     seiMessages.push_back(sei);
   }
-
+#if MCTS_EXTRACTION
+  if (m_pcCfg->getTMCTSExtractionSEIEnabled())
+  {
+    SEIMCTSExtractionInfoSet *sei = new SEIMCTSExtractionInfoSet;
+    m_seiEncoder.initSEIMCTSExtractionInfo(sei, vps, sps, pps);
+    seiMessages.push_back(sei);
+  }
+#endif
   if(m_pcCfg->getTimeCodeSEIEnabled())
   {
     SEITimeCode *seiTimeCode = new SEITimeCode;
@@ -1149,16 +1184,13 @@ printHash(const HashType hashType, const std::string &digestStr)
   }
 }
 
+
 // ====================================================================================================================
 // Public member functions
 // ====================================================================================================================
 Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rcListPic,
                            TComList<TComPicYuv*>& rcListPicYuvRecOut, std::list<AccessUnit>& accessUnitsInGOP,
-#if JVET_F0064_MSSSIM            
-                           Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE, const Bool printMSSSIM )
-#else
-                           Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE )
-#endif
+                           Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl )
 {
   // TODO: Split this function up.
 
@@ -1410,7 +1442,32 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       pcSlice->setSliceType ( P_SLICE );
     }
+
+
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+    if (pcSlice->getPOC() > m_RASPOCforResetEncoder && m_pcCfg->getResetEncoderStateAfterIRAP())
+    {
+      // need to reset encoder decisions.
+      m_pcSliceEncoder->resetEncoderDecisions();
+
+      if (pcSlice->getSPS()->getUseSAO())
+      {
+        m_pcSAO->resetEncoderDecisions();
+      }
+      m_RASPOCforResetEncoder=MAX_INT;
+    }
+    if (pcSlice->isIRAP())
+    {
+      m_RASPOCforResetEncoder = pcSlice->getPOC();
+    }
+#endif
+
     pcSlice->setEncCABACTableIdx(m_pcSliceEncoder->getEncCABACTableIdx());
+#if MCTS_EXTRACTION
+    SliceType  encCABACTableIdx = pcSlice->getEncCABACTableIdx();
+    Bool encCabacInitFlag = (pcSlice->getSliceType() != encCABACTableIdx && encCABACTableIdx != I_SLICE) ? true : false;
+    pcSlice->setCabacInitFlag(encCabacInitFlag);
+#endif
 
     if (pcSlice->getSliceType() == B_SLICE)
     {
@@ -1706,7 +1763,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       // create prefix SEI messages at the beginning of the sequence
       assert(leadingSeiMessages.empty());
+#if MCTS_EXTRACTION
+      xCreateIRAPLeadingSEIMessages(leadingSeiMessages, m_pcEncTop->getVPS(),  pcSlice->getSPS(), pcSlice->getPPS());
+#else
       xCreateIRAPLeadingSEIMessages(leadingSeiMessages, pcSlice->getSPS(), pcSlice->getPPS());
+#endif
 
       m_bSeqFirst = false;
     }
@@ -1736,8 +1797,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
                           m_pcCfg->getTestSAODisableAtPictureLevel(),
                           m_pcCfg->getSaoEncodingRate(),
                           m_pcCfg->getSaoEncodingRateChroma(),
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+                          m_pcCfg->getSaoCtuBoundary());
+#else
                           m_pcCfg->getSaoCtuBoundary(),
                           m_pcCfg->getSaoResetEncoderStateAfterIRAP());
+#endif
       m_pcSAO->PCMLFDisableProcess(pcPic);
       m_pcEncTop->getRDGoOnSbacCoder()->setBitstream(NULL);
 
@@ -1797,7 +1862,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       }
 
       pcSlice->setEncCABACTableIdx(m_pcSliceEncoder->getEncCABACTableIdx());
-
+#if MCTS_EXTRACTION
+      encCABACTableIdx = pcSlice->getEncCABACTableIdx();
+      encCabacInitFlag = (pcSlice->getSliceType() != encCABACTableIdx && encCABACTableIdx != I_SLICE) ? true : false;
+      pcSlice->setCabacInitFlag(encCabacInitFlag);
+#endif
       tmpBitsBeforeWriting = m_pcEntropyCoder->getNumberOfWrittenBits();
       m_pcEntropyCoder->encodeSliceHeader(pcSlice);
       actualHeadBits += ( m_pcEntropyCoder->getNumberOfWrittenBits() - tmpBitsBeforeWriting );
@@ -1882,11 +1951,8 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     m_pcCfg->setEncodedFlag(iGOPid, true);
 
     Double PSNR_Y;
-#if JVET_F0064_MSSSIM
-    xCalculateAddPSNRs( isField, isTff, iGOPid, pcPic, accessUnit, rcListPic, dEncTime, snr_conversion, printFrameMSE, printMSSSIM, &PSNR_Y );
-#else
-    xCalculateAddPSNRs( isField, isTff, iGOPid, pcPic, accessUnit, rcListPic, dEncTime, snr_conversion, printFrameMSE, &PSNR_Y );
-#endif
+
+    xCalculateAddPSNRs( isField, isTff, iGOPid, pcPic, accessUnit, rcListPic, dEncTime, snr_conversion, outputLogCtrl, &PSNR_Y );
     
     // Only produce the Green Metadata SEI message with the last picture.
     if( m_pcCfg->getSEIGreenMetadataInfoSEIEnable() && pcSlice->getPOC() == ( m_pcCfg->getFramesToBeEncoded() - 1 )  )
@@ -1966,11 +2032,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   assert ( (m_iNumPicCoded == iNumPicRcvd) );
 }
 
-#if JVET_F0064_MSSSIM
-Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool printMSEBasedSNR, const Bool printSequenceMSE, const Bool printMSSSIM, const BitDepths &bitDepths)
-#else
-Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool printMSEBasedSNR, const Bool printSequenceMSE, const BitDepths &bitDepths)
-#endif
+Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const TEncAnalyze::OutputLogControl &outputLogCtrl, const BitDepths &bitDepths)
 {
   assert (uiNumAllPicCoded == m_gcAnalyzeAll.getNumPic());
 
@@ -1983,44 +2045,29 @@ Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool pr
   m_gcAnalyzeB.setFrmRate( m_pcCfg->getFrameRate()*rateMultiplier / (Double)m_pcCfg->getTemporalSubsampleRatio());
   const ChromaFormat chFmt = m_pcCfg->getChromaFormatIdc();
 
-#if JVET_F0064_MSSSIM
   //-- all
   printf( "\n\nSUMMARY --------------------------------------------------------\n" );
-  m_gcAnalyzeAll.printOut('a', chFmt, printMSEBasedSNR, printSequenceMSE, printMSSSIM, bitDepths);
+  m_gcAnalyzeAll.printOut('a', chFmt, outputLogCtrl, bitDepths);
 
   printf( "\n\nI Slices--------------------------------------------------------\n" );
-  m_gcAnalyzeI.printOut('i', chFmt, printMSEBasedSNR, printSequenceMSE, printMSSSIM, bitDepths);
+  m_gcAnalyzeI.printOut('i', chFmt, outputLogCtrl, bitDepths);
 
   printf( "\n\nP Slices--------------------------------------------------------\n" );
-  m_gcAnalyzeP.printOut('p', chFmt, printMSEBasedSNR, printSequenceMSE, printMSSSIM, bitDepths);
+  m_gcAnalyzeP.printOut('p', chFmt, outputLogCtrl, bitDepths);
 
   printf( "\n\nB Slices--------------------------------------------------------\n" );
-  m_gcAnalyzeB.printOut('b', chFmt, printMSEBasedSNR, printSequenceMSE, printMSSSIM, bitDepths);
-#else
-  //-- all
-  printf( "\n\nSUMMARY --------------------------------------------------------\n" );
-  m_gcAnalyzeAll.printOut('a', chFmt, printMSEBasedSNR, printSequenceMSE, bitDepths);
-
-  printf( "\n\nI Slices--------------------------------------------------------\n" );
-  m_gcAnalyzeI.printOut('i', chFmt, printMSEBasedSNR, printSequenceMSE, bitDepths);
-
-  printf( "\n\nP Slices--------------------------------------------------------\n" );
-  m_gcAnalyzeP.printOut('p', chFmt, printMSEBasedSNR, printSequenceMSE, bitDepths);
-
-  printf( "\n\nB Slices--------------------------------------------------------\n" );
-  m_gcAnalyzeB.printOut('b', chFmt, printMSEBasedSNR, printSequenceMSE, bitDepths);
-#endif
+  m_gcAnalyzeB.printOut('b', chFmt, outputLogCtrl, bitDepths);
 
   if (!m_pcCfg->getSummaryOutFilename().empty())
   {
-    m_gcAnalyzeAll.printSummary(chFmt, printSequenceMSE, bitDepths, m_pcCfg->getSummaryOutFilename());
+    m_gcAnalyzeAll.printSummary(chFmt, outputLogCtrl, bitDepths, m_pcCfg->getSummaryOutFilename());
   }
 
   if (!m_pcCfg->getSummaryPicFilenameBase().empty())
   {
-    m_gcAnalyzeI.printSummary(chFmt, printSequenceMSE, bitDepths, m_pcCfg->getSummaryPicFilenameBase()+"I.txt");
-    m_gcAnalyzeP.printSummary(chFmt, printSequenceMSE, bitDepths, m_pcCfg->getSummaryPicFilenameBase()+"P.txt");
-    m_gcAnalyzeB.printSummary(chFmt, printSequenceMSE, bitDepths, m_pcCfg->getSummaryPicFilenameBase()+"B.txt");
+    m_gcAnalyzeI.printSummary(chFmt, outputLogCtrl, bitDepths, m_pcCfg->getSummaryPicFilenameBase()+"I.txt");
+    m_gcAnalyzeP.printSummary(chFmt, outputLogCtrl, bitDepths, m_pcCfg->getSummaryPicFilenameBase()+"P.txt");
+    m_gcAnalyzeB.printSummary(chFmt, outputLogCtrl, bitDepths, m_pcCfg->getSummaryPicFilenameBase()+"B.txt");
   }
 
   if(isField)
@@ -2031,15 +2078,11 @@ Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool pr
     // prior to the above statement, the interlace analyser does not contain the correct total number of bits.
 
     printf( "\n\nSUMMARY INTERLACED ---------------------------------------------\n" );
-#if JVET_F0064_MSSSIM
-    m_gcAnalyzeAll_in.printOut('a', chFmt, printMSEBasedSNR, printSequenceMSE, printMSSSIM, bitDepths);
-#else
-    m_gcAnalyzeAll_in.printOut('a', chFmt, printMSEBasedSNR, printSequenceMSE, bitDepths);
-#endif
+    m_gcAnalyzeAll_in.printOut('a', chFmt, outputLogCtrl, bitDepths);
 
     if (!m_pcCfg->getSummaryOutFilename().empty())
     {
-      m_gcAnalyzeAll_in.printSummary(chFmt, printSequenceMSE, bitDepths, m_pcCfg->getSummaryOutFilename());
+      m_gcAnalyzeAll_in.printSummary(chFmt, outputLogCtrl, bitDepths, m_pcCfg->getSummaryOutFilename());
     }
   }
 
@@ -2154,16 +2197,10 @@ UInt64 TEncGOP::xFindDistortionFrame (TComPicYuv* pcPic0, TComPicYuv* pcPic1, co
 
   return uiTotalDiff;
 }
-#if JVET_F0064_MSSSIM
-Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopFieldFirst, const Int iGOPid, TComPic* pcPic, const AccessUnit&accessUnit, TComList<TComPic*> &rcListPic, const Double dEncTime, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE, const Bool printMSSSIM, Double* PSNR_Y )
-{
-  xCalculateAddPSNR( pcPic, pcPic->getPicYuvRec(), accessUnit, dEncTime, snr_conversion, printFrameMSE, printMSSSIM, PSNR_Y );
-#else
-Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopFieldFirst, const Int iGOPid, TComPic* pcPic, const AccessUnit&accessUnit, TComList<TComPic*> &rcListPic, const Double dEncTime, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE, Double* PSNR_Y )
-{
-  xCalculateAddPSNR( pcPic, pcPic->getPicYuvRec(), accessUnit, dEncTime, snr_conversion, printFrameMSE, PSNR_Y );
-#endif
 
+Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopFieldFirst, const Int iGOPid, TComPic* pcPic, const AccessUnit&accessUnit, TComList<TComPic*> &rcListPic, const Double dEncTime, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
+{
+  xCalculateAddPSNR( pcPic, pcPic->getPicYuvRec(), accessUnit, dEncTime, snr_conversion, outputLogCtrl, PSNR_Y );
   //In case of field coding, compute the interlaced PSNR for both fields
   if(isField)
   {
@@ -2217,36 +2254,19 @@ Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopField
 
       if( (pcPic->isTopField() && isFieldTopFieldFirst) || (!pcPic->isTopField() && !isFieldTopFieldFirst))
       {
-#if JVET_F0064_MSSSIM
-        xCalculateInterlacedAddPSNR(pcPic, correspondingFieldPic, pcPic->getPicYuvRec(), correspondingFieldPic->getPicYuvRec(), snr_conversion, printFrameMSE, printMSSSIM, PSNR_Y );
-#else
-        xCalculateInterlacedAddPSNR(pcPic, correspondingFieldPic, pcPic->getPicYuvRec(), correspondingFieldPic->getPicYuvRec(), snr_conversion, printFrameMSE, PSNR_Y );
-#endif
+        xCalculateInterlacedAddPSNR(pcPic, correspondingFieldPic, pcPic->getPicYuvRec(), correspondingFieldPic->getPicYuvRec(), snr_conversion, outputLogCtrl, PSNR_Y );
       }
       else
       {
-#if JVET_F0064_MSSSIM
-        xCalculateInterlacedAddPSNR(correspondingFieldPic, pcPic, correspondingFieldPic->getPicYuvRec(), pcPic->getPicYuvRec(), snr_conversion, printFrameMSE, printMSSSIM, PSNR_Y );
-#else
-        xCalculateInterlacedAddPSNR(correspondingFieldPic, pcPic, correspondingFieldPic->getPicYuvRec(), pcPic->getPicYuvRec(), snr_conversion, printFrameMSE, PSNR_Y );
-#endif
+        xCalculateInterlacedAddPSNR(correspondingFieldPic, pcPic, correspondingFieldPic->getPicYuvRec(), pcPic->getPicYuvRec(), snr_conversion, outputLogCtrl, PSNR_Y );
       }
     }
   }
 }
 
-#if JVET_F0064_MSSSIM
-Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const AccessUnit& accessUnit, Double dEncTime, const InputColourSpaceConversion conversion, const Bool printFrameMSE, const Bool printMSSSIM, Double* PSNR_Y )
-#else
-Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const AccessUnit& accessUnit, Double dEncTime, const InputColourSpaceConversion conversion, const Bool printFrameMSE, Double* PSNR_Y )
-#endif
+Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const AccessUnit& accessUnit, Double dEncTime, const InputColourSpaceConversion conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
 {
-  Double  dPSNR[MAX_NUM_COMPONENT];
-
-  for(Int i=0; i<MAX_NUM_COMPONENT; i++)
-  {
-    dPSNR[i]=0.0;
-  }
+  TEncAnalyze::ResultData result;
 
   TComPicYuv cscd;
   if (conversion!=IPCOLOURSPACE_UNCHANGED)
@@ -2257,36 +2277,121 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   TComPicYuv &picd=(conversion==IPCOLOURSPACE_UNCHANGED)?*pcPicD : cscd;
 
   //===== calculate PSNR =====
-  Double MSEyuvframe[MAX_NUM_COMPONENT] = {0, 0, 0};
 
-  for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
+#if JCTVC_Y0037_XPSNR
+  if (outputLogCtrl.printXPSNR && pcPicD->getChromaFormat() != CHROMA_400)
   {
-    const ComponentID ch=ComponentID(chan);
-    const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
-    const Pel*  pOrg       = pOrgPicYuv->getAddr(ch);
-    const Int   iOrgStride = pOrgPicYuv->getStride(ch);
-    Pel*  pRec             = picd.getAddr(ch);
-    const Int   iRecStride = picd.getStride(ch);
-    const Int   iWidth  = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
-    const Int   iHeight = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
-
-    Int   iSize   = iWidth*iHeight;
-
-    UInt64 uiSSDtemp=0;
-    for(Int y = 0; y < iHeight; y++ )
+    TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+    Pel*   pOrg[MAX_NUM_COMPONENT];
+    Double dWeightPel[MAX_NUM_COMPONENT];
+    Int    iWeightSize[MAX_NUM_COMPONENT] = {1, 1, 1};
+    Pel*   pRec[MAX_NUM_COMPONENT];
+    Int    iOrgStride[MAX_NUM_COMPONENT], iRecStride[MAX_NUM_COMPONENT];
+    Int    iWidth[MAX_NUM_COMPONENT], iHeight[MAX_NUM_COMPONENT], iSize[MAX_NUM_COMPONENT];
+    UInt64 uiSSDtemp[MAX_NUM_COMPONENT];
+    UInt   uiShiftWidth[MAX_NUM_COMPONENT], uiShiftHeight[MAX_NUM_COMPONENT];
+    Intermediate_Int iDiff;
+    
+    for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
-      for(Int x = 0; x < iWidth; x++ )
-      {
-        Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
-        uiSSDtemp   += iDiff * iDiff;
-      }
-      pOrg += iOrgStride;
-      pRec += iRecStride;
+      const ComponentID ch=ComponentID(chan);
+      
+      iOrgStride[ch]    = pOrgPicYuv->getStride(ch);
+      iRecStride[ch]    = picd.getStride(ch);
+      iWidth[ch]        = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
+      iHeight[ch]       = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
+      iSize[ch]         = iWidth[ch]*iHeight[ch];
+      uiSSDtemp[ch]     = 0;
+      uiShiftWidth[ch]  = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444) ? 0 : 1;
+      uiShiftHeight[ch] = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444 || pcPicD->getChromaFormat() == CHROMA_422) ? 0 : 1;
+      dWeightPel[ch]    = m_pcCfg->getXPSNRWeight(ch);
+      pOrg[ch]          = pOrgPicYuv->getAddr(ch);
+      pRec[ch]          = picd.getAddr(ch);
     }
-    const Int maxval = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch)) - 8);
-    const Double fRefValue = (Double) maxval * maxval * iSize;
-    dPSNR[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
-    MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize);
+    
+    Double dSSDtemp=0;
+    std::vector<Double> vecSSEChroma(iSize[COMPONENT_Cb], Double(0));
+    for(Int y = 0, t= 0; y < iHeight[COMPONENT_Cb]; y++ )
+    {
+      for(Int x = 0; x < iWidth[COMPONENT_Cb]; x++, t++)
+      {
+        UInt64 uiSE_cb, uiSE_cr;
+        iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cb][x] - (Intermediate_Int)pRec[COMPONENT_Cb][x] );
+        uiSE_cb = iDiff * iDiff;
+        iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cr][x] - (Intermediate_Int)pRec[COMPONENT_Cr][x] );
+        uiSE_cr = iDiff * iDiff;
+        uiSSDtemp[COMPONENT_Cb] += uiSE_cb;
+        uiSSDtemp[COMPONENT_Cr] += uiSE_cr;
+        vecSSEChroma[t] = dWeightPel[COMPONENT_Cb] * (Double) uiSE_cb + dWeightPel[COMPONENT_Cr] * (Double) uiSE_cr;
+      }
+      pOrg[COMPONENT_Cb]  += iOrgStride[COMPONENT_Cb];
+      pRec[COMPONENT_Cb]  += iRecStride[COMPONENT_Cb];
+      pOrg[COMPONENT_Cr]  += iOrgStride[COMPONENT_Cr];
+      pRec[COMPONENT_Cr]  += iRecStride[COMPONENT_Cr];
+    }
+    
+    for(Int y = 0; y < iHeight[COMPONENT_Y]; y++ )
+    {
+      UInt y_step_chroma = (y >> uiShiftHeight[COMPONENT_Cb]) * iWidth[COMPONENT_Cb];
+      for(Int x = 0; x < iWidth[COMPONENT_Y]; x++)
+      {
+        UInt64 uiSE_y;
+        UInt x_step_chroma = (x >> uiShiftWidth[COMPONENT_Cb]);
+        iDiff   = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Y][x] - (Intermediate_Int)pRec[COMPONENT_Y][x] );
+        uiSE_y  = iDiff * iDiff;
+        uiSSDtemp[COMPONENT_Y] += uiSE_y;
+        dSSDtemp += sqrt(dWeightPel[COMPONENT_Y] * (Double) uiSE_y + vecSSEChroma[y_step_chroma+x_step_chroma]);
+      }
+      pOrg[COMPONENT_Y]  += iOrgStride[COMPONENT_Y];
+      pRec[COMPONENT_Y]  += iRecStride[COMPONENT_Y];
+    }
+    
+    Double fWValue = 0;
+    for( Int chan = 0; chan<pcPicD->getNumberValidComponents(); chan++)
+    {
+      const ComponentID ch=ComponentID(chan);
+      const UInt maxval  = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch)) - 8);
+      const Double fRefValue = (Double) maxval * maxval * iSize[ch];
+      result.psnr[ch]        = ( uiSSDtemp[ch] ? 10.0 * log10( fRefValue / (Double)uiSSDtemp[ch] ) : 999.99 );
+      result.MSEyuvframe[ch]  = (Double)uiSSDtemp[ch]/(iSize[ch]);
+      fWValue += (Double) iWeightSize[ch] * (Double) iSize[ch];
+    }
+    const Double maxval    = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(COMPONENT_Y)) - 8);
+    fWValue = Double( maxval * fWValue);
+    result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
+  }
+  else
+#endif
+  {
+    for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
+    {
+      const ComponentID ch=ComponentID(chan);
+      const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+      const Pel*  pOrg       = pOrgPicYuv->getAddr(ch);
+      const Int   iOrgStride = pOrgPicYuv->getStride(ch);
+      Pel*  pRec             = picd.getAddr(ch);
+      const Int   iRecStride = picd.getStride(ch);
+      const Int   iWidth  = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
+      const Int   iHeight = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
+
+      Int   iSize   = iWidth*iHeight;
+
+      UInt64 uiSSDtemp=0;
+      for(Int y = 0; y < iHeight; y++ )
+      {
+        for(Int x = 0; x < iWidth; x++ )
+        {
+          Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
+          uiSSDtemp   += iDiff * iDiff;
+        }
+        pOrg += iOrgStride;
+        pRec += iRecStride;
+      }
+      const Int maxval = 255 << (pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch)) - 8);
+      const Double fRefValue = (Double) maxval * maxval * iSize;
+      result.psnr[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
+      result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize);
+    }
   }
 #if EXTENSION_360_VIDEO
   m_ext360.calculatePSNRs(pcPic);
@@ -2294,8 +2399,7 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
 #if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
-  Double  MSSSIM[MAX_NUM_COMPONENT] = {0,0,0};
-  if (printMSSSIM) 
+  if (outputLogCtrl.printMSSSIM)
   {
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
@@ -2309,7 +2413,7 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
       const Int   height    = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> (pcPic->isField()?1:0)) >> pcPic->getComponentScaleY(ch));
       const UInt  bitDepth  = pcPic->getPicSym()->getSPS().getBitDepth(toChannelType(ch));
  
-      MSSSIM[ch] = xCalculateMSSSIM (pOrg, orgStride, pRec, recStride, width, height, bitDepth);
+      result.MSSSIM[ch] = xCalculateMSSSIM (pOrg, orgStride, pRec, recStride, width, height, bitDepth);
     }
   }
 #endif
@@ -2343,12 +2447,10 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   UInt uibits = numRBSPBytes * 8;
   m_vRVM_RP.push_back( uibits );
 
-  //===== add PSNR =====
-#if JVET_F0064_MSSSIM
-  m_gcAnalyzeAll.addResult (dPSNR, (Double)uibits, MSEyuvframe, MSSSIM);
-#else
-  m_gcAnalyzeAll.addResult (dPSNR, (Double)uibits, MSEyuvframe);
-#endif
+  //===== add distortion metrics =====
+  result.bits=(Double)uibits;
+  m_gcAnalyzeAll.addResult (result);
+
 #if EXTENSION_360_VIDEO
   m_ext360.addResult(m_gcAnalyzeAll);
 #endif
@@ -2356,39 +2458,27 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   TComSlice*  pcSlice = pcPic->getSlice(0);
   if (pcSlice->isIntra())
   {
-#if JVET_F0064_MSSSIM
-    m_gcAnalyzeI.addResult (dPSNR, (Double)uibits, MSEyuvframe, MSSSIM);
-#else
-    m_gcAnalyzeI.addResult (dPSNR, (Double)uibits, MSEyuvframe);
-#endif
+    m_gcAnalyzeI.addResult (result);
 #if EXTENSION_360_VIDEO
     m_ext360.addResult(m_gcAnalyzeI);
 #endif
-    *PSNR_Y = dPSNR[COMPONENT_Y];
+    *PSNR_Y = result.psnr[COMPONENT_Y];
   }
   if (pcSlice->isInterP())
   {
-#if JVET_F0064_MSSSIM
-    m_gcAnalyzeP.addResult (dPSNR, (Double)uibits, MSEyuvframe, MSSSIM);
-#else
-    m_gcAnalyzeP.addResult (dPSNR, (Double)uibits, MSEyuvframe);
-#endif
+    m_gcAnalyzeP.addResult (result);
 #if EXTENSION_360_VIDEO
     m_ext360.addResult(m_gcAnalyzeP);
 #endif
-    *PSNR_Y = dPSNR[COMPONENT_Y];
+    *PSNR_Y = result.psnr[COMPONENT_Y];
   }
   if (pcSlice->isInterB())
   {
-#if JVET_F0064_MSSSIM
-    m_gcAnalyzeB.addResult (dPSNR, (Double)uibits, MSEyuvframe, MSSSIM);
-#else
-    m_gcAnalyzeB.addResult (dPSNR, (Double)uibits, MSEyuvframe);
-#endif
+    m_gcAnalyzeB.addResult (result);
 #if EXTENSION_360_VIDEO
     m_ext360.addResult(m_gcAnalyzeB);
 #endif
-    *PSNR_Y = dPSNR[COMPONENT_Y];
+    *PSNR_Y = result.psnr[COMPONENT_Y];
   }
 
   TChar c = (pcSlice->isIntra() ? 'I' : pcSlice->isInterP() ? 'P' : 'B');
@@ -2414,16 +2504,35 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
          uibits );
 #endif
 
-  printf(" [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", dPSNR[COMPONENT_Y], dPSNR[COMPONENT_Cb], dPSNR[COMPONENT_Cr] );
-#if JVET_F0064_MSSSIM
-  if (printMSSSIM)
+  printf(" [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", result.psnr[COMPONENT_Y], result.psnr[COMPONENT_Cb], result.psnr[COMPONENT_Cr] );
+
+  if (outputLogCtrl.printHexPerPOCPSNRs)
   {
-    printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", MSSSIM[COMPONENT_Y], MSSSIM[COMPONENT_Cb], MSSSIM[COMPONENT_Cr] );
+    uint64_t xPsnr[MAX_NUM_COMPONENT];
+    for (int i = 0; i < MAX_NUM_COMPONENT; i++)
+    {
+      copy(reinterpret_cast<uint8_t *>(&result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&result.psnr[i]) + sizeof(result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&xPsnr[i]));
+    }
+    printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
+  }
+
+#if JVET_F0064_MSSSIM
+  if (outputLogCtrl.printMSSSIM)
+  {
+    printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }  
 #endif
-  if (printFrameMSE)
+#if JCTVC_Y0037_XPSNR
+  if (outputLogCtrl.printXPSNR)
   {
-    printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", MSEyuvframe[COMPONENT_Y], MSEyuvframe[COMPONENT_Cb], MSEyuvframe[COMPONENT_Cr] );
+    printf(" [xPSNR %6.4lf dB]", result.xpsnr);
+  }
+#endif
+  if (outputLogCtrl.printFrameMSE)
+  {
+    printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", result.MSEyuvframe[COMPONENT_Y], result.MSEyuvframe[COMPONENT_Cb], result.MSEyuvframe[COMPONENT_Cr] );
   }
 #if EXTENSION_360_VIDEO
   m_ext360.printPerPOCInfo();
@@ -2619,22 +2728,13 @@ Double TEncGOP::xCalculateMSSSIM (const Pel *pOrg, const Int orgStride, const Pe
 
 
 Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic* pcPicOrgSecondField,
-                                           TComPicYuv* pcPicRecFirstField, TComPicYuv* pcPicRecSecondField,
-#if JVET_F0064_MSSSIM
-                                           const InputColourSpaceConversion conversion, const Bool printFrameMSE, const Bool printMSSSIM, Double* PSNR_Y )
-#else
-                                           const InputColourSpaceConversion conversion, const Bool printFrameMSE, Double* PSNR_Y )
-#endif
+                                          TComPicYuv* pcPicRecFirstField, TComPicYuv* pcPicRecSecondField,
+                                          const InputColourSpaceConversion conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
 {
+  TEncAnalyze::ResultData result;
   const TComSPS &sps=pcPicOrgFirstField->getPicSym()->getSPS();
-  Double  dPSNR[MAX_NUM_COMPONENT];
   TComPic    *apcPicOrgFields[2]={pcPicOrgFirstField, pcPicOrgSecondField};
   TComPicYuv *apcPicRecFields[2]={pcPicRecFirstField, pcPicRecSecondField};
-
-  for(Int i=0; i<MAX_NUM_COMPONENT; i++)
-  {
-    dPSNR[i]=0.0;
-  }
 
   TComPicYuv cscd[2 /* first/second field */];
   if (conversion!=IPCOLOURSPACE_UNCHANGED)
@@ -2649,54 +2749,142 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
   }
 
   //===== calculate PSNR =====
-  Double MSEyuvframe[MAX_NUM_COMPONENT] = {0, 0, 0};
 
   assert(apcPicRecFields[0]->getChromaFormat()==apcPicRecFields[1]->getChromaFormat());
   const UInt numValidComponents=apcPicRecFields[0]->getNumberValidComponents();
 
-  for(Int chan=0; chan<numValidComponents; chan++)
+#if JCTVC_Y0037_XPSNR
+  if (outputLogCtrl.printXPSNR && apcPicRecFields[0]->getChromaFormat() != CHROMA_400 && apcPicRecFields[1]->getChromaFormat() != CHROMA_400)
   {
-    const ComponentID ch=ComponentID(chan);
-    assert(apcPicRecFields[0]->getWidth(ch)==apcPicRecFields[1]->getWidth(ch));
-    assert(apcPicRecFields[0]->getHeight(ch)==apcPicRecFields[1]->getHeight(ch));
-
-    UInt64 uiSSDtemp=0;
-    const Int   iWidth  = apcPicRecFields[0]->getWidth (ch) - (m_pcEncTop->getPad(0) >> apcPicRecFields[0]->getComponentScaleX(ch));
-    const Int   iHeight = apcPicRecFields[0]->getHeight(ch) - ((m_pcEncTop->getPad(1) >> 1) >> apcPicRecFields[0]->getComponentScaleY(ch));
-
-    Int   iSize   = iWidth*iHeight;
-
+    // For interlace images, we need to scan the two fields independently
+    Pel*   pOrg[MAX_NUM_COMPONENT];
+    Double dWeightPel[MAX_NUM_COMPONENT];
+    Int    iWeightSize[MAX_NUM_COMPONENT] = {1, 1, 1};
+    Pel*   pRec[MAX_NUM_COMPONENT];
+    Int    iOrgStride[MAX_NUM_COMPONENT], iRecStride[MAX_NUM_COMPONENT];
+    Int    iWidth[MAX_NUM_COMPONENT], iHeight[MAX_NUM_COMPONENT], iSize[MAX_NUM_COMPONENT];
+    UInt64 uiSSDtemp[MAX_NUM_COMPONENT];
+    UInt   uiShiftWidth[MAX_NUM_COMPONENT], uiShiftHeight[MAX_NUM_COMPONENT];
+    Intermediate_Int iDiff;
+    Double dSSDtemp = 0.0;
+    Double fWValue  = 0.0;
     for(UInt fieldNum=0; fieldNum<2; fieldNum++)
     {
       TComPic *pcPic=apcPicOrgFields[fieldNum];
       TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
+      TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
 
-      const Pel*  pOrg    = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
-      Pel*  pRec    = pcPicD->getAddr(ch);
-      const Int   iStride = pcPicD->getStride(ch);
-
-
-      for(Int y = 0; y < iHeight; y++ )
+      for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
       {
-        for(Int x = 0; x < iWidth; x++ )
+        const ComponentID ch=ComponentID(chan);
+        iOrgStride[ch]    = pOrgPicYuv->getStride(ch);
+        iRecStride[ch]    = pcPicD->getStride(ch);
+        iWidth[ch]        = pcPicD->getWidth (ch) - (m_pcEncTop->getPad(0) >> pcPic->getComponentScaleX(ch));
+        iHeight[ch]       = pcPicD->getHeight(ch) - ((m_pcEncTop->getPad(1) >> 1) >> pcPic->getComponentScaleY(ch));
+        iSize[ch]         = iWidth[ch]*iHeight[ch];
+        uiSSDtemp[ch]     = 0;
+        uiShiftWidth[ch]  = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444) ? 0 : 1;
+        uiShiftHeight[ch] = (ch == COMPONENT_Y || pcPicD->getChromaFormat() == CHROMA_444 || pcPicD->getChromaFormat() == CHROMA_422) ? 0 : 1;
+        dWeightPel[ch]    = m_pcCfg->getXPSNRWeight(ch);
+        pOrg[ch]          = pOrgPicYuv->getAddr(ch);
+        pRec[ch]          = pcPicD->getAddr(ch);
+      }
+      std::vector<Double> vecSSEChroma(iSize[COMPONENT_Cb], Double(0));
+
+      for(Int y = 0, t= 0; y < iHeight[COMPONENT_Cb]; y++ )
+      {
+        for(Int x = 0; x < iWidth[COMPONENT_Cb]; x++, t++)
         {
-          Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
-          uiSSDtemp   += iDiff * iDiff;
+          UInt64 uiSE_cb, uiSE_cr;
+          iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cb][x] - (Intermediate_Int)pRec[COMPONENT_Cb][x] );
+          uiSE_cb = iDiff * iDiff;
+          iDiff = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Cr][x] - (Intermediate_Int)pRec[COMPONENT_Cr][x] );
+          uiSE_cr = iDiff * iDiff;
+          uiSSDtemp[COMPONENT_Cb] += uiSE_cb;
+          uiSSDtemp[COMPONENT_Cr] += uiSE_cr;
+          vecSSEChroma[t] = dWeightPel[COMPONENT_Cb] * (Double) uiSE_cb + dWeightPel[COMPONENT_Cr] * (Double) uiSE_cr;
         }
-        pOrg += iStride;
-        pRec += iStride;
+        pOrg[COMPONENT_Cb]  += iOrgStride[COMPONENT_Cb];
+        pRec[COMPONENT_Cb]  += iRecStride[COMPONENT_Cb];
+        pOrg[COMPONENT_Cr]  += iOrgStride[COMPONENT_Cr];
+        pRec[COMPONENT_Cr]  += iRecStride[COMPONENT_Cr];
+      }
+
+      for(Int y = 0; y < iHeight[COMPONENT_Y]; y++ )
+      {
+        UInt y_step_chroma = (y >> uiShiftHeight[COMPONENT_Cb]) * iWidth[COMPONENT_Cb];
+        for(Int x = 0; x < iWidth[COMPONENT_Y]; x++)
+        {
+          UInt64 uiSE_y;
+          UInt x_step_chroma = (x >> uiShiftWidth[COMPONENT_Cb]);
+          iDiff   = (Intermediate_Int)( (Intermediate_Int)pOrg[COMPONENT_Y][x] - (Intermediate_Int)pRec[COMPONENT_Y][x] );
+          uiSE_y  = iDiff * iDiff;
+          uiSSDtemp[COMPONENT_Y] += uiSE_y;
+          dSSDtemp += sqrt(dWeightPel[COMPONENT_Y] * (Double) uiSE_y + vecSSEChroma[y_step_chroma+x_step_chroma]);
+        }
+        pOrg[COMPONENT_Y]  += iOrgStride[COMPONENT_Y];
+        pRec[COMPONENT_Y]  += iRecStride[COMPONENT_Y];
+      }
+
+      for( Int chan = 0; chan<pcPicD->getNumberValidComponents(); chan++)
+      {
+        const ComponentID ch=ComponentID(chan);
+        const UInt maxval  = 255 << (sps.getBitDepth(toChannelType(ch)) - 8);
+        const Double fRefValue = (Double) maxval * maxval * iSize[ch];
+        result.psnr[ch]        = ( uiSSDtemp[ch] ? 10.0 * log10( fRefValue / (Double)uiSSDtemp[ch] ) : 999.99 );
+        result.MSEyuvframe[ch]  = (Double)uiSSDtemp[ch]/(iSize[ch]);
+        fWValue += (Double) iWeightSize[ch] * (Double) iSize[ch];
       }
     }
-    const Int maxval = 255 << (sps.getBitDepth(toChannelType(ch)) - 8);
-    const Double fRefValue = (Double) maxval * maxval * iSize*2;
-    dPSNR[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
-    MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize*2);
+    const Double maxval    = 255 << (sps.getBitDepth(toChannelType(COMPONENT_Y)) - 8);
+    fWValue = Double( maxval * fWValue);
+    result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
   }
+  else
+#endif
+  {
+    for(Int chan=0; chan<numValidComponents; chan++)
+    {
+      const ComponentID ch=ComponentID(chan);
+      assert(apcPicRecFields[0]->getWidth(ch)==apcPicRecFields[1]->getWidth(ch));
+      assert(apcPicRecFields[0]->getHeight(ch)==apcPicRecFields[1]->getHeight(ch));
 
+      UInt64 uiSSDtemp=0;
+      const Int   iWidth  = apcPicRecFields[0]->getWidth (ch) - (m_pcEncTop->getPad(0) >> apcPicRecFields[0]->getComponentScaleX(ch));
+      const Int   iHeight = apcPicRecFields[0]->getHeight(ch) - ((m_pcEncTop->getPad(1) >> 1) >> apcPicRecFields[0]->getComponentScaleY(ch));
+
+      Int   iSize   = iWidth*iHeight;
+
+      for(UInt fieldNum=0; fieldNum<2; fieldNum++)
+      {
+        TComPic *pcPic=apcPicOrgFields[fieldNum];
+        TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
+
+        const Pel*  pOrg    = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
+        Pel*  pRec    = pcPicD->getAddr(ch);
+        const Int   iStride = pcPicD->getStride(ch);
+
+
+        for(Int y = 0; y < iHeight; y++ )
+        {
+          for(Int x = 0; x < iWidth; x++ )
+          {
+            Intermediate_Int iDiff = (Intermediate_Int)( pOrg[x] - pRec[x] );
+            uiSSDtemp   += iDiff * iDiff;
+          }
+          pOrg += iStride;
+          pRec += iStride;
+        }
+      }
+      const Int maxval = 255 << (sps.getBitDepth(toChannelType(ch)) - 8);
+      const Double fRefValue = (Double) maxval * maxval * iSize*2;
+      result.psnr[ch]         = ( uiSSDtemp ? 10.0 * log10( fRefValue / (Double)uiSSDtemp ) : 999.99 );
+      result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize*2);
+    }
+  }
 #if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
-  Double MSSSIM[MAX_NUM_COMPONENT] = {0,0,0};
-  if (printMSSSIM)
+  if (outputLogCtrl.printMSSSIM)
   {
     for(Int chan=0; chan<numValidComponents; chan++)
     {
@@ -2722,32 +2910,41 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
         sumOverFieldsMSSSIM += xCalculateMSSSIM (pOrg, orgStride, pRec, recStride, width, height, bitDepth);
       }
 
-      MSSSIM[ch] = sumOverFieldsMSSSIM/2;
+      result.MSSSIM[ch] = sumOverFieldsMSSSIM/2;
     }
   }
 #endif
 
-  UInt uibits = 0; // the number of bits for the pair is not calculated here - instead the overall total is used elsewhere.
+  result.bits = 0; // the number of bits for the pair is not calculated here - instead the overall total is used elsewhere.
 
   //===== add PSNR =====
-#if JVET_F0064_MSSSIM
-  m_gcAnalyzeAll_in.addResult (dPSNR, (Double)uibits, MSEyuvframe, MSSSIM);
-#else
-  m_gcAnalyzeAll_in.addResult (dPSNR, (Double)uibits, MSEyuvframe);
-#endif
+  m_gcAnalyzeAll_in.addResult (result);
 
-  *PSNR_Y = dPSNR[COMPONENT_Y];
+  *PSNR_Y = result.psnr[COMPONENT_Y];
 
-  printf("\n                                      Interlaced frame %d: [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", pcPicOrgSecondField->getPOC()/2 , dPSNR[COMPONENT_Y], dPSNR[COMPONENT_Cb], dPSNR[COMPONENT_Cr] );
-#if JVET_F0064_MSSSIM  
-  if (printMSSSIM)
+  printf("\n                                      Interlaced frame %d: [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", pcPicOrgSecondField->getPOC()/2 , result.psnr[COMPONENT_Y], result.psnr[COMPONENT_Cb], result.psnr[COMPONENT_Cr] );
+
+  if (outputLogCtrl.printHexPerPOCPSNRs)
   {
-    printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", MSSSIM[COMPONENT_Y], MSSSIM[COMPONENT_Cb], MSSSIM[COMPONENT_Cr] );
+    uint64_t xPsnr[MAX_NUM_COMPONENT];
+    for (int i = 0; i < MAX_NUM_COMPONENT; i++)
+    {
+      copy(reinterpret_cast<uint8_t *>(&result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&result.psnr[i]) + sizeof(result.psnr[i]),
+           reinterpret_cast<uint8_t *>(&xPsnr[i]));
+    }
+    printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
+  }
+
+#if JVET_F0064_MSSSIM
+  if (outputLogCtrl.printMSSSIM)
+  {
+    printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }
 #endif
-  if (printFrameMSE)
+  if (outputLogCtrl.printFrameMSE)
   {
-    printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", MSEyuvframe[COMPONENT_Y], MSEyuvframe[COMPONENT_Cb], MSEyuvframe[COMPONENT_Cr] );
+    printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", result.MSEyuvframe[COMPONENT_Y], result.MSEyuvframe[COMPONENT_Cb], result.MSEyuvframe[COMPONENT_Cr] );
   }
 
   for(UInt fieldNum=0; fieldNum<2; fieldNum++)

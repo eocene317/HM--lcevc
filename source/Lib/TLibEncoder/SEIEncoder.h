@@ -77,6 +77,9 @@ public:
   Void initSEIRecoveryPoint(SEIRecoveryPoint *sei, TComSlice *slice);
   Void initSEISegmentedRectFramePacking(SEISegmentedRectFramePacking *sei);
   Void initSEITempMotionConstrainedTileSets (SEITempMotionConstrainedTileSets *sei, const TComPPS *pps);
+#if MCTS_EXTRACTION
+  Void initSEIMCTSExtractionInfo(SEIMCTSExtractionInfoSet *sei, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps);
+#endif
   Void initSEIKneeFunctionInfo(SEIKneeFunctionInfo *sei);
 #if CCV_SEI_MESSAGE
   Void initSEIContentColourVolume(SEIContentColourVolume *sei);

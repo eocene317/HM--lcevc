@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 
+# Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAppDecoder", "vc2015\TAppDecoder_vc2015.vcxproj", "{A7A515D9-E917-4706-BD5B-57DC6C78D612}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAppEncoder", "vc2015\TAppEncoder_vc2015.vcxproj", "{D759E4E1-D33A-4483-B57B-0FD248E022FE}"
@@ -18,6 +18,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAppDecoderAnalyser", "vc2015\TAppDecoderAnalyser_vc2015.vcxproj", "{6BB4C8D8-449D-4CC1-A5E1-E98AAF94012F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TLibDecoderAnalyser", "vc2015\TLibDecoderAnalyser_vc2015.vcxproj", "{68C1251A-55D8-47C9-9052-62F785BD437A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAppMctsExtractor", "vc2015\TAppMCTSExtractor_vc2015.vcxproj", "{9BF48911-8901-425A-9329-C843C6FCBAB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +101,14 @@ Global
 		{68C1251A-55D8-47C9-9052-62F785BD437A}.Release|Win32.Build.0 = Release|Win32
 		{68C1251A-55D8-47C9-9052-62F785BD437A}.Release|x64.ActiveCfg = Release|x64
 		{68C1251A-55D8-47C9-9052-62F785BD437A}.Release|x64.Build.0 = Release|x64
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Debug|Win32.Build.0 = Debug|Win32
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Debug|x64.ActiveCfg = Debug|x64
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Debug|x64.Build.0 = Debug|x64
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Release|Win32.ActiveCfg = Release|Win32
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Release|Win32.Build.0 = Release|Win32
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Release|x64.ActiveCfg = Release|x64
+		{9BF48911-8901-425A-9329-C843C6FCBAB8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

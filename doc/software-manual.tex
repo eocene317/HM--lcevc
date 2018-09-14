@@ -191,7 +191,7 @@
 \maketitle
 \begin{abstract}
 This document is a user manual describing usage of reference software
-for the HEVC project. It applies to version 16.19
+for the HEVC project. It applies to version 16.20
 of the software.
 \end{abstract}
 
@@ -689,6 +689,12 @@ Specifies the chroma format to use for processing. Permitted values (depending o
 When 0, the PSNR output is a linear average of the frame PSNRs; when 1, additional PSNRs are output which are formed from the average MSE of all the frames. The latter is useful when coding near-losslessly, where occasional frames become lossless.
 \\
 
+\Option{PrintHexPSNR} &
+%\ShortOption{\None} &
+\Default{false} &
+When 1, each POC line will include the 64-bit hexadecimal representation of the PSNR for each channel. This allows some types of simulations to be split into sub-simulations and the results later combined without loss of accuracy.
+\\
+
 \Option{PrintFrameMSE} &
 %\ShortOption{\None} &
 \Default{false} &
@@ -705,6 +711,30 @@ When 1, the Mean Square Error (MSE) values of the entire sequence will also be o
 %\ShortOption{\None} &
 \Default{false} &
 When 1, the multi-scale structural similarity (MS-SSIM) will also be output alongside the PSNR values.
+\\
+
+\Option{xPSNREnableFlag (-xPS} &
+%\ShortOption{\None} &
+\Default{false} &
+When 1, the cross component PSNR is calculated, using the weights provided with xPSNRYWeight, xPSNRCbWeight and xPSNRCrWeight.
+\\
+
+\Option{xPSNRYWeight (-xPS0)} &
+%\ShortOption{\None} &
+\Default{1.0} &
+Specifies the xPSNR weighting factor for Y.
+\\
+
+\Option{xPSNRCbWeight (-xPS1)} &
+%\ShortOption{\None} &
+\Default{1.0} &
+Specifies the xPSNR weighting factor for Cb.
+\\
+
+\Option{xPSNRCrWeight (-xPS2)} &
+%\ShortOption{\None} &
+\Default{1.0} &
+Specifies the xPSNR weighting factor for Cr.
 \\
 
 \Option{SummaryOutFilename} &
@@ -1685,10 +1715,10 @@ Enables or disables SAO parameter estimation using non-deblocked pixels
 for LCU bottom and right boundary areas.
 \\
 
-\Option{SAOResetEncoderStateAfterIRAP} &
+\Option{ResetEncoderStateAfterIRAP} &
 %\ShortOption{\None} &
-\Default{false} &
-When true, resets the encoder's SAO state after an IRAP (POC order).
+\Default{true} &
+When true, resets the encoder's decisions after an IRAP (POC order) 
 \\
 
 \Option{ConstrainedIntraPred} &
@@ -2220,6 +2250,7 @@ The table below lists the SEI messages defined for Version 1 and Range-Extension
   154 & Sphere rotation                          & Table \ref{tab:sei-sphere-rotation} \\
   155 & Region-wise packing                      & Table \ref{tab:sei-rwp} \\
   156 & Omni viewport                            & Table \ref{tab:sei-omni-viewport} \\  
+  158 & Motion-constrained tile set extraction information        & Table \ref{tab:sei-mcts-extract} \\
 \end{SEIListTable}
 %%
 %% SEI messages
@@ -3057,6 +3088,17 @@ An array that indicates the elevation range of the i-th recommended viewport reg
 \\
 \end{OptionTableNoShorthand}
 
+\begin{OptionTableNoShorthand}{Motion-constrained tile sets extraction information sets SEI message encoder parameters}{tab:sei-mcts-extract}
+\Option{SEIMctsExtractInfoSet} &
+\Default{false} &
+When true (non-zero), generates example motion-constrained tile sets extraction information sets SEI message. with the following settings:
+\begin{itemize}
+\item SliceMode will be set to 0 and SliceArgument will be set to 1 (Enforcing one slice per tile).
+\item Extraction Info will be generated applying to each individual MCTS in the bitstream.
+\end{itemize}
+\\
+\end{OptionTableNoShorthand}
+
 %\Option{SEITimeCode} &
 %\Default{false} &
 %When true, generate time code SEI messages.
@@ -3294,5 +3336,53 @@ If violations are found, an error message is printed to stderr.
 If the decoder is compiled with the macro RExt__DECODER_DEBUG_BIT_STATISTICS defined as 1 (either externally, or by editing TypeDef.h), the decoder will gather fractional bit counts associated with the different syntax elements, producing a table of the number of bits per syntax element, and where appropriate, according to block size and colour component/channel.
 The Linux makefile will compile both the analyser and standard version when the `all' or `everything' target is used (where the latter will also build  high-bit-depth executables).
 
+
+
+%%
+%%
+%%
+\clearpage
+\section{Using additional tools}
+\subsection{MCTS extractor application}
+\subsubsection{General}
+\begin{verbatim}
+TAppMCTSExtractor -i str_in.bin -b str_in.bin [options]
+\end{verbatim}
+
+\begin{OptionTableNoShorthand}{MCTS Extractor options}{tab:mcts-extractor-options}
+\Option{(--help)} &
+%\ShortOption{\None} &
+\Default{\None} &
+Prints usage information.
+\\
+
+\Option{InputBitstreamFile (-i)} &
+%\ShortOption{-i} &
+\Default{\NotSet} &
+Defines the input bitstream file name.
+\\
+
+\Option{OutputBitstreamFile (-b)} &
+%\ShortOption{-b} &
+\Default{\NotSet} &
+Defines the output sub-bitstream file name.
+\\
+
+\Option{TargetMCTSIdx (-d)} &
+%\ShortOption{-d} &
+\Default{0} &
+ Target MCTS index to be extracted from input bitstream to output sub-bitstream. 
+\\
+
+\end{OptionTableNoShorthand}
+
+\subsubsection{Usage example}
+
+The MCTS extractor application allows extraction of MCTS sub-bitstreams from bitstreams containing the Temporal motion-constrained tile sets SEI message syntax and the Motion-constrained tile sets extraction information sets SEI message. In order to generate such a bitstream with TAppEncoder, the following parameters need to be set.
+\begin{verbatim}
+--SEITempMotionConstrainedTileSets=1 
+--SEITMCTSTileConstraint=1 
+--SEITMCTSExtractionInfo=1
+\end{verbatim}
 
 \end{document}

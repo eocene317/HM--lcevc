@@ -386,6 +386,108 @@ Void SEIEncoder::initSEITempMotionConstrainedTileSets (SEITempMotionConstrainedT
   }
 }
 
+#if MCTS_EXTRACTION && MCTS_ENC_CHECK
+Void SEIEncoder::initSEIMCTSExtractionInfo(SEIMCTSExtractionInfoSet *sei, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps)
+{
+  assert(m_isInitialized);
+  assert(sei != NULL);
+  assert(vps != NULL);
+  assert(sps != NULL);
+  assert(pps != NULL);
+
+  TComVPS nestedVPS = *vps;
+  TComSPS nestedSPS = *sps;
+  TComPPS nestedPPS = *pps;
+
+  if (pps->getTilesEnabledFlag())
+  {
+    if (m_pcCfg->getTMCTSSEITileConstraint())
+    {
+      UInt numTiles = (pps->getNumTileColumnsMinus1() + 1) * (pps->getNumTileRowsMinus1() + 1);
+      UInt bottomTileRowHeightSampleOffset = ( sps->getPicHeightInLumaSamples() % sps->getMaxCUHeight() ) ? sps->getMaxCUHeight() - (sps->getPicHeightInLumaSamples() % sps->getMaxCUHeight()) : 0;
+      UInt rightmostTileColumnWidthSampleOffset = ( sps->getPicWidthInLumaSamples() % sps->getMaxCUWidth() ) ? sps->getMaxCUWidth() - (sps->getPicWidthInLumaSamples() % sps->getMaxCUWidth()) : 0;
+      TComPicSym *picSym = (*(m_pcEncTop->getListPic()->begin()))->getPicSym();
+
+      // find MCTS that may share similar extraction info
+      for ( UInt mctsIdx = 0; mctsIdx < numTiles; mctsIdx++) 
+      {
+        bool suitableEISfound = false;
+        bool isRightmostTileColumn = (mctsIdx + 1) % (picSym->getNumTileColumnsMinus1() + 1) == 0 ;
+        bool isBottomTileRow =  mctsIdx / (picSym->getNumTileColumnsMinus1() + 1) == picSym->getNumTileRowsMinus1();
+        UInt curMctsHeight = picSym->getTComTile(mctsIdx)->getTileHeightInCtus() * sps->getMaxCUHeight() - (isBottomTileRow ? bottomTileRowHeightSampleOffset : 0);
+        UInt curMctsWidth = picSym->getTComTile(mctsIdx)->getTileWidthInCtus() * sps->getMaxCUWidth() - (isRightmostTileColumn ? rightmostTileColumnWidthSampleOffset : 0);
+
+        for (std::vector< SEIMCTSExtractionInfoSet::MCTSExtractionInfo>::iterator EISiter = sei->m_MCTSExtractionInfoSets.begin(); EISiter != sei->m_MCTSExtractionInfoSets.end() && !suitableEISfound; EISiter++)
+        {
+          if ( ( EISiter->mctsHeight == curMctsHeight) && ( EISiter->mctsWidth == curMctsWidth) )
+          {
+            EISiter->m_idxOfMctsInSet.push_back(std::vector<UInt>(1, mctsIdx ));
+            suitableEISfound = true;
+          }
+        }
+        if (!suitableEISfound)
+        {
+          SEIMCTSExtractionInfoSet::MCTSExtractionInfo newEIS;
+          newEIS.mctsHeight = curMctsHeight;
+          newEIS.mctsWidth = curMctsWidth;
+          newEIS.m_idxOfMctsInSet.push_back(std::vector<UInt>(1, mctsIdx));
+          sei->m_MCTSExtractionInfoSets.push_back(newEIS);
+        }
+      }
+
+      // create parameter sets for each extraction info
+      for (std::vector<SEIMCTSExtractionInfoSet::MCTSExtractionInfo>::iterator EISiter = sei->m_MCTSExtractionInfoSets.begin(); EISiter != sei->m_MCTSExtractionInfoSets.end(); EISiter++) 
+      {
+        EISiter->m_sliceReorderingEnabledFlag = false;
+
+        TComOutputBitstream vps_rbsp;
+        TComOutputBitstream sps_rbsp;
+        TComOutputBitstream pps_rbsp;        
+        
+        nestedSPS.setPicHeightInLumaSamples(EISiter->mctsHeight);
+        nestedSPS.setPicWidthInLumaSamples(EISiter->mctsWidth);
+        nestedPPS.setTilesEnabledFlag(false);
+
+        m_pcEncGOP->generateVPS_RBSP(&vps_rbsp, &nestedVPS);
+        m_pcEncGOP->generateSPS_RBSP(&sps_rbsp, &nestedSPS);
+        m_pcEncGOP->generatePPS_RBSP(&pps_rbsp, &nestedPPS);
+
+        EISiter->m_vpsRbspData.resize(1);
+        for (int j = 0; j < EISiter->m_vpsRbspData.size(); j++)
+        {
+          EISiter->m_vpsRbspDataLength.push_back(vps_rbsp.getByteStreamLength());
+          EISiter->m_vpsRbspData[j] = vps_rbsp.getFIFO();
+        }
+        
+        EISiter->m_spsRbspData.resize(1);
+        for (int j = 0; j < EISiter->m_spsRbspData.size(); j++)
+        {
+          EISiter->m_spsRbspDataLength.push_back(sps_rbsp.getByteStreamLength());
+          EISiter->m_spsRbspData[j] = sps_rbsp.getFIFO();
+        }
+        EISiter->m_ppsRbspData.resize(1);
+        EISiter->m_ppsNuhTemporalIdPlus1.resize(1);
+        for (int j = 0; j < EISiter->m_ppsRbspData.size(); j++)
+        {
+          EISiter->m_ppsRbspDataLength.push_back(pps_rbsp.getByteStreamLength());
+          EISiter->m_ppsRbspData[j] = pps_rbsp.getFIFO();
+          EISiter->m_ppsNuhTemporalIdPlus1[j] = 1;
+        }
+      }
+    }
+    else
+    {
+      assert(!"MCTS not activated");
+    }
+  }
+  else
+  {
+    assert(!"Tiles is not enabled");
+  }
+}
+
+#endif
+
 Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInfo)
 {
   assert (m_isInitialized);

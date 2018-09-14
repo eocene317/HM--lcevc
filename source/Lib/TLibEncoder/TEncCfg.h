@@ -144,10 +144,15 @@ protected:
   Double    m_dIntraQpFactor;                                 ///< Intra Q Factor. If negative, use a default equation: 0.57*(1.0 - Clip3( 0.0, 0.5, 0.05*(Double)(isField ? (GopSize-1)/2 : GopSize-1) ))
 
   Bool      m_printMSEBasedSequencePSNR;
+  Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
 #if JVET_F0064_MSSSIM
   Bool      m_printMSSSIM;
+#endif
+#if JCTVC_Y0037_XPSNR
+  Bool      m_bXPSNREnableFlag;
+  Double    m_dXPSNRWeight[MAX_NUM_COMPONENT];
 #endif
   Bool      m_cabacZeroWordPaddingEnabled;
 
@@ -214,7 +219,11 @@ protected:
   Double    m_saoEncodingRateChroma; // The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma.
   Int       m_maxNumOffsetsPerPic;
   Bool      m_saoCtuBoundary;
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  Bool      m_resetEncoderStateAfterIRAP;
+#else
   Bool      m_saoResetEncoderStateAfterIRAP;
+#endif
 
   //====== Motion search ========
   Bool      m_bDisableIntraPUsInInterSlices;
@@ -354,6 +363,9 @@ protected:
   Bool      m_tmctsSEIEnabled;
 #if MCTS_ENC_CHECK
   Bool      m_tmctsSEITileConstraint;
+#endif
+#if MCTS_EXTRACTION
+  Bool      m_tmctsExtractionSEIEnabled;
 #endif
   Bool      m_timeCodeSEIEnabled;
   Int       m_timeCodeSEINumTs;
@@ -540,6 +552,9 @@ public:
   Bool      getPrintMSEBasedSequencePSNR    ()         const { return m_printMSEBasedSequencePSNR;  }
   Void      setPrintMSEBasedSequencePSNR    (Bool value)     { m_printMSEBasedSequencePSNR = value; }
 
+  Bool      getPrintHexPsnr                 ()         const { return m_printHexPsnr;               }
+  Void      setPrintHexPsnr                 (Bool value)     { m_printHexPsnr = value;              }
+
   Bool      getPrintFrameMSE                ()         const { return m_printFrameMSE;              }
   Void      setPrintFrameMSE                (Bool value)     { m_printFrameMSE = value;             }
 
@@ -549,6 +564,14 @@ public:
 #if JVET_F0064_MSSSIM
   Bool      getPrintMSSSIM                  ()         const { return m_printMSSSIM;               }
   Void      setPrintMSSSIM                  (Bool value)     { m_printMSSSIM = value;              }
+#endif
+
+#if JCTVC_Y0037_XPSNR
+  Bool      getXPSNREnableFlag              () const                     { return m_bXPSNREnableFlag;}
+  Double    getXPSNRWeight                  (const ComponentID id) const { return m_dXPSNRWeight[id];}
+
+  Void      setXPSNREnableFlag              ( Bool  i )      { m_bXPSNREnableFlag = i; }
+  Void      setXPSNRWeight                  ( Double dValue, ComponentID id) { m_dXPSNRWeight[id] = dValue;}
 #endif
 
   Bool      getCabacZeroWordPaddingEnabled()           const { return m_cabacZeroWordPaddingEnabled;  }
@@ -816,8 +839,13 @@ public:
   Int   getMaxNumOffsetsPerPic                   ()                  { return m_maxNumOffsetsPerPic; }
   Void  setSaoCtuBoundary              (Bool val)                    { m_saoCtuBoundary = val; }
   Bool  getSaoCtuBoundary              ()                            { return m_saoCtuBoundary; }
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  Void  setResetEncoderStateAfterIRAP(Bool b)                        { m_resetEncoderStateAfterIRAP = b; }
+  Bool  getResetEncoderStateAfterIRAP() const                        { return m_resetEncoderStateAfterIRAP; }
+#else
   Void  setSaoResetEncoderStateAfterIRAP(Bool b)                     { m_saoResetEncoderStateAfterIRAP = b; }
   Bool  getSaoResetEncoderStateAfterIRAP() const                     { return m_saoResetEncoderStateAfterIRAP; }
+#endif
   Void  setLFCrossTileBoundaryFlag               ( Bool   val  )     { m_loopFilterAcrossTilesEnabledFlag = val; }
   Bool  getLFCrossTileBoundaryFlag               ()                  { return m_loopFilterAcrossTilesEnabledFlag;   }
   Void  setTileUniformSpacingFlag      ( Bool b )                    { m_tileUniformSpacingFlag = b; }
@@ -932,6 +960,10 @@ public:
 #if MCTS_ENC_CHECK
   Void  setTMCTSSEITileConstraint(Bool b)                            { m_tmctsSEITileConstraint = b; }
   Bool  getTMCTSSEITileConstraint()                                  { return m_tmctsSEITileConstraint; }
+#endif
+#if MCTS_EXTRACTION
+  Void  setTMCTSExtractionSEIEnabled(Bool b)                         { m_tmctsExtractionSEIEnabled = b; }
+  Bool  getTMCTSExtractionSEIEnabled() const                         { return m_tmctsExtractionSEIEnabled; }
 #endif
   Void  setTimeCodeSEIEnabled(Bool b)                                { m_timeCodeSEIEnabled = b; }
   Bool  getTimeCodeSEIEnabled()                                      { return m_timeCodeSEIEnabled; }

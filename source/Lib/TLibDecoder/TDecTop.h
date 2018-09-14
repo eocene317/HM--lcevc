@@ -132,7 +132,14 @@ public:
 
 #endif  
   Void  init();
+#if MCTS_EXTRACTION
+  SEIMessages& getSEIs() { return m_SEIs; }
+  TComSlice* getApcSlicePilot() { return m_apcSlicePilot; }
+  TComPic* getPcPic() const { return m_pcPic; }
+  Bool  decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay, Bool bSkipCabacAndReconstruction=false);
+#else
   Bool  decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay);
+#endif
   Void  deletePicBuffer();
 
   
@@ -154,13 +161,25 @@ protected:
   Void  xGetNewPicBuffer  (const TComSPS &sps, const TComPPS &pps, TComPic*& rpcPic, const UInt temporalLayer);
   Void  xCreateLostPicture (Int iLostPOC);
 
-  Void      xActivateParameterSets();
+#if MCTS_EXTRACTION
+  Bool      xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay, Bool bSkipCabacAndReconstruction);
+  Void      xActivateParameterSets(Bool bSkipCabacAndReconstruction);
+#else
   Bool      xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay);
+  Void      xActivateParameterSets();
+#endif
   Void      xDecodeVPS(const std::vector<UChar> &naluData);
   Void      xDecodeSPS(const std::vector<UChar> &naluData);
   Void      xDecodePPS(const std::vector<UChar> &naluData);
   Void      xUpdatePreviousTid0POC( TComSlice *pSlice ) { if ((pSlice->getTLayer()==0) && (pSlice->isReferenceNalu() && (pSlice->getNalUnitType()!=NAL_UNIT_CODED_SLICE_RASL_R)&& (pSlice->getNalUnitType()!=NAL_UNIT_CODED_SLICE_RADL_R))) { m_prevTid0POC=pSlice->getPOC(); } }
+#if MCTS_EXTRACTION
+public:
+#endif
+  TComList<TComPic*>*  getRpcListPic()  { return &m_cListPic; };
   Void      xParsePrefixSEImessages();
+#if MCTS_EXTRACTION
+private:
+#endif
 #if MCTS_ENC_CHECK
   Void      xAnalysePrefixSEImessages();
 #endif

@@ -111,6 +111,9 @@ public:
   Void    create              ( Int iWidth, Int iHeight, ChromaFormat chromaFormat, UInt iMaxCUWidth, UInt iMaxCUHeight, UChar uhTotalDepth );
   Void    destroy             ();
   Void    init                ( TEncTop* pcEncTop );
+#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
+  Void    resetEncoderDecisions() { m_encCABACTableIdx = I_SLICE; }
+#endif
 
   /// preparation of slice encoding (reference marking, QP and lambda)
   Void    initEncSlice        ( TComPic*  pcPic, const Int pocLast, const Int pocCurr,
