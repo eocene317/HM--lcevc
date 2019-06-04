@@ -53,7 +53,6 @@
 #define MACRO_TO_STRING(val) MACRO_TO_STRING_HELPER(val)
 
 using namespace std;
-namespace po = df::program_options_lite;
 
 enum UIProfileName // this is used for determining profile strings, where multiple profiles map to a single profile idc with various constraint flag combinations
 {
@@ -109,6 +108,8 @@ enum UIProfileName // this is used for determining profile strings, where multip
 // ====================================================================================================================
 // Constructor / destructor / initialization / destroy
 // ====================================================================================================================
+
+std::map<Int, Double> TAppEncCfg::s_gopBasedTemporalFilterStrengths;
 
 TAppEncCfg::TAppEncCfg()
 : m_inputColourSpaceConvert(IPCOLOURSPACE_UNCHANGED)
@@ -1234,6 +1235,12 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIRegionalNestingFileRoot,-rns",                 m_regionalNestingSEIFileRoot,                    string(""), "Regional nesting SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-rns rns\" will search for files rns_0.txt, rns_1.txt, ...")
 #endif
   ;
+
+  opts.addOptions()
+    ("TemporalFilter", m_gopBasedTemporalFilterEnabled, false, "Enable GOP based temporal filter. Disabled per default")
+    ("TemporalFilterFutureReference", m_gopBasedTemporalFilterFutureReference, true, "Enable referencing of future frames in the GOP based temporal filter. This is typically disabled for Low Delay configurations.")
+    ("TemporalFilterStrengthFrame*", (po::OptionFunc::Func *) &handleTemporalFilterStrengthOption, "Strength for every * frame in GOP based temporal filter, where * is an integer."
+                                                                                                   " E.g. --TemporalFilterStrengthFrame8 0.95 will enable GOP based temporal filter at every 8th frame with strength 0.95");
 
 #if EXTENSION_360_VIDEO
   TExt360AppEncCfg::TExt360AppEncCfgContext ext360CfgContext;
@@ -2805,6 +2812,13 @@ Void TAppEncCfg::xCheckParameter()
   }
 #endif
 
+  if (m_gopBasedTemporalFilterEnabled)
+  {
+    xConfirmPara(m_inputColourSpaceConvert != IPCOLOURSPACE_UNCHANGED, "GOP Based Temporal Filter only supports IPCOLOURSPACE_UNCHANGED.");
+    xConfirmPara(m_chromaFormatIDC != CHROMA_420, "GOP Based Temporal Filter only supports CHROMA_420.");
+    xConfirmPara(m_temporalSubsampleRatio != 1, "GOP Based Temporal Filter only support Temporal sub-sample ratio 1");
+  }
+
 #if EXTENSION_360_VIDEO
   check_failed |= m_ext360.verifyParameters();
 #endif
@@ -3058,6 +3072,26 @@ Void TAppEncCfg::xPrintParameter()
   printf("\n\n");
 
   fflush(stdout);
+}
+
+Void  TAppEncCfg::handleTemporalFilterStrengthOption(po::Options& options, const std::string& name, po::ErrorReporter& errorReporter)
+{
+  std::istringstream name_ss(name, std::istringstream::in);
+  name_ss.exceptions(std::ios::failbit);
+
+  Int key;
+  Double value;
+  try
+  {
+    name_ss >> key;
+    name_ss >> value;
+  }
+  catch (...)
+  {
+    throw po::ParseFailure("TemporalFilterStrengthFrame*", name);
+  }
+
+  s_gopBasedTemporalFilterStrengths[key] = value;
 }
 
 Bool confirmPara(Bool bflag, const TChar* message)

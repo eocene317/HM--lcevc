@@ -38,7 +38,7 @@
 #include <list>
 #include <algorithm>
 #include <functional>
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "TEncTop.h"
 #include "TEncGOP.h"
@@ -2278,10 +2278,12 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
   //===== calculate PSNR =====
 
+  const Bool useTrueOrg = conversion != IPCOLOURSPACE_UNCHANGED || m_pcCfg->getGopBasedTemporalFilterEnabled();
+
 #if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && pcPicD->getChromaFormat() != CHROMA_400)
   {
-    TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+    TComPicYuv *pOrgPicYuv = useTrueOrg ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
     Pel*   pOrg[MAX_NUM_COMPONENT];
     Double dWeightPel[MAX_NUM_COMPONENT];
     Int    iWeightSize[MAX_NUM_COMPONENT] = {1, 1, 1};
@@ -2366,7 +2368,7 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
       const ComponentID ch=ComponentID(chan);
-      const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+      const TComPicYuv *pOrgPicYuv = useTrueOrg ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
       const Pel*  pOrg       = pOrgPicYuv->getAddr(ch);
       const Int   iOrgStride = pOrgPicYuv->getStride(ch);
       Pel*  pRec             = picd.getAddr(ch);
@@ -2404,7 +2406,7 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
       const ComponentID ch  = ComponentID(chan);
-      const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+      const TComPicYuv *pOrgPicYuv = useTrueOrg ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
       const Pel*  pOrg      = pOrgPicYuv->getAddr(ch);
       const Int   orgStride = pOrgPicYuv->getStride(ch);
       const Pel*  pRec      = picd.getAddr(ch);
@@ -2752,6 +2754,7 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
 
   assert(apcPicRecFields[0]->getChromaFormat()==apcPicRecFields[1]->getChromaFormat());
   const UInt numValidComponents=apcPicRecFields[0]->getNumberValidComponents();
+  const Bool   useTrueOrg = conversion != IPCOLOURSPACE_UNCHANGED || m_pcCfg->getGopBasedTemporalFilterEnabled();
 
 #if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && apcPicRecFields[0]->getChromaFormat() != CHROMA_400 && apcPicRecFields[1]->getChromaFormat() != CHROMA_400)
@@ -2772,7 +2775,7 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
     {
       TComPic *pcPic=apcPicOrgFields[fieldNum];
       TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
-      TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+      TComPicYuv *pOrgPicYuv = useTrueOrg ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
 
       for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
       {
@@ -2860,7 +2863,7 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
         TComPic *pcPic=apcPicOrgFields[fieldNum];
         TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
 
-        const Pel*  pOrg    = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
+        const Pel*  pOrg    = useTrueOrg ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
         Pel*  pRec    = pcPicD->getAddr(ch);
         const Int   iStride = pcPicD->getStride(ch);
 
@@ -2901,8 +2904,8 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
         TComPic    *pcPic      = apcPicOrgFields[fieldNum];
         TComPicYuv *pcPicD     = apcPicRecFields[fieldNum];
 
-        const Pel*  pOrg       = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch)   : pcPic ->getPicYuvOrg()->getAddr(ch);
-        const Int   orgStride  = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getStride(ch) : pcPic ->getPicYuvOrg()->getStride(ch);
+        const Pel*  pOrg       = useTrueOrg ? pcPic ->getPicYuvTrueOrg()->getAddr(ch)   : pcPic ->getPicYuvOrg()->getAddr(ch);
+        const Int   orgStride  = useTrueOrg ? pcPic ->getPicYuvTrueOrg()->getStride(ch) : pcPic ->getPicYuvOrg()->getStride(ch);
         Pel*        pRec       = pcPicD->getAddr(ch);
         const Int   recStride  = pcPicD->getStride(ch);
         const UInt  bitDepth   = sps.getBitDepth(toChannelType(ch));

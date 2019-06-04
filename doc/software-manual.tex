@@ -1899,6 +1899,31 @@ This option has no effect if TransformSkip is disabled.
 \end{OptionTableNoShorthand}
 
 %%
+%% GOP based termporal filter parameters
+%%
+
+\begin{OptionTableNoShorthand}{GOP based temporal filter paramters}{tab:gop-based-temporal-filter}
+
+\Option{TemporalFilter} &
+%\ShortOption{\None} &
+\Default{false} &
+Enables or disables GOP based temporal filter.
+\\
+\Option{TemporalFilterFutureReference} &
+%\ShortOption{\None} &
+\Default{true} &
+Enables or disable referencing future frames in the GOP based temporal filter. Can be used for low delay configuration.
+\\
+\Option{TemporalFilterStrengthFrame*} &
+%\ShortOption{\None} &
+\Default{} &
+Strength for every * frame in GOP based temporal filter, where * is an integer. E.g. --TemporalFilterStrengthFrame8 0.95 will
+enable GOP based temporal filter at every 8th frame with strength 0.95. Longer intervals overrides shorter when there a multiple
+matches.
+\\
+\end{OptionTableNoShorthand}
+
+%%
 %% Rate control parameters
 %%
 
