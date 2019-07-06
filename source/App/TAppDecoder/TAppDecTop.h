@@ -70,7 +70,9 @@ private:
   SEIColourRemappingInfo*         m_pcSeiColourRemappingInfoPrevious;
 
 #if AR_SEI_MESSAGE
-  SEIAnnotatedRegions*            m_pcSeiAnnotatedRegions;       ///< Annotated regions SEI message
+  SEIAnnotatedRegions::AnnotatedRegionHeader                 m_arHeader;
+  std::map<UInt, SEIAnnotatedRegions::AnnotatedRegionObject> m_arObjects;
+  std::map<UInt, std::string>                                m_arLabels;
 #endif
 
 public:

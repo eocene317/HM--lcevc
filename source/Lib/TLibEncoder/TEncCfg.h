@@ -1137,7 +1137,7 @@ public:
 #endif
 
 #if AR_SEI_MESSAGE
-  Void  setARSEIFileRoot(const std::string &s)                       { m_arSEIFileRoot = s; }
+  Void  setAnnotatedRegionSEIFileRoot(const std::string &s)          { m_arSEIFileRoot = s; }
   const std::string &getAnnotatedRegionSEIFileRoot() const           { return m_arSEIFileRoot; }
 #endif
 

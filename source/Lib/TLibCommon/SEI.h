@@ -857,46 +857,62 @@ public:
   SEIAnnotatedRegions() {}
   virtual ~SEIAnnotatedRegions() {}
 
-  Void copyFrom(const SEIAnnotatedRegions &seiAnnotaedRegions)
+  Void copyFrom(const SEIAnnotatedRegions &seiAnnotatedRegions)
   {
-    (*this) = seiAnnotaedRegions;
+    (*this) = seiAnnotatedRegions;
   }
 
-  struct AnnotatedRegion
+  struct AnnotatedRegionObject
   {
-    Bool bObjCancelFlag;
-    Bool bObjLabelUpdateFlag;
-    UInt objIdx;
-    UInt objLabelIdc;            // only valid if !bNewObjFlag && m_annotatedRegionsObjLabelPresentFlag
-    Bool bObjBoundBoxUpdateFlag; // only valid if !bNewObjFlag. (not required when not valid)
-    UInt boundingBoxTop;         // only valid if bObjBoundBoxUpdateFlag or bNewObjFlag
+    AnnotatedRegionObject() :
+      bObjectCancelFlag(false),
+      bObjectLabelValid(false),
+      bBoundingBoxValid(false)
+    { }
+    Bool bObjectCancelFlag;
+
+    Bool bObjectLabelValid;
+    UInt objLabelIdx;            // only valid if bObjectLabelValid
+
+    Bool bBoundingBoxValid;
+    UInt boundingBoxTop;         // only valid if bBoundingBoxValid
     UInt boundingBoxLeft;
     UInt boundingBoxWidth;
     UInt boundingBoxHeight;
-    Bool bPartObjFlag;
-    UInt objConf;                // only valid if m_annotatedRegionsObjDetConfLength
+
+    Bool bPartialObjectFlag;        // only valid if bPartialObjectFlagValid
+    UInt objectConfidence;
   };
-  struct AnnotatedLabel
+  struct AnnotatedRegionLabel
   {
-    UInt        labelIdx;
-    Bool        bLabelCancelFlag;
-    std::string label;
+    AnnotatedRegionLabel() : bLabelValid(false) { }
+    Bool        bLabelValid;
+    std::string label;           // only valid if bLabelValid
   };
-  Bool      m_annotatedRegionsSEIEnabled;
-  Bool      m_annotatedRegionsCancelFlag;
-  Bool      m_annotatedRegionsNotOptimizedForViewFlag;
-  Bool      m_annotatedRegionsTrueMotionFlag;
-  Bool      m_annotatedRegionsOccludedObjsFlag;
-  Bool      m_annotatedRegionsPartialObjsFlagPresentFlag;
-  Bool      m_annotatedRegionsObjLabelPresentFlag;
-  Bool      m_annotatedRegionsObjDetConfInfoPresentFlag;
-  UInt      m_annotatedRegionsObjDetConfLength; //Only valid if m_annotatedRegionsObjDetConfInfoPresentFlag is present
-  Bool      m_annotatedRegionsObjLabelLangPresentFlag; //Only valid if m_annotatedRegionsObjLabelPresentFlag is present
-  std::string m_annotatedRegionsObjLabelLang;
-  UInt      m_annotatedRegionsNumLabelUpdates;
-  UInt      m_annotatedRegionsNumObjUpdates;
-  std::map<UInt, AnnotatedRegion> m_annotatedRegions;
-  std::map<UInt, AnnotatedLabel> m_annotatedLabels;
+  Bool      m_SEIEnabled; //huh?
+
+  struct AnnotatedRegionHeader
+  {
+    AnnotatedRegionHeader() : m_cancelFlag(true), m_receivedSettingsOnce(false) { }
+    Bool      m_cancelFlag;
+    Bool      m_receivedSettingsOnce; // used for decoder conformance checking. Other confidence flags must be unchanged once this flag is set.
+
+    Bool      m_notOptimizedForViewingFlag;
+    Bool      m_trueMotionFlag;
+    Bool      m_occludedObjectFlag;
+    Bool      m_partialObjectFlagPresentFlag;
+    Bool      m_objectLabelPresentFlag;
+    Bool      m_objectConfidenceInfoPresentFlag;
+    UInt      m_objectConfidenceLength;         // Only valid if m_objectConfidenceInfoPresentFlag
+    Bool      m_objectLabelLanguagePresentFlag; // Only valid if m_objectLabelPresentFlag
+    std::string m_annotatedRegionsObjectLabelLang;
+  };
+  typedef UInt AnnotatedRegionObjectIndex;
+  typedef UInt AnnotatedRegionLabelIndex;
+
+  AnnotatedRegionHeader m_hdr;
+  std::vector<std::pair<AnnotatedRegionObjectIndex, AnnotatedRegionObject> > m_annotatedRegions;
+  std::vector<std::pair<AnnotatedRegionLabelIndex,  AnnotatedRegionLabel>  > m_annotatedLabels;
 };
 #endif
 

@@ -451,7 +451,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setRegionalNestingSEIFileRoot                        ( m_regionalNestingSEIFileRoot );
 #endif
 #if AR_SEI_MESSAGE
-  m_cTEncTop.setARSEIFileRoot                                     (m_arSEIFileRoot);
+  m_cTEncTop.setAnnotatedRegionSEIFileRoot                        (m_arSEIFileRoot);
 #endif
   m_cTEncTop.setTileUniformSpacingFlag                            ( m_tileUniformSpacingFlag );
   m_cTEncTop.setNumColumnsMinus1                                  ( m_numTileColumnsMinus1 );

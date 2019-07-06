@@ -1373,83 +1373,92 @@ Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting
   }
 }
 #endif
+
 #if AR_SEI_MESSAGE
 Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const TComSPS *sps)
 {
-  WRITE_FLAG(sei.m_annotatedRegionsCancelFlag, "annotated_regions_cancel_flag");
-  if (!sei.m_annotatedRegionsCancelFlag)
+  WRITE_FLAG(sei.m_hdr.m_cancelFlag, "ar_cancel_flag");
+  if (!sei.m_hdr.m_cancelFlag)
   {
-    WRITE_FLAG(sei.m_annotatedRegionsNotOptimizedForViewFlag, "annotated_regions_not_opt_for_view_flag");
-    WRITE_FLAG(sei.m_annotatedRegionsTrueMotionFlag, "annotated_regions_true_motion_flag");
-    WRITE_FLAG(sei.m_annotatedRegionsOccludedObjsFlag, "annotated_regions_occluded_objects_flag");
-    WRITE_FLAG(sei.m_annotatedRegionsPartialObjsFlagPresentFlag, "annotated_regions_partial_objects_flag_present_flag");
-    WRITE_FLAG(sei.m_annotatedRegionsObjLabelPresentFlag, "annotated_regions_object_label_present_flag");
-    WRITE_FLAG(sei.m_annotatedRegionsObjDetConfInfoPresentFlag, "annotated_regions_object_conf_info_present_flag");
-    if (sei.m_annotatedRegionsObjDetConfInfoPresentFlag)
+    WRITE_FLAG(sei.m_hdr.m_notOptimizedForViewingFlag, "ar_not_optimized_for_viewing_flag");
+    WRITE_FLAG(sei.m_hdr.m_trueMotionFlag, "ar_true_motion_flag");
+    WRITE_FLAG(sei.m_hdr.m_occludedObjectFlag, "ar_occluded_object_flag");
+    WRITE_FLAG(sei.m_hdr.m_partialObjectFlagPresentFlag, "ar_partial_object_flag_present_flag");
+    WRITE_FLAG(sei.m_hdr.m_objectLabelPresentFlag, "ar_object_label_present_flag");
+    WRITE_FLAG(sei.m_hdr.m_objectConfidenceInfoPresentFlag, "ar_object_confidence_info_present_flag");
+    if (sei.m_hdr.m_objectConfidenceInfoPresentFlag)
     {
-      WRITE_CODE((sei.m_annotatedRegionsObjDetConfLength - 1), 4, "annotated_regions_object_detection_conf_length_minus_1");
+      assert(sei.m_hdr.m_objectConfidenceLength <= 16 && sei.m_hdr.m_objectConfidenceLength>0);
+      WRITE_CODE((sei.m_hdr.m_objectConfidenceLength - 1), 4, "ar_object_confidence_length_minus_1");
     }
-    if (sei.m_annotatedRegionsObjLabelPresentFlag)
+    if (sei.m_hdr.m_objectLabelPresentFlag)
     {
-      WRITE_FLAG(sei.m_annotatedRegionsObjLabelLangPresentFlag, "annotated_regions_object_detection_label_language_present_flag");
-      if (sei.m_annotatedRegionsObjLabelLangPresentFlag)
+      WRITE_FLAG(sei.m_hdr.m_objectLabelLanguagePresentFlag, "ar_object_label_language_present_flag");
+      if (sei.m_hdr.m_objectLabelLanguagePresentFlag)
       {
         xWriteByteAlign();
-        for (UInt j = 0; j < strlen(sei.m_annotatedRegionsObjLabelLang.c_str()); j++)
+        assert(sei.m_hdr.m_annotatedRegionsObjectLabelLang.size()<256);
+        for (UInt j = 0; j < sei.m_hdr.m_annotatedRegionsObjectLabelLang.size(); j++)
         {
-          UChar ch = sei.m_annotatedRegionsObjLabelLang.c_str()[j];
-          WRITE_CODE(ch, 8, "annotated_regions_label_language");
+          UChar ch = sei.m_hdr.m_annotatedRegionsObjectLabelLang[j];
+          WRITE_CODE(ch, 8, "ar_object_label_language");
         }
-        WRITE_CODE('\0', 8, "annotated_regions_label_language");
+        WRITE_CODE('\0', 8, "ar_label_language");
       }
     }
-    WRITE_UVLC(sei.m_annotatedRegionsNumLabelUpdates, "annotated_regions_num_label_updates");
-    for (Int i = 0; i < sei.m_annotatedRegionsNumLabelUpdates; i++)
+    WRITE_UVLC(sei.m_annotatedLabels.size(), "ar_num_label_updates");
+    assert(sei.m_annotatedLabels.size()<256);
+    for(auto it=sei.m_annotatedLabels.begin(); it!=sei.m_annotatedLabels.end(); it++)
     {
-      WRITE_UVLC(sei.m_annotatedLabels.at(i).labelIdx, "annotated_regions_label_idx");
-      WRITE_FLAG(sei.m_annotatedLabels.at(i).bLabelCancelFlag, "annotated_regions_label_cancel_flag");
-      if (!sei.m_annotatedLabels.at(i).bLabelCancelFlag)
+      assert(it->first < 256);
+      WRITE_UVLC(it->first, "ar_label_idx[]");
+      const SEIAnnotatedRegions::AnnotatedRegionLabel &ar=it->second;
+      WRITE_FLAG(!ar.bLabelValid, "ar_label_cancel_flag");
+      if (ar.bLabelValid)
       {
         xWriteByteAlign();
-        for (UInt j = 0; j < strlen(sei.m_annotatedLabels.at(i).label.c_str()); j++)
+        assert(ar.label.size()<256);
+        for (UInt j = 0; j < ar.label.size(); j++)
         {
-          UChar ch = sei.m_annotatedLabels.at(i).label.c_str()[j];
-          WRITE_CODE(ch, 8, "annotated_regions_label");
+          UChar ch = ar.label[j];
+          WRITE_CODE(ch, 8, "ar_label[]");
         }
-        WRITE_CODE('\0', 8, "annotated_regions_label");
+        WRITE_CODE('\0', 8, "ar_label[]");
       }
     }
-    WRITE_UVLC(sei.m_annotatedRegionsNumObjUpdates, "annotated_regions_num_object_updates");
-    for (Int i = 0; i < sei.m_annotatedRegionsNumObjUpdates; i++)
+    WRITE_UVLC(sei.m_annotatedRegions.size(), "ar_num_object_updates");
+    assert(sei.m_annotatedRegions.size()<256);
+    for (auto it=sei.m_annotatedRegions.begin(); it!=sei.m_annotatedRegions.end(); it++)
     {
-      SEIAnnotatedRegions::AnnotatedRegion ar = sei.m_annotatedRegions.at(i);
-      WRITE_UVLC(ar.objIdx, "annotated_regions_obj_idx");
-      WRITE_FLAG(ar.bObjCancelFlag, "annotated_regions_obj_cancel_flag");
-      if (!ar.bObjCancelFlag)
+      const SEIAnnotatedRegions::AnnotatedRegionObject &ar = it->second;
+      WRITE_UVLC(it->first, "ar_object_idx");
+      WRITE_FLAG(ar.bObjectCancelFlag, "ar_object_cancel_flag");
+      if (!ar.bObjectCancelFlag)
       {
-        if (sei.m_annotatedRegionsObjLabelPresentFlag)
+        if (sei.m_hdr.m_objectLabelPresentFlag)
         {
-          WRITE_FLAG(ar.bObjLabelUpdateFlag, "annotated_regions_obj_label_update_flag");
-          if (ar.bObjLabelUpdateFlag)
+          WRITE_FLAG(ar.bObjectLabelValid, "ar_object_label_update_flag");
+          if (ar.bObjectLabelValid)
           {
-            WRITE_UVLC(ar.objLabelIdc, "annotated_regions_obj_label_idx");
+            assert(ar.objLabelIdx<256);
+            WRITE_UVLC(ar.objLabelIdx, "ar_object_label_idx");
           }
         }
-        WRITE_FLAG(ar.bObjBoundBoxUpdateFlag, "annotated_regions_obj_bounding_box_update_flag");
-        if (ar.bObjBoundBoxUpdateFlag)
+        WRITE_FLAG(ar.bBoundingBoxValid, "ar_object_bounding_box_update_flag");
+        if (ar.bBoundingBoxValid)
         {
-          xWriteByteAlign();
-          WRITE_CODE(ar.boundingBoxTop,  16,"annotated_regions_obj_top");
-          WRITE_CODE(ar.boundingBoxLeft, 16,"annotated_regions_obj_left");
-          WRITE_CODE(ar.boundingBoxWidth,16,"annotated_regions_obj_width");
-          WRITE_CODE(ar.boundingBoxHeight,16,"annotated_regions_obj_height");
-          if (sei.m_annotatedRegionsPartialObjsFlagPresentFlag)
+          WRITE_CODE(ar.boundingBoxTop,   16, "ar_bounding_box_top");
+          WRITE_CODE(ar.boundingBoxLeft,  16, "ar_bounding_box_left");
+          WRITE_CODE(ar.boundingBoxWidth, 16, "ar_bounding_box_width");
+          WRITE_CODE(ar.boundingBoxHeight,16, "ar_bounding_box_height");
+          if (sei.m_hdr.m_partialObjectFlagPresentFlag)
           {
-            WRITE_UVLC(ar.bPartObjFlag, "annotated_regions_partial_obj_flag");
+            WRITE_UVLC(ar.bPartialObjectFlag, "ar_partial_object_flag");
           }
-          if (sei.m_annotatedRegionsObjDetConfInfoPresentFlag)
+          if (sei.m_hdr.m_objectConfidenceInfoPresentFlag)
           {
-            WRITE_CODE(ar.objConf, sei.m_annotatedRegionsObjDetConfLength, "annotated_regions_obj_conf");
+            assert(ar.objectConfidence < (1<<sei.m_hdr.m_objectConfidenceLength));
+            WRITE_CODE(ar.objectConfidence, sei.m_hdr.m_objectConfidenceLength, "ar_object_confidence");
           }
         }
       }

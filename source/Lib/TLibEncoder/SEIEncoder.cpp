@@ -682,6 +682,124 @@ Void SEIEncoder::initSEIRegionWisePacking(SEIRegionWisePacking *seiRegionWisePac
 }
 #endif
 
+#if AR_SEI_MESSAGE
+template <typename T>
+static Void readTokenValue(T            &returnedValue, /// value returned
+                           Bool         &failed,        /// used and updated
+                           std::istream &is,            /// stream to read token from
+                           const TChar  *pToken,        /// token string
+                           Bool (*parseFn) (std::istream &, T &) /// parsing function
+                           )
+{
+  returnedValue=T();
+  if (failed)
+  {
+    return;
+  }
+
+  Int c;
+  // Ignore any whitespace
+  while ((c=is.get())!=EOF && isspace(c));
+  // test for comment mark
+  while (c=='#')
+  {
+    // Ignore to the end of the line
+    while ((c=is.get())!=EOF && (c!=10 && c!=13));
+    // Ignore any white space at the start of the next line
+    while ((c=is.get())!=EOF && isspace(c));
+  }
+  // test first character of token
+  failed=(c!=pToken[0]);
+  // test remaining characters of token
+  Int pos;
+  for(pos=1;!failed && pToken[pos]!=0 && is.get()==pToken[pos]; pos++);
+  failed|=(pToken[pos]!=0);
+  // Ignore any whitespace before the ':'
+  while (!failed && (c=is.get())!=EOF && isspace(c));
+  failed|=(c!=':');
+  // Now read the value associated with the token:
+  if (!failed)
+  {
+    failed=parseFn(is, returnedValue);
+  }
+  if (failed)
+  {
+    std::cerr << "Unable to read token '" << pToken << "'\n";
+  }
+}
+
+template <typename T>
+static Bool readTokenValueParsing(std::istream &is, T & returnedValue)
+{
+  is >> returnedValue;
+  Bool failed=!is.good();
+  if (!failed)
+  {
+    Int c=is.get();
+    failed=(c!=EOF && !isspace(c));
+  }
+  return failed;
+}
+
+template <>
+Bool readTokenValueParsing(std::istream &is, std::string & returnedValue)
+{
+  Int c;
+  // ignore any initial white space
+  do
+  {
+    c=is.get();
+  } while (isspace(c) && c!=10 && c!=13 && c!=EOF);
+
+  Int currentQuoteSymbol=0;
+  Int trailingSpaces=0;
+
+  while (c!=EOF && c!=0 && c!=10 && c!=13)
+  {
+    if (currentQuoteSymbol==0 && (c=='"' || c=='\''))
+    {
+      currentQuoteSymbol=c;
+    }
+    else if (c==currentQuoteSymbol)
+    {
+      currentQuoteSymbol=0;
+    }
+    else if (isspace(c) && !currentQuoteSymbol)
+    {
+      trailingSpaces++;
+    }
+    else
+    {
+      if (c=='\\')
+      {
+        c=is.get();
+        if (c==EOF || c==10 || c==13 || c==0)
+        {
+          return true; // not properly escaped '\'
+        }
+      }
+      if (trailingSpaces)
+      {
+        returnedValue+=string(trailingSpaces, ' ');
+        trailingSpaces=0;
+      }
+      returnedValue+=c;
+    }
+    c=is.get();
+  }
+
+  return currentQuoteSymbol!=0; // error if we didn't find a closing quote.
+}
+
+template <typename T>
+static Void readTokenValue(T            &returnedValue, /// value returned
+                           Bool         &failed,        /// used and updated
+                           std::istream &is,            /// stream to read token from
+                           const TChar  *pToken)        /// token string
+{
+  readTokenValue(returnedValue, failed, is, pToken, readTokenValueParsing);
+}
+#else
 template <typename T>
 static Void readTokenValue(T            &returnedValue, /// value returned
                            Bool         &failed,        /// used and updated
@@ -730,6 +848,7 @@ static Void readTokenValue(T            &returnedValue, /// value returned
     std::cerr << "Unable to read token '" << pToken << "'\n";
   }
 }
+#endif
 
 template <typename T>
 static Void readTokenValueAndValidate(T            &returnedValue, /// value returned
@@ -759,60 +878,7 @@ static Void readTokenValueAndValidate(Bool         &returnedValue, /// value ret
   readTokenValue(returnedValue, failed, is, pToken);
 }
 
-#if AR_SEI_MESSAGE
-template <typename T>
-static void readTokenValueString(std::vector<T> &returnedValue,
-                                Bool & failed,
-                                std::istream &is,
-                                const TChar *pToken)
-{
 
-  if (failed)
-  {
-    return;
-  }
-  Int c;
-  // Ignore any whitespace
-  while ((c = is.get()) != EOF && isspace(c));
-  // test for comment mark
-  while (c == '#')
-  {
-    // Ignore to the end of the line
-    while ((c = is.get()) != EOF && (c != 10 && c != 13));
-    // Ignore any white space at the start of the next line
-    while ((c = is.get()) != EOF && isspace(c));
-  }
-  // test first character of token
-  failed = (c != pToken[0]);
-  // test remaining characters of token
-  Int pos;
-  for (pos = 1; !failed && pToken[pos] != 0 && is.get() == pToken[pos]; pos++);
-  failed |= (pToken[pos] != 0);
-  // Ignore any whitespace before the ':'
-  while (!failed && (c = is.get()) != EOF && isspace(c));
-  failed |= (c != ':');
-  // Now read the values till end of line
-  UInt i = 0;
-  for (; c != '\n'; i++)
-  {
-    if (!failed)
-    {
-      is >> returnedValue[i];
-      failed = !is.good();
-      if (!failed)
-      {
-        c = is.get();
-        failed = (c != EOF && !isspace(c));
-      }
-    }
-    if (failed)
-    {
-      std::cerr << "Unable to read token '" << pToken << "[" << i << "]'\n";
-    }
-  }
-  returnedValue.resize(i);
-}
-#endif
 
 #if RNSEI
 template <typename T>
@@ -1280,74 +1346,77 @@ Bool SEIEncoder::initSEIRegionalNesting(SEIRegionalNesting* seiRegionalNesting, 
 #if AR_SEI_MESSAGE
 Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed)
 {
-  std::vector <TChar> Label;
-  readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsSEIEnabled, failed, fic, "SEIArEnabled");
-  readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsCancelFlag, failed, fic, "SEIArCancelFlag");
-  if (!seiAnnoRegion->m_annotatedRegionsCancelFlag)
+  readTokenValueAndValidate(seiAnnoRegion->m_SEIEnabled, failed, fic, "SEIArEnabled");
+
+  readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_cancelFlag, failed, fic, "SEIArCancelFlag");
+  if (!seiAnnoRegion->m_hdr.m_cancelFlag)
   {
-    readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsNotOptimizedForViewFlag, failed, fic, "SEIArNotOptForViewingFlag");
-    readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsTrueMotionFlag, failed, fic, "SEIArTrueMotionFlag");
-    readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsOccludedObjsFlag, failed, fic, "SEIArOccludedObjsFlag");
-    readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsPartialObjsFlagPresentFlag, failed, fic, "SEIArPartialObjsFlagPresentFlag");
-    readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsObjLabelPresentFlag, failed, fic, "SEIArObjLabelPresentFlag");
-    readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsObjDetConfInfoPresentFlag, failed, fic, "SEIArObjConfInfoPresentFlag");
-    if (seiAnnoRegion->m_annotatedRegionsObjDetConfInfoPresentFlag)
+    readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_notOptimizedForViewingFlag, failed, fic, "SEIArNotOptForViewingFlag");
+    readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_trueMotionFlag, failed, fic, "SEIArTrueMotionFlag");
+    readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_occludedObjectFlag, failed, fic, "SEIArOccludedObjsFlag");
+    readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_partialObjectFlagPresentFlag, failed, fic, "SEIArPartialObjsFlagPresentFlag");
+    readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_objectLabelPresentFlag, failed, fic, "SEIArObjLabelPresentFlag");
+    readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_objectConfidenceInfoPresentFlag, failed, fic, "SEIArObjConfInfoPresentFlag");
+    if (seiAnnoRegion->m_hdr.m_objectConfidenceInfoPresentFlag)
     {
-      readTokenValueAndValidate<UInt>(seiAnnoRegion->m_annotatedRegionsObjDetConfLength, failed, fic, "SEIArObjDetConfLength", UInt(0), UInt(255));
+      readTokenValueAndValidate<UInt>(seiAnnoRegion->m_hdr.m_objectConfidenceLength, failed, fic, "SEIArObjDetConfLength", UInt(0), UInt(255));
     }
-    if (seiAnnoRegion->m_annotatedRegionsObjLabelPresentFlag)
+    if (seiAnnoRegion->m_hdr.m_objectLabelPresentFlag)
     {
-      readTokenValueAndValidate(seiAnnoRegion->m_annotatedRegionsObjLabelLangPresentFlag, failed, fic, "SEIArObjLabelLangPresentFlag");
-      if (seiAnnoRegion->m_annotatedRegionsObjLabelLangPresentFlag)
+      readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_objectLabelLanguagePresentFlag, failed, fic, "SEIArObjLabelLangPresentFlag");
+      if (seiAnnoRegion->m_hdr.m_objectLabelLanguagePresentFlag)
       {
-        Label.resize(100);
-        readTokenValueString(Label, failed, fic, "SEIArLabelLanguage");
-        std::string NewLabel(Label.begin(), Label.end());
-        seiAnnoRegion->m_annotatedRegionsObjLabelLang = NewLabel;
+        readTokenValue(seiAnnoRegion->m_hdr.m_annotatedRegionsObjectLabelLang, failed, fic, "SEIArLabelLanguage");
       }
-      readTokenValueAndValidate<UInt>(seiAnnoRegion->m_annotatedRegionsNumLabelUpdates, failed, fic, "SEIArNumLabelUpdates", UInt(0), UInt(255));
-      for (UInt c = 0; c < seiAnnoRegion->m_annotatedRegionsNumLabelUpdates; c++)
+      UInt numLabelUpdates=0;
+      readTokenValueAndValidate<UInt>(numLabelUpdates, failed, fic, "SEIArNumLabelUpdates", UInt(0), UInt(255));
+      seiAnnoRegion->m_annotatedLabels.resize(numLabelUpdates);
+      for (auto it=seiAnnoRegion->m_annotatedLabels.begin(); it!=seiAnnoRegion->m_annotatedLabels.end(); it++)
       {
-        readTokenValueAndValidate<UInt>(seiAnnoRegion->m_annotatedLabels[c].labelIdx, failed, fic, "SEIArLabelIdc[c]", UInt(0), UInt(255));
-        readTokenValueAndValidate(seiAnnoRegion->m_annotatedLabels[c].bLabelCancelFlag, failed, fic, "SEIArLabelCancelFlag[c]");
-        if (!seiAnnoRegion->m_annotatedLabels[c].bLabelCancelFlag)
+        SEIAnnotatedRegions::AnnotatedRegionLabel &ar=it->second;
+        readTokenValueAndValidate(it->first, failed, fic, "SEIArLabelIdc[c]", UInt(0), UInt(255));
+        bool cancelFlag;
+        readTokenValueAndValidate(cancelFlag, failed, fic, "SEIArLabelCancelFlag[c]");
+        ar.bLabelValid=!cancelFlag;
+        if (ar.bLabelValid)
         {
-          Label.resize(100);
-          readTokenValueString(Label, failed, fic, "SEIArLabel[c]");
-          std::string NewLabel(Label.begin(), Label.end());
-          seiAnnoRegion->m_annotatedLabels[c].label = NewLabel;
+          readTokenValue(ar.label, failed, fic, "SEIArLabel[c]");
         }
       }
     }
-    readTokenValueAndValidate<UInt>(seiAnnoRegion->m_annotatedRegionsNumObjUpdates, failed, fic, "SEIArNumObjUpdates", UInt(0), UInt(255));
-    for (UInt c = 0; c < seiAnnoRegion->m_annotatedRegionsNumObjUpdates; c++)
+    UInt numObjectUpdates=0;
+    readTokenValueAndValidate<UInt>(numObjectUpdates, failed, fic, "SEIArNumObjUpdates", UInt(0), UInt(255));
+    seiAnnoRegion->m_annotatedRegions.resize(numObjectUpdates);
+    for (auto it=seiAnnoRegion->m_annotatedRegions.begin(); it!=seiAnnoRegion->m_annotatedRegions.end(); it++)
     {
-      SEIAnnotatedRegions::AnnotatedRegion &ar = seiAnnoRegion->m_annotatedRegions[c];
-      readTokenValueAndValidate<UInt>(ar.objIdx, failed, fic, "SEIArObjIdx[c]", UInt(0), UInt(255));
-      readTokenValueAndValidate(ar.bObjCancelFlag, failed, fic, "SEIArObjCancelFlag[c]");
-      if (!ar.bObjCancelFlag)
+      SEIAnnotatedRegions::AnnotatedRegionObject &ar = it->second;
+      readTokenValueAndValidate(it->first, failed, fic, "SEIArObjIdx[c]", UInt(0), UInt(255));
+      readTokenValueAndValidate(ar.bObjectCancelFlag, failed, fic, "SEIArObjCancelFlag[c]");
+      ar.bObjectLabelValid=false;
+      ar.bBoundingBoxValid=false;
+      if (!ar.bObjectCancelFlag)
       {
-        if (seiAnnoRegion->m_annotatedRegionsObjLabelPresentFlag)
+        if (seiAnnoRegion->m_hdr.m_objectLabelPresentFlag)
         {
-          readTokenValueAndValidate(ar.bObjLabelUpdateFlag, failed, fic, "SEIArObjLabelUpdateFlag[c]");
-          if (ar.bObjLabelUpdateFlag)
+          readTokenValueAndValidate(ar.bObjectLabelValid, failed, fic, "SEIArObjLabelUpdateFlag[c]");
+          if (ar.bObjectLabelValid)
           {
-            readTokenValueAndValidate<UInt>(ar.objLabelIdc, failed, fic, "SEIArObjectLabelIdc[c]", UInt(0), UInt(255));
+            readTokenValueAndValidate<UInt>(ar.objLabelIdx, failed, fic, "SEIArObjectLabelIdc[c]", UInt(0), UInt(255));
           }
-          readTokenValueAndValidate(ar.bObjBoundBoxUpdateFlag, failed, fic, "SEIArBoundBoxUpdateFlag[c]");
-          if (ar.bObjBoundBoxUpdateFlag)
+          readTokenValueAndValidate(ar.bBoundingBoxValid, failed, fic, "SEIArBoundBoxUpdateFlag[c]");
+          if (ar.bBoundingBoxValid)
           {
             readTokenValueAndValidate<UInt>(ar.boundingBoxTop, failed, fic, "SEIArObjTop[c]", UInt(0), UInt(0x7fffffff));
             readTokenValueAndValidate<UInt>(ar.boundingBoxLeft, failed, fic, "SEIArObjLeft[c]", UInt(0), UInt(0x7fffffff));
             readTokenValueAndValidate<UInt>(ar.boundingBoxWidth, failed, fic, "SEIArObjWidth[c]", UInt(0), UInt(0x7fffffff));
             readTokenValueAndValidate<UInt>(ar.boundingBoxHeight, failed, fic, "SEIArObjHeight[c]", UInt(0), UInt(0x7fffffff));
-            if (seiAnnoRegion->m_annotatedRegionsPartialObjsFlagPresentFlag)
+            if (seiAnnoRegion->m_hdr.m_partialObjectFlagPresentFlag)
             {
-              readTokenValueAndValidate(ar.bPartObjFlag, failed, fic, "SEIArObjPartUpdateFlag[c]");
+              readTokenValueAndValidate(ar.bPartialObjectFlag, failed, fic, "SEIArObjPartUpdateFlag[c]");
             }
-            if (seiAnnoRegion->m_annotatedRegionsObjDetConfInfoPresentFlag)
+            if (seiAnnoRegion->m_hdr.m_objectConfidenceInfoPresentFlag)
             {
-              readTokenValueAndValidate<UInt>(ar.objConf, failed, fic, "SEIArObjDetConf[c]", UInt(0), UInt(100));
+              readTokenValueAndValidate<UInt>(ar.objectConfidence, failed, fic, "SEIArObjDetConf[c]", UInt(0), UInt(1<<seiAnnoRegion->m_hdr.m_objectConfidenceLength)-1);
             }
           }
         }
@@ -1358,35 +1427,35 @@ Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *
 
 Bool SEIEncoder::initSEIAnnotatedRegions(SEIAnnotatedRegions* SEIAnnoReg, Int currPOC)
 {
-    assert(m_isInitialized);
-    assert(SEIAnnoReg != NULL);
+  assert(m_isInitialized);
+  assert(SEIAnnoReg != NULL);
 
-    // reading external Colour Remapping Information SEI message parameters from file
-	if (!m_pcCfg->getAnnotatedRegionSEIFileRoot().empty())
+  // reading external Colour Remapping Information SEI message parameters from file
+  if (!m_pcCfg->getAnnotatedRegionSEIFileRoot().empty())
+  {
+    Bool failed = false;
+    // building the annotated regions file name with poc num in prefix "_poc.txt"
+    std::string AnnoRegionSEIFileWithPoc(m_pcCfg->getAnnotatedRegionSEIFileRoot());
     {
-      Bool failed = false;
-      // building the annotated regions file name with poc num in prefix "_poc.txt"
-	  std::string AnnoRegionSEIFileWithPoc(m_pcCfg->getAnnotatedRegionSEIFileRoot());
-      {
-        std::stringstream suffix;
-        suffix << "_" << currPOC << ".txt";
-        AnnoRegionSEIFileWithPoc += suffix.str();
-      }
-      std::ifstream fic(AnnoRegionSEIFileWithPoc.c_str());
-      if (!fic.good() || !fic.is_open())
-      {
-        std::cerr << "No Annotated Regions SEI parameters file " << AnnoRegionSEIFileWithPoc << " for POC " << currPOC << std::endl;
-        return false;
-      }
-      //Read annotated region SEI parameters from the cfg file
-      readAnnotatedRegionSEI(fic, SEIAnnoReg, failed);
-      if (failed)
-      {
-        std::cerr << "Error while reading Annotated Regions SEI parameters file '" << AnnoRegionSEIFileWithPoc << "'" << std::endl;
-        exit(EXIT_FAILURE);
-      }
+      std::stringstream suffix;
+      suffix << "_" << currPOC << ".txt";
+      AnnoRegionSEIFileWithPoc += suffix.str();
     }
-    return true;
+    std::ifstream fic(AnnoRegionSEIFileWithPoc.c_str());
+    if (!fic.good() || !fic.is_open())
+    {
+      std::cerr << "No Annotated Regions SEI parameters file " << AnnoRegionSEIFileWithPoc << " for POC " << currPOC << std::endl;
+      return false;
+    }
+    //Read annotated region SEI parameters from the cfg file
+    readAnnotatedRegionSEI(fic, SEIAnnoReg, failed);
+    if (failed)
+    {
+      std::cerr << "Error while reading Annotated Regions SEI parameters file '" << AnnoRegionSEIFileWithPoc << "'" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+  return true;
 }
 #endif
 Void SEIEncoder::initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Int iHorFilterIndex, Int iVerFilterIndex)
