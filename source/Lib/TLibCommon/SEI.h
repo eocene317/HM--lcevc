@@ -889,7 +889,6 @@ public:
     Bool        bLabelValid;
     std::string label;           // only valid if bLabelValid
   };
-  Bool      m_SEIEnabled; //huh?
 
   struct AnnotatedRegionHeader
   {

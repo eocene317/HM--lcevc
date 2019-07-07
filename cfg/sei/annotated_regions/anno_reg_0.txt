@@ -1,4 +1,3 @@
-SEIArEnabled: 1
 SEIArCancelFlag: 0
 SEIArNotOptForViewingFlag: 0
 SEIArTrueMotionFlag: 0

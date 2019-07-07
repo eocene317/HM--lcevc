@@ -1346,8 +1346,6 @@ Bool SEIEncoder::initSEIRegionalNesting(SEIRegionalNesting* seiRegionalNesting, 
 #if AR_SEI_MESSAGE
 Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed)
 {
-  readTokenValueAndValidate(seiAnnoRegion->m_SEIEnabled, failed, fic, "SEIArEnabled");
-
   readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_cancelFlag, failed, fic, "SEIArCancelFlag");
   if (!seiAnnoRegion->m_hdr.m_cancelFlag)
   {
