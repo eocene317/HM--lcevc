@@ -38,179 +38,6 @@
 #include <math.h>
 
 
-template <typename T>
-void allocateMatrix(T ***matrix, Int width, Int height)
-{
-  (*matrix) = new T*[height];
-  (*matrix)[0] = new T[width * height];
-  for (Int i = 1; i < height; i++)
-    (*matrix)[i] = (*matrix)[i - 1] + width;
-}
-
-template <typename T>
-void deallocateMatrix(T ***matrix)
-{
-  delete[](*matrix)[0];
-  delete[](*matrix);
-}
-
-void PaddedPelMap::create(Int pad, Int w, Int h)
-{
-  m_padding = pad;
-  m_width = w;
-  m_height = h;
-  m_stride = w + 2 * pad;
-
-  m_origin = (Pel*)xMalloc(Pel, m_stride * (h + 2 * pad));
-  memset(m_origin, 0, sizeof(Pel) * m_stride * (h + 2 * pad));
-
-  m_originCB = (Pel*)xMalloc(Pel, (m_stride * (h + 2 * pad)) >> 2);
-  memset(m_originCB, 0, sizeof(Pel) * ((m_stride * (h + 2 * pad)) >> 2));
-
-  m_originCR = (Pel*)xMalloc(Pel, (m_stride * (h + 2 * pad)) >> 2);
-  memset(m_originCR, 0, sizeof(Pel) * ((m_stride * (h + 2 * pad)) >> 2));
-}
-
-void PaddedPelMap::create(Int pad, Int w, Int h, const TComPicYuv *src)
-{
-  create(pad, w, h);
-  copyFromPelStorage(src);
-}
-
-void PaddedPelMap::destroy()
-{
-  xFree(m_origin);
-  xFree(m_originCB);
-  xFree(m_originCR);
-}
-
-void PaddedPelMap::copyFromPelStorage(const TComPicYuv *source)
-{
-  // fill picture area
-  for (Int i = 0; i < m_height; i++)
-  {
-    memcpy(get(0, i), source->getAddr(COMPONENT_Y) + i * source->getStride(COMPONENT_Y), m_width * sizeof(Pel));
-  }
-
-  for (Int i = 0; i < m_height / 2; i++)
-  {
-    memcpy(getCB(0, i), source->getAddr(COMPONENT_Cb) + i * source->getStride(COMPONENT_Cb), (m_width / 2) * sizeof(Pel));
-    memcpy(getCR(0, i), source->getAddr(COMPONENT_Cr) + i * source->getStride(COMPONENT_Cr), (m_width / 2) * sizeof(Pel));
-  }
-
-  fillPadding();
-}
-
-void PaddedPelMap::copyToPelStorage(TComPicYuv *dest)
-{
-  for (Int i = 0; i < m_height; i++)
-  {
-    memcpy(dest->getAddr(COMPONENT_Y) + i * dest->getStride(COMPONENT_Y), get(0, i), m_width * sizeof(Pel));
-  }
-
-  for (Int i = 0; i < m_height / 2; i++)
-  {
-    memcpy(dest->getAddr(COMPONENT_Cb) + i * dest->getStride(COMPONENT_Cb), getCB(0, i), m_width / 2 * sizeof(Pel));
-    memcpy(dest->getAddr(COMPONENT_Cr) + i * dest->getStride(COMPONENT_Cr), getCR(0, i), m_width / 2 * sizeof(Pel));
-  }
-}
-
-void memseti(Pel* pointer, Pel value, Int num)
-{
-  for (Int i = 0; i < num; i++)
-  {
-    pointer[i] = value;
-  }
-}
-
-void PaddedPelMap::fillPadding()
-{
-  // fill padding top + bottom
-  for (Int i = 0; i < m_padding; i++)
-  {
-    memseti(&m_origin[i * m_stride], at(0, 0), m_padding);
-    memcpy(&m_origin[i * m_stride + m_padding], get(0, 0), m_width * sizeof(Pel));
-    memset(&m_origin[i * m_stride + m_padding + m_width], at(m_width - 1, 0), m_padding); // top right
-    memseti(&m_origin[(i + m_padding + m_height) * m_stride], at(0, m_height - 1), m_padding);
-    memcpy(&m_origin[(i + m_padding + m_height) * m_stride + m_padding], get(0, m_height - 1), m_width * sizeof(Pel));
-    memseti(&m_origin[(i + m_padding + m_height) * m_stride + m_padding + m_width], at(m_width - 1, m_height - 1), m_padding);
-  }
-  // fill padding left + right
-  for (Int i = 0; i < m_height; i++)
-  {
-    memseti(&m_origin[(m_padding + i) * m_stride], at(0, i), m_padding);
-    memseti(&m_origin[(m_padding + i) * m_stride + m_padding + m_width], at(m_width - 1, i), m_padding);
-  }
-
-  for (Int i = 0; i < m_padding / 2; i++)
-  {
-    memseti(&m_originCB[i * m_stride / 2], atCB(0, 0), m_padding / 2);
-    memcpy(&m_originCB[i * m_stride / 2 + m_padding / 2], getCB(0, 0), (m_width / 2) * sizeof(Pel));
-    memset(&m_originCB[i * m_stride / 2 + m_padding / 2 + m_width / 2], atCB(m_width / 2 - 1, 0), m_padding / 2); // top right
-    memseti(&m_originCB[(i + m_padding / 2 + m_height / 2) * m_stride / 2], atCB(0, m_height / 2 - 1), m_padding / 2);
-    memcpy(&m_originCB[(i + m_padding / 2 + m_height / 2) * m_stride / 2 + m_padding / 2], getCB(0, m_height / 2 - 1), m_width / 2 * sizeof(Pel));
-    memseti(&m_originCB[(i + m_padding / 2 + m_height / 2) * m_stride / 2 + m_padding / 2 + m_width / 2], atCB(m_width / 2 - 1, m_height / 2 - 1), m_padding / 2);
-
-    memseti(&m_originCR[i * m_stride / 2], atCR(0, 0), m_padding / 2);
-    memcpy(&m_originCR[i * m_stride / 2 + m_padding / 2], getCR(0, 0), (m_width / 2) * sizeof(Pel));
-    memset(&m_originCR[i * m_stride / 2 + m_padding / 2 + m_width / 2], atCR(m_width / 2 - 1, 0), m_padding / 2); // top right
-    memseti(&m_originCR[(i + m_padding / 2 + m_height / 2) * m_stride / 2], atCR(0, m_height / 2 - 1), m_padding / 2);
-    memcpy(&m_originCR[(i + m_padding / 2 + m_height / 2) * m_stride / 2 + m_padding / 2], getCR(0, m_height / 2 - 1), m_width / 2 * sizeof(Pel));
-    memseti(&m_originCR[(i + m_padding / 2 + m_height / 2) * m_stride / 2 + m_padding / 2 + m_width / 2], atCR(m_width / 2 - 1, m_height / 2 - 1), m_padding / 2);
-  }
-  // fill padding left + right
-  for (Int i = 0; i < m_height / 2; i++)
-  {
-    memseti(&m_originCB[(m_padding / 2 + i) * m_stride / 2], atCB(0, i), m_padding / 2);
-    memseti(&m_originCB[(m_padding / 2 + i) * m_stride / 2 + m_padding / 2 + m_width / 2], atCB(m_width / 2 - 1, i), m_padding / 2);
-
-    memseti(&m_originCR[(m_padding / 2 + i) * m_stride / 2], atCR(0, i), m_padding / 2);
-    memseti(&m_originCR[(m_padding / 2 + i) * m_stride / 2 + m_padding / 2 + m_width / 2], atCR(m_width / 2 - 1, i), m_padding / 2);
-  }
-}
-
-Pel PaddedPelMap::at(Int x, Int y) const
-{
-  assert(x >= -m_padding && y >= -m_padding);
-  assert(x < (Int)(m_width + m_padding) && y < (Int)(m_height + m_padding));
-  return m_origin[m_padding * m_stride + m_padding + y * m_stride + x];
-}
-
-Pel* PaddedPelMap::get(Int x, Int y) const
-{
-  assert(x >= -m_padding && y >= -m_padding);
-  assert(x < (Int)(m_width + m_padding) && y < (Int)(m_height + m_padding));
-  return &m_origin[m_padding * m_stride + m_padding + y * m_stride + x];
-}
-
-Pel PaddedPelMap::atCB(Int x, Int y) const
-{
-  assert(x >= -m_padding / 2 && y >= -m_padding / 2);
-  assert(x < (Int)(m_width / 2 + m_padding / 2) && y < (Int)(m_height / 2 + m_padding / 2));
-  return m_originCB[m_padding / 2 * m_stride / 2 + m_padding / 2 + y * m_stride / 2 + x];
-}
-
-Pel* PaddedPelMap::getCB(Int x, Int y) const
-{
-  assert(x >= -m_padding / 2 && y >= -m_padding / 2);
-  assert(x < (Int)(m_width / 2 + m_padding / 2) && y < (Int)(m_height / 2 + m_padding / 2));
-  return &m_originCB[m_padding / 2 * m_stride / 2 + m_padding / 2 + y * m_stride / 2 + x];
-}
-
-Pel PaddedPelMap::atCR(Int x, Int y) const
-{
-  assert(x >= -m_padding / 2 && y >= -m_padding / 2);
-  assert(x < (Int)(m_width / 2 + m_padding / 2) && y < (Int)(m_height / 2 + m_padding / 2));
-  return m_originCR[m_padding / 2 * m_stride / 2 + m_padding / 2 + y * m_stride / 2 + x];
-}
-
-Pel* PaddedPelMap::getCR(Int x, Int y) const
-{
-  assert(x >= -m_padding / 2 && y >= -m_padding / 2);
-  assert(x < (Int)(m_width / 2 + m_padding / 2) && y < (Int)(m_height / 2 + m_padding / 2));
-  return &m_originCR[m_padding / 2 * m_stride / 2 + m_padding / 2 + y * m_stride / 2 + x];
-}
-
 // ====================================================================================================================
 // Constructor / destructor / initialization / destroy
 // ====================================================================================================================
@@ -254,21 +81,29 @@ TEncTemporalFilter::TEncTemporalFilter() :
   m_chromaFormatIDC(NUM_CHROMA_FORMAT),
   m_sourceWidth(0),
   m_sourceHeight(0),
-  m_iQP(0),
-  m_iGOPSize(0),
+  m_QP(0),
+  m_GOPSize(0),
   m_framesToBeEncoded(0),
   m_bClipInputVideoToRec709Range(false),
-  m_inputColourSpaceConvert(NUMBER_INPUT_COLOUR_SPACE_CONVERSIONS),
-  m_uiMaxCUWidth(0),
-  m_uiMaxCUHeight(0),
-  m_uiMaxTotalCUDepth(0)
+  m_inputColourSpaceConvert(NUMBER_INPUT_COLOUR_SPACE_CONVERSIONS)
 {}
 
-void TEncTemporalFilter::init(Int frameSkip, const Int inputBitDepth[MAX_NUM_CHANNEL_TYPE],
-  const Int MSBExtendedBitDepth[MAX_NUM_CHANNEL_TYPE],  const Int internalBitDepth[MAX_NUM_CHANNEL_TYPE],
-  Int width, Int height, Int *pad, Int frames, Bool Rec709, std::string filename, ChromaFormat chroma,
-  InputColourSpaceConversion colorSpaceConv, Int maxCUWidth, Int maxCUHeight, Int maxTotalCUDepth, Int QP,
-  Int iGOPSize, std::map<Int, Double> temporalFilterStrengths, Bool gopBasedTemporalFilterFutureReference)
+void TEncTemporalFilter::init(const Int frameSkip,
+                              const Int inputBitDepth[MAX_NUM_CHANNEL_TYPE],
+                              const Int MSBExtendedBitDepth[MAX_NUM_CHANNEL_TYPE],
+                              const Int internalBitDepth[MAX_NUM_CHANNEL_TYPE],
+                              const Int width,
+                              const Int height,
+                              const Int *pad,
+                              const Int frames,
+                              const Bool Rec709,
+                              const std::string &filename,
+                              const ChromaFormat chroma,
+                              const InputColourSpaceConversion colorSpaceConv,
+                              const Int QP,
+                              const Int GOPSize,
+                              const std::map<Int, Double> &temporalFilterStrengths,
+                              const Bool gopBasedTemporalFilterFutureReference)
 {
   m_FrameSkip = frameSkip;
   for (Int i = 0; i < MAX_NUM_CHANNEL_TYPE; i++)
@@ -289,11 +124,8 @@ void TEncTemporalFilter::init(Int frameSkip, const Int inputBitDepth[MAX_NUM_CHA
   m_inputFileName = filename;
   m_chromaFormatIDC = chroma;
   m_inputColourSpaceConvert = colorSpaceConv;
-  m_uiMaxCUHeight = maxCUHeight;
-  m_uiMaxCUWidth = maxCUWidth;
-  m_uiMaxTotalCUDepth = maxTotalCUDepth;
-  m_iQP = QP;
-  m_iGOPSize = iGOPSize;
+  m_QP = QP;
+  m_GOPSize = GOPSize;
   m_temporalFilterStrengths = temporalFilterStrengths;
   m_gopBasedTemporalFilterFutureReference = gopBasedTemporalFilterFutureReference;
 }
@@ -305,7 +137,7 @@ void TEncTemporalFilter::init(Int frameSkip, const Int inputBitDepth[MAX_NUM_CHA
 Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
 {
   Bool isFilterThisFrame = false;
-  if (m_iQP >= 17)  // disable filter for QP < 17
+  if (m_QP >= 17)  // disable filter for QP < 17
   {
     for (map<Int, Double>::iterator it = m_temporalFilterStrengths.begin(); it != m_temporalFilterStrengths.end(); ++it)
     {
@@ -325,12 +157,8 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
     yuvFrames.open(m_inputFileName, false, m_inputBitDepth, m_MSBExtendedBitDepth, m_internalBitDepth);
     yuvFrames.skipFrames(std::max(offset + receivedPoc - s_range, 0), m_sourceWidth - m_aiPad[0], m_sourceHeight - m_aiPad[1], m_chromaFormatIDC);
 
-    TComPicYuv     picBuffers[s_range << 1];
-    TComPicYuv     dummyPicBufferTO; // Only used temporary in yuvFrames.read 
 
-    MotionVector **mvs[s_range << 1];
-    PaddedPelMap   ppm[s_range << 1];
-    Int            origOffsets[s_range << 1];
+    std::deque<TemporalFilterSourcePicInfo> srcFrameInfo;
 
     Int firstFrame = receivedPoc + offset - s_range;
     Int lastFrame = receivedPoc + offset + s_range;
@@ -338,14 +166,17 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
     {
       lastFrame = receivedPoc + offset - 1;
     }
-    Int refs = 0;
     Int origOffset = -s_range;
 
     // subsample original picture so it only needs to be done once
-    PaddedPelMap ppm_orig;
-    ppm_orig.create(s_padding, m_sourceWidth, m_sourceHeight, orgPic);
-    subsample(ppm_orig, &m_orgSub2);
-    subsample(m_orgSub2, &m_orgSub4);
+    TComPicYuv origPadded;
+
+    origPadded.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding, s_padding);
+    orgPic->copyToPic(&origPadded);
+    origPadded.extendPicBorder();
+
+    subsampleLuma(origPadded, m_orgSub2);
+    subsampleLuma(m_orgSub2, m_orgSub4);
 
     // determine motion vectors
     for (Int poc = firstFrame; poc <= lastFrame; poc++)
@@ -361,24 +192,27 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
         origOffset++;
         continue;
       }
-      picBuffers[refs].create(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true);
-      dummyPicBufferTO.create(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true);
-      if (!yuvFrames.read(&picBuffers[refs], &dummyPicBufferTO, m_inputColourSpaceConvert, m_aiPad, m_chromaFormatIDC, m_bClipInputVideoToRec709Range))
+      srcFrameInfo.push_back(TemporalFilterSourcePicInfo());
+      TemporalFilterSourcePicInfo &srcPic=srcFrameInfo.back();
+
+      TComPicYuv     dummyPicBufferTO; // Only used temporary in yuvFrames.read
+      srcPic.picBuffer.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding);
+      dummyPicBufferTO.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding);
+      if (!yuvFrames.read(&srcPic.picBuffer, &dummyPicBufferTO, m_inputColourSpaceConvert, m_aiPad, m_chromaFormatIDC, m_bClipInputVideoToRec709Range))
       {
         return false; // eof or read fail
       }
+      srcPic.picBuffer.extendPicBorder();
+      srcPic.mvs.allocate(m_sourceWidth / 4, m_sourceHeight / 4);
 
-      allocateMatrix(&mvs[refs], m_sourceWidth / 4, m_sourceHeight / 4);
-      ppm[refs].create(s_padding, m_sourceWidth, m_sourceHeight, &picBuffers[refs]);
-      motionEstimation(mvs[refs], ppm_orig, ppm[refs]);
-      origOffsets[refs] = origOffset;
-      refs++;
+      motionEstimation(srcPic.mvs, origPadded, srcPic.picBuffer);
+      srcPic.origOffset = origOffset;
       origOffset++;
     }
 
     // filter
-    PaddedPelMap newOrgPic;
-    newOrgPic.create(s_padding, m_sourceWidth, m_sourceHeight);
+    TComPicYuv newOrgPic;
+    newOrgPic.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding, s_padding);
     Double overallStrength = -1.0;
     for (map<Int, Double>::iterator it = m_temporalFilterStrengths.begin(); it != m_temporalFilterStrengths.end(); ++it)
     {
@@ -389,22 +223,11 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
         overallStrength = strength;
       }
     }
-    bilateralFilter(ppm_orig, mvs, ppm, refs, &newOrgPic, origOffsets, overallStrength);
+
+    bilateralFilter(origPadded, srcFrameInfo, newOrgPic, overallStrength);
 
     // move filtered to orgPic
-    newOrgPic.copyToPelStorage(orgPic);
-
-    // clean up
-    m_orgSub2.destroy();
-    m_orgSub4.destroy();
-    newOrgPic.destroy();
-    ppm_orig.destroy();
-    dummyPicBufferTO.destroy();
-    for (Int j = 0; j < refs; j++)
-    {
-      picBuffers[j].destroy();
-      deallocateMatrix(&mvs[j]);
-    }
+    newOrgPic.copyToPic(orgPic);
 
     yuvFrames.close();
     return true;
@@ -416,17 +239,23 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
 // Private member functions
 // ====================================================================================================================
 
-void TEncTemporalFilter::subsample(const PaddedPelMap input, PaddedPelMap *output, const Int factor)
+Void TEncTemporalFilter::subsampleLuma(const TComPicYuv &input, TComPicYuv &output, const Int factor)
 {
-  const Int newWidth = input.m_width / factor;
-  const Int newHeight = input.m_height / factor;
-  output->create(s_padding, newWidth, newHeight);
-  for (Int y = 0; y < newHeight; y++)
+  const Int newWidth = input.getWidth(COMPONENT_Y) / factor;
+  const Int newHeight = input.getHeight(COMPONENT_Y) / factor;
+  output.createWithoutCUInfo(newWidth, newHeight, input.getChromaFormat(), true, s_padding, s_padding);
+
+  const Pel* srcRow   =input.getAddr(COMPONENT_Y);
+  const UInt srcStride=input.getStride(COMPONENT_Y);
+        Pel *dstRow   =output.getAddr(COMPONENT_Y);
+  const UInt dstStride=output.getStride(COMPONENT_Y);
+
+  for (Int y = 0; y < newHeight; y++, srcRow+=factor*srcStride, dstRow+=dstStride)
   {
-    Int y2 = y << 1;
-    Pel *inRow = input.get(0, y2);
-    Pel *inRowBelow = input.get(0, y2 + 1);
-    Pel *target = output->get(0, y);
+    const Pel *inRow      = srcRow;
+    const Pel *inRowBelow = srcRow+srcStride;
+          Pel *target     = dstRow;
+
     for (Int x = 0; x < newWidth; x++)
     {
       target[x] = (inRow[0] + inRowBelow[0] + inRow[1] + inRowBelow[1] + 2) >> 2;
@@ -434,11 +263,24 @@ void TEncTemporalFilter::subsample(const PaddedPelMap input, PaddedPelMap *outpu
       inRowBelow += 2;
     }
   }
-  output->fillPadding();
+  output.extendPicBorder();
 }
 
-Int TEncTemporalFilter::motionError(const PaddedPelMap orig, PaddedPelMap buffer, const Int x, const Int y, Int dx, Int dy, const Int bs, const Int besterror = 8 * 8 * 1024 * 1024)
+Int TEncTemporalFilter::motionErrorLuma(const TComPicYuv &orig,
+                                        const TComPicYuv &buffer,
+                                        const Int x,
+                                        const Int y,
+                                              Int dx,
+                                              Int dy,
+                                        const Int bs,
+                                        const Int besterror = 8 * 8 * 1024 * 1024)
 {
+
+  const Pel* origOrigin =orig.getAddr(COMPONENT_Y);
+  const Int origStride  =orig.getStride(COMPONENT_Y);
+  const Pel *buffOrigin =buffer.getAddr(COMPONENT_Y);
+  const Int buffStride  =buffer.getStride(COMPONENT_Y);
+
   Int error = 0;// dx * 10 + dy * 10;
   if (((dx | dy) & 0xF) == 0)
   {
@@ -446,8 +288,8 @@ Int TEncTemporalFilter::motionError(const PaddedPelMap orig, PaddedPelMap buffer
     dy /= s_motionVectorFactor;
     for (Int y1 = 0; y1 < bs; y1++)
     {
-      Pel* origRowStart = orig.get(x, y + y1);
-      Pel* bufferRowStart = buffer.get(x + dx, y + y1 + dy);
+      const Pel* origRowStart = origOrigin + (y+y1)*origStride + x;
+      const Pel* bufferRowStart = buffOrigin + (y+y1+dy)*buffStride + (x+dx);
       for (Int x1 = 0; x1 < bs; x1 += 2)
       {
         Int diff = origRowStart[x1] - bufferRowStart[x1];
@@ -457,7 +299,6 @@ Int TEncTemporalFilter::motionError(const PaddedPelMap orig, PaddedPelMap buffer
       }
       if (error > besterror)
       {
-
         return error;
       }
     }
@@ -472,7 +313,7 @@ Int TEncTemporalFilter::motionError(const PaddedPelMap orig, PaddedPelMap buffer
     for (Int y1 = 1; y1 < bs + 7; y1++)
     {
       const Int yOffset = y + y1 + (dy >> 4) - 3;
-      const Pel *sourceRow = buffer.get(0, yOffset);
+      const Pel *sourceRow = buffOrigin + (yOffset)*buffStride + 0;
       for (Int x1 = 0; x1 < bs; x1++)
       {
         iSum = 0;
@@ -491,7 +332,7 @@ Int TEncTemporalFilter::motionError(const PaddedPelMap orig, PaddedPelMap buffer
     }
     for (Int y1 = 0; y1 < bs; y1++)
     {
-      const Pel *origRow = orig.get(0, y + y1);
+      const Pel *origRow = origOrigin + (y+y1)*origStride + 0;
       for (Int x1 = 0; x1 < bs; x1++)
       {
         iSum = 0;
@@ -508,21 +349,26 @@ Int TEncTemporalFilter::motionError(const PaddedPelMap orig, PaddedPelMap buffer
         error += (iSum - origRow[x + x1]) * (iSum - origRow[x + x1]);
       }
       if (error > besterror)
+      {
         return error;
+      }
     }
   }
   return error;
 }
 
-void TEncTemporalFilter::motionEstimation(MotionVector **vectors, const PaddedPelMap orig, PaddedPelMap buffer, const Int blockSize,
-  MotionVector **previous, const Int factor, const Bool doubleRes)
+Void TEncTemporalFilter::motionEstimationLuma(Array2D<MotionVector> &mvs, const TComPicYuv &orig, const TComPicYuv &buffer, const Int blockSize,
+    const Array2D<MotionVector> *previous, const Int factor, const Bool doubleRes)
 {
   Int range = 5;
   const Int stepSize = blockSize;
 
-  for (Int blockY = 0; blockY + blockSize < orig.m_height; blockY += stepSize)
+  const Int origWidth  = orig.getWidth(COMPONENT_Y);
+  const Int origHeight = orig.getHeight(COMPONENT_Y);
+
+  for (Int blockY = 0; blockY + blockSize < origHeight; blockY += stepSize)
   {
-    for (Int blockX = 0; blockX + blockSize < orig.m_width; blockX += stepSize)
+    for (Int blockX = 0; blockX + blockSize < origWidth; blockX += stepSize)
     {
       MotionVector best;
 
@@ -538,10 +384,10 @@ void TEncTemporalFilter::motionEstimation(MotionVector **vectors, const PaddedPe
           for (Int px = -2; px <= 2; px++)
           {
             Int testx = blockX / (2 * blockSize) + px;
-            if ((testx >= 0) && (testx < orig.m_width / (2 * blockSize)) && (testy >= 0) && (testy < orig.m_height / (2 * blockSize)))
+            if ((testx >= 0) && (testx < origWidth / (2 * blockSize)) && (testy >= 0) && (testy < origHeight / (2 * blockSize)))
             {
-              MotionVector old = previous[testy][testx];
-              Int error = motionError(orig, buffer, blockX, blockY, old.x * factor, old.y * factor, blockSize, best.error);
+              MotionVector old = previous->get(testx, testy);
+              Int error = motionErrorLuma(orig, buffer, blockX, blockY, old.x * factor, old.y * factor, blockSize, best.error);
               if (error < best.error)
               {
                 best.set(old.x * factor, old.y * factor, error);
@@ -555,7 +401,7 @@ void TEncTemporalFilter::motionEstimation(MotionVector **vectors, const PaddedPe
       {
         for (Int x2 = prevBest.x / s_motionVectorFactor - range; x2 <= prevBest.x / s_motionVectorFactor + range; x2++)
         {
-          Int error = motionError(orig, buffer, blockX, blockY, x2 * s_motionVectorFactor, y2 * s_motionVectorFactor, blockSize, best.error);
+          Int error = motionErrorLuma(orig, buffer, blockX, blockY, x2 * s_motionVectorFactor, y2 * s_motionVectorFactor, blockSize, best.error);
           if (error < best.error)
           {
             best.set(x2 * s_motionVectorFactor, y2 * s_motionVectorFactor, error);
@@ -570,7 +416,7 @@ void TEncTemporalFilter::motionEstimation(MotionVector **vectors, const PaddedPe
         {
           for (Int x2 = prevBest.x - doubleRange; x2 <= prevBest.x + doubleRange; x2 += 4)
           {
-            Int error = motionError(orig, buffer, blockX, blockY, x2, y2, blockSize, best.error);
+            Int error = motionErrorLuma(orig, buffer, blockX, blockY, x2, y2, blockSize, best.error);
             if (error < best.error)
             {
               best.set(x2, y2, error);
@@ -585,7 +431,7 @@ void TEncTemporalFilter::motionEstimation(MotionVector **vectors, const PaddedPe
         {
           for (Int x2 = prevBest.x - doubleRange; x2 <= prevBest.x + doubleRange; x2++)
           {
-            Int error = motionError(orig, buffer, blockX, blockY, x2, y2, blockSize, best.error);
+            Int error = motionErrorLuma(orig, buffer, blockX, blockY, x2, y2, blockSize, best.error);
             if (error < best.error)
             {
               best.set(x2, y2, error);
@@ -595,322 +441,180 @@ void TEncTemporalFilter::motionEstimation(MotionVector **vectors, const PaddedPe
         }
 
       }
-      vectors[blockY / stepSize][blockX / stepSize] = best;
+      mvs.get(blockX / stepSize, blockY / stepSize) = best;
     }
   }
 }
 
-void TEncTemporalFilter::motionEstimation(MotionVector **mv, PaddedPelMap orgPic, PaddedPelMap buffer)
+Void TEncTemporalFilter::motionEstimation(Array2D<MotionVector> &mv, const TComPicYuv &orgPic, const TComPicYuv &buffer)
 {
   const Int width = m_sourceWidth;
   const Int height = m_sourceHeight;
-  MotionVector **mv_0;
-  MotionVector **mv_1;
-  MotionVector **mv_2;
-  allocateMatrix(&mv_0, width / 16, height / 16);
-  allocateMatrix(&mv_1, width / 16, height / 16);
-  allocateMatrix(&mv_2, width / 16, height / 16);
+  Array2D<MotionVector> mv_0(width / 16, height / 16);
+  Array2D<MotionVector> mv_1(width / 16, height / 16);
+  Array2D<MotionVector> mv_2(width / 16, height / 16);
 
-  PaddedPelMap bufferSub2;
-  PaddedPelMap bufferSub4;
+  TComPicYuv bufferSub2;
+  TComPicYuv bufferSub4;
 
-  subsample(buffer, &bufferSub2);
-  subsample(bufferSub2, &bufferSub4);
+  subsampleLuma(buffer, bufferSub2);
+  subsampleLuma(bufferSub2, bufferSub4);
 
-  motionEstimation(mv_0, m_orgSub4, bufferSub4, 16);
-  motionEstimation(mv_1, m_orgSub2, bufferSub2, 16, mv_0, 2);
-  motionEstimation(mv_2, orgPic, buffer, 16, mv_1, 2);
+  motionEstimationLuma(mv_0, m_orgSub4, bufferSub4, 16);
+  motionEstimationLuma(mv_1, m_orgSub2, bufferSub2, 16, &mv_0, 2);
+  motionEstimationLuma(mv_2, orgPic, buffer, 16, &mv_1, 2);
 
-  motionEstimation(mv, orgPic, buffer, 8, mv_2, 1, true);
-
-  // clean up stuff
-  bufferSub2.destroy();
-  bufferSub4.destroy();
-  deallocateMatrix(&mv_0);
-  deallocateMatrix(&mv_1);
-  deallocateMatrix(&mv_2);
+  motionEstimationLuma(mv, orgPic, buffer, 8, &mv_2, 1, true);
 }
 
-void TEncTemporalFilter::applyMotion(MotionVector **vectors, PaddedPelMap input, PaddedPelMap *output)
+Void TEncTemporalFilter::applyMotion(const Array2D<MotionVector> &mvs, const TComPicYuv &input, TComPicYuv &output)
 {
-  const Int bs = 8;
-  for (Int y = 0; y + bs <= m_sourceHeight; y += bs)
+  static const Int lumaBlockSize=8;
+
+  for(Int c=0; c< getNumberValidComponents(m_chromaFormatIDC); c++)
   {
-    for (Int x = 0; x + bs <= m_sourceWidth; x += bs)
+    const ComponentID compID=(ComponentID)c;
+    const Int csx=getComponentScaleX(compID, m_chromaFormatIDC);
+    const Int csy=getComponentScaleY(compID, m_chromaFormatIDC);
+    const Int blockSizeX = lumaBlockSize>>csx;
+    const Int blockSizeY = lumaBlockSize>>csy;
+    const Int height = input.getHeight(compID);
+    const Int width  = input.getWidth(compID);
+
+    const Int bitDepthBits=10;
+    const Int maxValue=(1<<bitDepthBits)-1;
+
+    const Pel *pSrcImage=input.getAddr(compID);
+    const Int srcStride=input.getStride(compID);
+
+          Pel *pDstImage=output.getAddr(compID);
+          Int dstStride=output.getStride(compID);
+
+    for (Int y = 0, blockNumY = 0; y + blockSizeY <= height; y += blockSizeY, blockNumY++)
     {
-      MotionVector mv = vectors[y / bs][x / bs];
-      const Int startx = 0;
-      const Int starty = 0;
-
-      Int tempArray[64 + 8][64];
-      const Int *xFilter = s_interpolationFilter[mv.x & 0xF];
-      const Int *yFilter = s_interpolationFilter[mv.y & 0xF];
-      Int iSum, iBase;
-      for (Int by = 1; by < bs + 7; by++)
+      for (Int x = 0, blockNumX = 0; x + blockSizeX <= width; x += blockSizeX, blockNumX++)
       {
-        const Int yOffset = y + by + (mv.y >> 4) - 3;
-        const Pel *sourceRow = input.get(0, yOffset);
-        for (Int bx = 0; bx < bs; bx++)
+        const MotionVector &mv = mvs.get(blockNumX,blockNumY);
+        const Int dx = mv.x >> csx ;
+        const Int dy = mv.y >> csy ;
+        const Int xInt = mv.x >> (4+csx) ;
+        const Int yInt = mv.y >> (4+csy) ;
+
+        const Int *xFilter = s_interpolationFilter[dx & 0xf];
+        const Int *yFilter = s_interpolationFilter[dy & 0xf]; // will add 6 bit.
+        const Int numFilterTaps=7;
+        const Int centreTapOffset=3;
+
+        Int tempArray[lumaBlockSize + numFilterTaps][lumaBlockSize];
+
+        for (Int by = 1; by < blockSizeY + numFilterTaps; by++)
         {
-          iSum = 0;
-          iBase = x + bx + (mv.x >> 4) - 3;
-          const Pel *rowStart = sourceRow + iBase;
+          const Int yOffset = y + by + yInt - centreTapOffset;
+          const Pel *sourceRow = pSrcImage+yOffset*srcStride;
+          for (Int bx = 0; bx < blockSizeX; bx++)
+          {
+            Int iBase = x + bx + xInt - centreTapOffset;
+            const Pel *rowStart = sourceRow + iBase;
 
-          iSum += xFilter[1] * rowStart[1];
-          iSum += xFilter[2] * rowStart[2];
-          iSum += xFilter[3] * rowStart[3];
-          iSum += xFilter[4] * rowStart[4];
-          iSum += xFilter[5] * rowStart[5];
-          iSum += xFilter[6] * rowStart[6];
+            Int iSum = 0;
+            iSum += xFilter[1] * rowStart[1];
+            iSum += xFilter[2] * rowStart[2];
+            iSum += xFilter[3] * rowStart[3];
+            iSum += xFilter[4] * rowStart[4];
+            iSum += xFilter[5] * rowStart[5];
+            iSum += xFilter[6] * rowStart[6];
 
-          tempArray[by][bx] = iSum;
+            tempArray[by][bx] = iSum;
+          }
         }
-      }
-      for (Int by = starty; by < bs; by++)
-      {
-        for (Int bx = startx; bx < bs; bx++)
+
+        Pel *pDstRow=pDstImage+y*dstStride;
+        for (Int by = 0; by < blockSizeY; by++, pDstRow+=dstStride)
         {
-          iSum = 0;
+          Pel *pDstPel=pDstRow+x;
+          for (Int bx = 0; bx < blockSizeX; bx++, pDstPel++)
+          {
+            Int iSum = 0;
 
-          iSum += yFilter[1] * tempArray[by + 1][bx];
-          iSum += yFilter[2] * tempArray[by + 2][bx];
-          iSum += yFilter[3] * tempArray[by + 3][bx];
-          iSum += yFilter[4] * tempArray[by + 4][bx];
-          iSum += yFilter[5] * tempArray[by + 5][bx];
-          iSum += yFilter[6] * tempArray[by + 6][bx];
+            iSum += yFilter[1] * tempArray[by + 1][bx];
+            iSum += yFilter[2] * tempArray[by + 2][bx];
+            iSum += yFilter[3] * tempArray[by + 3][bx];
+            iSum += yFilter[4] * tempArray[by + 4][bx];
+            iSum += yFilter[5] * tempArray[by + 5][bx];
+            iSum += yFilter[6] * tempArray[by + 6][bx];
 
-          iSum = (iSum + (1 << 11)) >> 12;
-          iSum = iSum < 0 ? 0 : (iSum > 1023 ? 1023 : iSum);
-          *output->get(x + bx, y + by) = iSum;
-        }
-      }
-    }
-  }
-
-  for (Int y = 0; y + bs / 2 <= m_sourceHeight / 2; y += bs / 2)
-  {
-    for (Int x = 0; x + bs / 2 <= m_sourceWidth / 2; x += bs / 2)
-    {
-      MotionVector vector = vectors[(y * 2) / bs][(x * 2) / bs];
-      Int dx = vector.x >> 1;
-      Int dy = vector.y >> 1;
-      Int starty = 0;
-      Int startx = 0;
-
-      //Q-pel
-      Int yInt = vector.y >> 5;
-      Int xInt = vector.x >> 5;
-      Int xFrac = dx & 15;
-      Int yFrac = dy & 15;
-
-      Int tempArray[64 + 8][64];
-      const Int* xFilter = s_interpolationFilter[xFrac];
-      const Int* yFilter = s_interpolationFilter[yFrac];
-      Int isum, ibase;
-      for (Int iy = 0; iy < bs / 2 + 8; iy++)
-      {
-        Int yc = y + iy + yInt - 3;
-        const Pel* sourceRow = input.getCB(0, yc);
-
-        for (Int ix = 0; ix < bs / 2; ix++)
-        {
-          isum = 0;
-          ibase = x + ix + xInt - 3;
-          const Pel* rowStart = sourceRow + ibase;
-
-          //isum += xFilter[0] * rowStart[0];
-          isum += xFilter[1] * rowStart[1];
-          isum += xFilter[2] * rowStart[2];
-          isum += xFilter[3] * rowStart[3];
-          isum += xFilter[4] * rowStart[4];
-          isum += xFilter[5] * rowStart[5];
-          isum += xFilter[6] * rowStart[6];
-          //isum += xFilter[7] * rowStart[7];
-
-          tempArray[iy][ix] = isum;
-        }
-      }
-      for (Int iy = starty; iy < bs / 2; iy++)
-      {
-        for (Int ix = startx; ix < bs / 2; ix++)
-        {
-          Int sum = 0;
-
-          //sum += yFilter[0] * tempArray[iy][ix];
-          sum += yFilter[1] * tempArray[iy + 1][ix];
-          sum += yFilter[2] * tempArray[iy + 2][ix];
-          sum += yFilter[3] * tempArray[iy + 3][ix];
-          sum += yFilter[4] * tempArray[iy + 4][ix];
-          sum += yFilter[5] * tempArray[iy + 5][ix];
-          sum += yFilter[6] * tempArray[iy + 6][ix];
-          //sum += yFilter[7] * tempArray[iy + 7][ix];
-
-          sum = (sum + (1 << 11)) >> 12;
-          if (sum < 0)
-            sum = 0;
-          if (sum > 1023)
-            sum = 1023;
-          *output->getCB(x + ix, y + iy) = sum;
-        }
-      }
-    }
-  }
-  for (Int y = 0; y + bs / 2 <= m_sourceHeight / 2; y += bs / 2)
-  {
-    for (Int x = 0; x + bs / 2 <= m_sourceWidth / 2; x += bs / 2)
-    {
-      const MotionVector vector = vectors[(y * 2) / bs][(x * 2) / bs];
-      const Int dx = vector.x >> 1;
-      const Int dy = vector.y >> 1;
-      const Int starty = 0;
-      const Int startx = 0;
-
-      //Qpel
-      const Int yInt = vector.y >> 5;
-      const Int xInt = vector.x >> 5;
-      const Int xFrac = dx & 15;
-      const Int yFrac = dy & 15;
-
-      Int tempArray[64 + 8][64];
-      const Int* xFilter = s_interpolationFilter[xFrac];
-      const Int* yFilter = s_interpolationFilter[yFrac];
-      Int isum, ibase;
-      for (Int iy = 1; iy < bs / 2 + 7; iy++)
-      {
-        Int yc = y + iy + yInt - 3;
-        const Pel* sourceRow = input.getCR(0, yc);
-
-        for (Int ix = 0; ix < bs / 2; ix++)
-        {
-          isum = 0;
-          ibase = x + ix + xInt - 3;
-          const Pel* rowStart = sourceRow + ibase;
-
-          isum += xFilter[1] * rowStart[1];
-          isum += xFilter[2] * rowStart[2];
-          isum += xFilter[3] * rowStart[3];
-          isum += xFilter[4] * rowStart[4];
-          isum += xFilter[5] * rowStart[5];
-          isum += xFilter[6] * rowStart[6];
-
-          tempArray[iy][ix] = isum;
-        }
-      }
-      for (Int iy = starty; iy < bs / 2; iy++)
-      {
-        for (Int ix = startx; ix < bs / 2; ix++)
-        {
-          Int sum = 0;
-
-          sum += yFilter[1] * tempArray[iy + 1][ix];
-          sum += yFilter[2] * tempArray[iy + 2][ix];
-          sum += yFilter[3] * tempArray[iy + 3][ix];
-          sum += yFilter[4] * tempArray[iy + 4][ix];
-          sum += yFilter[5] * tempArray[iy + 5][ix];
-          sum += yFilter[6] * tempArray[iy + 6][ix];
-
-          sum = (sum + (1 << 11)) >> 12;
-          if (sum < 0)
-            sum = 0;
-          if (sum > 1023)
-            sum = 1023;
-          *output->getCR(x + ix, y + iy) = sum;
+            iSum = (iSum + (1 << 11)) >> 12;
+            iSum = iSum < 0 ? 0 : (iSum > maxValue ? maxValue : iSum);
+            *pDstPel = iSum;
+          }
         }
       }
     }
   }
 }
 
-void TEncTemporalFilter::bilateralFilter(PaddedPelMap orgPic, MotionVector ***vectors, PaddedPelMap *picBuffer, const Int refs, PaddedPelMap *newOrgPic, const Int *origOffsets, Double overallStrength)
+Void TEncTemporalFilter::bilateralFilter(const TComPicYuv &orgPic,
+                                         const std::deque<TemporalFilterSourcePicInfo> &srcFrameInfo,
+                                               TComPicYuv &newOrgPic,
+                                               Double overallStrength)
 {
-  PaddedPelMap correctedPics[2 * s_range];
-  for (Int i = 0; i < refs; i++)
+  const int numRefs = Int(srcFrameInfo.size());
+  std::vector<TComPicYuv> correctedPics(numRefs);
+  for (Int i = 0; i < numRefs; i++)
   {
-    correctedPics[i].create(0, m_sourceWidth, m_sourceHeight);
-    applyMotion(vectors[i], picBuffer[i], &correctedPics[i]);
+    correctedPics[i].createWithoutCUInfo( m_sourceWidth, m_sourceHeight, orgPic.getChromaFormat(), true, s_padding, s_padding );
+    applyMotion(srcFrameInfo[i].mvs, srcFrameInfo[i].picBuffer, correctedPics[i]);
   }
 
   Int refStrengthRow = 2;
-  if (refs == s_range << 1)
+  if (numRefs == s_range*2)
   {
     refStrengthRow = 0;
   }
-  else if (refs == s_range)
+  else if (numRefs == s_range)
   {
     refStrengthRow = 1;
   }
 
-  const Double lumaSigmaSq = (m_iQP - s_sigmaZeroPoint) * (m_iQP - s_sigmaZeroPoint) * s_sigmaMultiplier;
-
-  for (Int y = 0; y < m_sourceHeight; y++)
-  {
-    for (Int x = 0; x < m_sourceWidth; x++)
-    {
-      const Int orgVal = (Int) orgPic.at(x, y);
-      Double temporalWeightSum = 1.0;
-      Double newVal = (Double) orgVal;
-      for (Int i = 0; i < refs; i++)
-      {
-        const Int refVal = (Int) correctedPics[i].at(x, y);
-        Double diff = (Double)(refVal - orgVal);
-        Double diffSq = diff * diff;
-        const Int index = std::min(1, std::abs(origOffsets[i]) - 1);
-        const Double weight = 0.4 * overallStrength * s_refStrengths[refStrengthRow][index] * exp(-diffSq / (2 * lumaSigmaSq));
-        newVal += weight * refVal;
-        temporalWeightSum += weight;
-      }
-      newVal /= temporalWeightSum;
-      *newOrgPic->get(x, y) = (Pel)round(newVal);
-    }
-  }
-  
+  const Double lumaSigmaSq = (m_QP - s_sigmaZeroPoint) * (m_QP - s_sigmaZeroPoint) * s_sigmaMultiplier;
   const Double chromaSigmaSq = 30 * 30;
-
-  for (Int y = 0; y < m_sourceHeight / 2; y++)
-  {
-    for (Int x = 0; x < m_sourceWidth / 2; x++)
-    {
-      const Int orgVal = (Int) orgPic.atCB(x, y);
-      Double weightSum = 1.0;
-      Double newVal = (Double) orgVal;
-      for (Int i = 0; i < refs; i++)
-      {
-        const Int refVal = correctedPics[i].atCB(x, y);
-        const Int diffSq = (refVal - orgVal) * (refVal - orgVal);
-        const Int index = std::min(1, std::abs(origOffsets[i]) - 1);
-        const Double weight = s_chromaFactor * overallStrength * s_refStrengths[refStrengthRow][index] * exp(-diffSq / (2 * chromaSigmaSq));
-        newVal += (weight * refVal);
-        weightSum += weight;
-      }
-      newVal /= weightSum;
-      *newOrgPic->getCB(x, y) = (Pel)round(newVal);
-    }
-  }
   
-  for (Int y = 0; y < m_sourceHeight / 2; y++)
+  for(Int c=0; c< getNumberValidComponents(m_chromaFormatIDC); c++)
   {
-    for (Int x = 0; x < m_sourceWidth / 2; x++)
-    {
-      const Int orgVal = (Int) orgPic.atCR(x, y);
-      Double weightSum = 1.0;
-      Double newval = (Double) orgVal;
-      for (Int i = 0; i < refs; i++)
-      {
-        const Int refVal = correctedPics[i].atCR(x, y);
-        const Int diffSq = (refVal - orgVal) * (refVal - orgVal);
-        const Int index = std::min(1, std::abs(origOffsets[i]) - 1);
-        const Double weight = s_chromaFactor * overallStrength * s_refStrengths[refStrengthRow][index] * exp(-diffSq / (2 * chromaSigmaSq));
-        newval += (weight * refVal);
-        weightSum += weight;
-      }
-      newval /= weightSum;
-      *newOrgPic->getCR(x, y) = (Pel)round(newval);
-    }
-  }
+    const ComponentID compID=(ComponentID)c;
+    const Int height = orgPic.getHeight(compID);
+    const Int width  = orgPic.getWidth(compID);
+    const Pel *srcPelRow = orgPic.getAddr(compID);
+    const Int srcStride = orgPic.getStride(compID);
+          Pel *dstPelRow = newOrgPic.getAddr(compID);
+    const Int dstStride = newOrgPic.getStride(compID);
+    const Double sigmaSq = isChroma(compID)? chromaSigmaSq : lumaSigmaSq;
+    const Double weightScaling = overallStrength * (isChroma(compID) ? s_chromaFactor : 0.4);
 
-  for (Int i = 0; i < refs; i++)
-  {
-    correctedPics[i].destroy();
+    for (Int y = 0; y < height; y++, srcPelRow+=srcStride, dstPelRow+=dstStride)
+    {
+      const Pel *srcPel=srcPelRow;
+            Pel *dstPel=dstPelRow;
+      for (Int x = 0; x < width; x++, srcPel++, dstPel++)
+      {
+        const Int orgVal = (Int) *srcPel;
+        Double temporalWeightSum = 1.0;
+        Double newVal = (Double) orgVal;
+        for (Int i = 0; i < numRefs; i++)
+        {
+          const Pel *pCorrectedPelPtr=correctedPics[i].getAddr(compID)+(y*correctedPics[i].getStride(compID)+x);
+          const Int refVal = (Int) *pCorrectedPelPtr;
+          Double diff = (Double)(refVal - orgVal);
+          Double diffSq = diff * diff;
+          const Int index = std::min(1, std::abs(srcFrameInfo[i].origOffset) - 1);
+          const Double weight = weightScaling * s_refStrengths[refStrengthRow][index] * exp(-diffSq / (2 * sigmaSq));
+          newVal += weight * refVal;
+          temporalWeightSum += weight;
+        }
+        newVal /= temporalWeightSum;
+        *dstPel = (Pel)round(newVal); // clipping
+      }
+    }
   }
 }
 

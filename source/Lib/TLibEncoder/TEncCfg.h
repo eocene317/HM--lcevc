@@ -1053,8 +1053,8 @@ public:
   Void  setOmniViewportSEIVerRange(const std::vector<UInt>& vi)      { m_omniViewportSEIVerRange = vi; } 
   UInt  getOmniViewportSEIVerRange(Int idx)                          { return m_omniViewportSEIVerRange[idx]; }
 #endif
-  Void  setGopBasedTemporalFilterEnabled(bool flag)                   { m_gopBasedTemporalFilterEnabled = flag; }
-  Bool  getGopBasedTemporalFilterEnabled()                            { return m_gopBasedTemporalFilterEnabled; }
+  Void  setGopBasedTemporalFilterEnabled(Bool flag)                  { m_gopBasedTemporalFilterEnabled = flag; }
+  Bool  getGopBasedTemporalFilterEnabled() const                     { return m_gopBasedTemporalFilterEnabled; }
 #if CMP_SEI_MESSAGE
   Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }
   Bool     getCmpSEIEnabled()                                        { return m_cmpSEIEnabled; }

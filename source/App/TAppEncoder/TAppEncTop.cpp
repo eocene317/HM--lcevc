@@ -616,7 +616,7 @@ Void TAppEncTop::encode()
   {
     temporalFilter.init(m_FrameSkip, m_inputBitDepth, m_MSBExtendedBitDepth, m_internalBitDepth, m_iSourceWidth, m_iSourceHeight,
       m_aiPad, m_framesToBeEncoded, m_bClipInputVideoToRec709Range, m_inputFileName, m_chromaFormatIDC,
-      m_inputColourSpaceConvert, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, m_iQP, m_iGOPSize, s_gopBasedTemporalFilterStrengths,
+      m_inputColourSpaceConvert, m_iQP, m_iGOPSize, m_gopBasedTemporalFilterStrengths,
       m_gopBasedTemporalFilterFutureReference);
   }
   while ( !bEos )

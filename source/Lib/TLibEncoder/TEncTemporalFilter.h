@@ -41,41 +41,55 @@
 #include "TLibVideoIO/TVideoIOYuv.h"
 #include <sstream>
 #include <map>
+#include <deque>
 
  //! \ingroup EncoderLib
  //! \{
 
-struct MotionVector {
+struct MotionVector
+{
   Int x, y;
   Int error;
   MotionVector() : x(0), y(0), error(INT_LEAST32_MAX) {}
   void set(Int nx, Int ny, Int ne) { x = nx; y = ny; error = ne; }
 };
 
-class PaddedPelMap {
-public:
-  Int m_padding;
-  Int m_width;
-  Int m_height;
-  Int m_stride;
-
-  void create(Int padding, Int width, Int height);
-  void create(Int padding, Int width, Int height, const TComPicYuv *source);
-  void destroy();
-  void copyFromPelStorage(const TComPicYuv *source);
-  void copyToPelStorage(TComPicYuv *destination);
-  void fillPadding();
-  Pel  at(Int x, Int y) const;
-  Pel* get(Int x, Int y) const;
-  Pel  atCB(Int x, Int y) const;
-  Pel* getCB(Int x, Int y) const;
-  Pel  atCR(Int x, Int y) const;
-  Pel* getCR(Int x, Int y) const;
-
+template <class T>
+struct Array2D
+{
 private:
-  Pel *m_origin;
-  Pel *m_originCB;
-  Pel *m_originCR;
+  UInt m_width, m_height;
+  std::vector< T > v;
+public:
+  Array2D() : m_width(0), m_height(0), v() { }
+  Array2D(UInt width, UInt height, const T& value=T()) : m_width(0), m_height(0), v() { allocate(width, height, value); }
+
+  Void allocate(UInt width, UInt height, const T& value=T())
+  {
+    m_width=width;
+    m_height=height;
+    v.resize(std::size_t(m_width*m_height), value);
+  }
+
+  T& get(UInt x, UInt y)
+  {
+    assert(x<m_width && y<m_height);
+    return v[y*m_width+x];
+  }
+
+  const T& get(UInt x, UInt y) const
+  {
+    assert(x<m_width && y<m_height);
+    return v[y*m_width+x];
+  }
+};
+
+struct TemporalFilterSourcePicInfo
+{
+  TemporalFilterSourcePicInfo() : picBuffer(), mvs(), origOffset(0) { }
+  TComPicYuv            picBuffer;
+  Array2D<MotionVector> mvs;
+  Int                   origOffset;
 };
 
 // ====================================================================================================================
@@ -88,12 +102,21 @@ public:
    TEncTemporalFilter();
   ~TEncTemporalFilter() {}
 
-  void init(Int frameSkip, const Int inputBitDepth[MAX_NUM_CHANNEL_TYPE],
-    const Int MSBExtendedBitDepth[MAX_NUM_CHANNEL_TYPE], const Int InternalBitDepth[MAX_NUM_CHANNEL_TYPE],
-    Int width, Int height,
-    Int *pad, Int frames, Bool Rec709, std::string filename, ChromaFormat inputChroma,
-    InputColourSpaceConversion colorSpaceConv, Int MaxCUWidth, Int MaxCUHeight, Int MaxTotalCUDepth, Int qp,
-    Int iGOPSize, std::map<Int, Double> temporalFilterStrengths, Bool gopBasedTemporalFilterFutureReference);
+  void init(const Int frameSkip,
+            const Int inputBitDepth[MAX_NUM_CHANNEL_TYPE],
+            const Int MSBExtendedBitDepth[MAX_NUM_CHANNEL_TYPE], const Int InternalBitDepth[MAX_NUM_CHANNEL_TYPE],
+            const Int width,
+            const Int height,
+            const Int *pad,
+            const Int frames,
+            const Bool Rec709,
+            const std::string &filename,
+            const ChromaFormat inputChroma,
+            const InputColourSpaceConversion colorSpaceConv,
+            const Int qp,
+            const Int GOPSize,
+            const std::map<Int, Double> &temporalFilterStrengths,
+            const Bool gopBasedTemporalFilterFutureReference);
 
   Bool filter(TComPicYuv *orgPic, Int frame);
 
@@ -117,8 +140,8 @@ private:
   ChromaFormat m_chromaFormatIDC;
   Int m_sourceWidth;
   Int m_sourceHeight;
-  Int m_iQP;
-  Int m_iGOPSize;
+  Int m_QP;
+  Int m_GOPSize;
   std::map<Int, Double> m_temporalFilterStrengths;
   Int m_aiPad[2];
   Int m_framesToBeEncoded;
@@ -126,22 +149,22 @@ private:
   InputColourSpaceConversion m_inputColourSpaceConvert;
   Bool m_gopBasedTemporalFilterFutureReference;
 
-  Int m_uiMaxCUWidth;
-  Int m_uiMaxCUHeight;
-  Int m_uiMaxTotalCUDepth;
+  Int m_maxCUWidth;
+  Int m_maxCUHeight;
+  Int m_maxTotalCUDepth;
 
-  PaddedPelMap m_orgSub2;
-  PaddedPelMap m_orgSub4;
+  TComPicYuv m_orgSub2;
+  TComPicYuv m_orgSub4;
 
   // Private functions
-  void subsample(const PaddedPelMap input, PaddedPelMap *output, const Int factor = 2);
-  Int motionError(const PaddedPelMap orig, PaddedPelMap buffer, const Int x, const Int y, Int dx, Int dy, const Int bs, const Int besterror);
-  void motionEstimation(MotionVector **vectors, const PaddedPelMap orig, PaddedPelMap buffer, const Int bs,
-    MotionVector **previous = 0, const Int factor = 1, const Bool doubleRes = false);
-  void motionEstimation(MotionVector **mv, PaddedPelMap orgPic, PaddedPelMap buffer);
+  Void subsampleLuma(const TComPicYuv &input, TComPicYuv &output, const Int factor = 2);
+  Int motionErrorLuma(const TComPicYuv &orig, const TComPicYuv &buffer, const Int x, const Int y, Int dx, Int dy, const Int bs, const Int besterror);
+  Void motionEstimationLuma(Array2D<MotionVector> &mvs, const TComPicYuv &orig, const TComPicYuv &buffer, const Int bs,
+      const Array2D<MotionVector> *previous=0, const Int factor = 1, const Bool doubleRes = false);
+  Void motionEstimation(Array2D<MotionVector> &mvs, const TComPicYuv &orgPic, const TComPicYuv &buffer);
 
-  void bilateralFilter(PaddedPelMap orgPic, MotionVector ***vectors, PaddedPelMap *picBuffer, const Int refs, PaddedPelMap *newOrgPic, const Int *origOffsets, Double strength);
-  void applyMotion(MotionVector **vectors, PaddedPelMap input, PaddedPelMap *output);
+  Void bilateralFilter(const TComPicYuv &orgPic, const std::deque<TemporalFilterSourcePicInfo> &srcFrameInfo, TComPicYuv &newOrgPic, Double overallStrength);
+  Void applyMotion(const Array2D<MotionVector> &mvs, const TComPicYuv &input, TComPicYuv &output);
 }; // END CLASS DEFINITION TEncTemporalFilter
 
 //! \}
