@@ -111,18 +111,9 @@ Void  SyntaxElementWriter::xWriteFlagTr(UInt value, const TChar *pSymbolName)
 
 Void SyntaxElementWriter::xWriteSCode    ( Int iCode, UInt uiLength )
 {
-  assert ( uiLength > 0 );
-  UInt uiCode;
-  if (iCode >= 0)
-  {
-    uiCode =  (UInt) iCode;
-  }
-  else
-  {
-    uiCode = ~(iCode) + 1;
-    uiCode |= (1 << 31);
-  }
-  m_pcBitIf->write( uiCode, uiLength );
+  assert ( uiLength > 0 && uiLength<=32 );
+  assert( uiLength==32 || (iCode>=-(1<<(uiLength-1)) && iCode<(1<<(uiLength-1))) );
+  m_pcBitIf->write( uiLength==32 ? UInt(iCode) : ( UInt(iCode)&((1<<uiLength)-1) ), uiLength );
 }
 
 Void SyntaxElementWriter::xWriteCode     ( UInt uiCode, UInt uiLength )
