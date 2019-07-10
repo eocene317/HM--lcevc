@@ -98,7 +98,7 @@ void TEncTemporalFilter::init(const Int frameSkip,
                               const Int frames,
                               const Bool Rec709,
                               const std::string &filename,
-                              const ChromaFormat chroma,
+                              const ChromaFormat inputChromaFormatIDC,
                               const InputColourSpaceConversion colorSpaceConv,
                               const Int QP,
                               const Int GOPSize,
@@ -119,13 +119,13 @@ void TEncTemporalFilter::init(const Int frameSkip,
   {
     m_aiPad[i] = pad[i];
   }
-  m_framesToBeEncoded = frames;
+  m_framesToBeEncoded = frames; // NOT USED.
   m_bClipInputVideoToRec709Range = Rec709;
   m_inputFileName = filename;
-  m_chromaFormatIDC = chroma;
+  m_chromaFormatIDC = inputChromaFormatIDC;
   m_inputColourSpaceConvert = colorSpaceConv;
   m_QP = QP;
-  m_GOPSize = GOPSize;
+  m_GOPSize = GOPSize; // NOT USED.
   m_temporalFilterStrengths = temporalFilterStrengths;
   m_gopBasedTemporalFilterFutureReference = gopBasedTemporalFilterFutureReference;
 }
@@ -175,8 +175,11 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
     orgPic->copyToPic(&origPadded);
     origPadded.extendPicBorder();
 
-    subsampleLuma(origPadded, m_orgSub2);
-    subsampleLuma(m_orgSub2, m_orgSub4);
+    TComPicYuv origSubsampled2;
+    TComPicYuv origSubsampled4;
+
+    subsampleLuma(origPadded, origSubsampled2);
+    subsampleLuma(origSubsampled2, origSubsampled4);
 
     // determine motion vectors
     for (Int poc = firstFrame; poc <= lastFrame; poc++)
@@ -196,8 +199,8 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
       TemporalFilterSourcePicInfo &srcPic=srcFrameInfo.back();
 
       TComPicYuv     dummyPicBufferTO; // Only used temporary in yuvFrames.read
-      srcPic.picBuffer.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding);
-      dummyPicBufferTO.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding);
+      srcPic.picBuffer.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding, s_padding);
+      dummyPicBufferTO.createWithoutCUInfo(m_sourceWidth, m_sourceHeight, m_chromaFormatIDC, true, s_padding, s_padding);
       if (!yuvFrames.read(&srcPic.picBuffer, &dummyPicBufferTO, m_inputColourSpaceConvert, m_aiPad, m_chromaFormatIDC, m_bClipInputVideoToRec709Range))
       {
         return false; // eof or read fail
@@ -205,7 +208,7 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
       srcPic.picBuffer.extendPicBorder();
       srcPic.mvs.allocate(m_sourceWidth / 4, m_sourceHeight / 4);
 
-      motionEstimation(srcPic.mvs, origPadded, srcPic.picBuffer);
+      motionEstimation(srcPic.mvs, origPadded, srcPic.picBuffer, origSubsampled2, origSubsampled4);
       srcPic.origOffset = origOffset;
       origOffset++;
     }
@@ -239,7 +242,7 @@ Bool TEncTemporalFilter::filter(TComPicYuv *orgPic, Int receivedPoc)
 // Private member functions
 // ====================================================================================================================
 
-Void TEncTemporalFilter::subsampleLuma(const TComPicYuv &input, TComPicYuv &output, const Int factor)
+Void TEncTemporalFilter::subsampleLuma(const TComPicYuv &input, TComPicYuv &output, const Int factor) const
 {
   const Int newWidth = input.getWidth(COMPONENT_Y) / factor;
   const Int newHeight = input.getHeight(COMPONENT_Y) / factor;
@@ -273,14 +276,13 @@ Int TEncTemporalFilter::motionErrorLuma(const TComPicYuv &orig,
                                               Int dx,
                                               Int dy,
                                         const Int bs,
-                                        const Int besterror = 8 * 8 * 1024 * 1024)
+                                        const Int besterror = 8 * 8 * 1024 * 1024) const
 {
 
   const Pel* origOrigin =orig.getAddr(COMPONENT_Y);
   const Int origStride  =orig.getStride(COMPONENT_Y);
   const Pel *buffOrigin =buffer.getAddr(COMPONENT_Y);
   const Int buffStride  =buffer.getStride(COMPONENT_Y);
-
   Int error = 0;// dx * 10 + dy * 10;
   if (((dx | dy) & 0xF) == 0)
   {
@@ -330,6 +332,8 @@ Int TEncTemporalFilter::motionErrorLuma(const TComPicYuv &orig,
         tempArray[y1][x1] = iSum;
       }
     }
+
+    const Pel maxSampleValue = (1<<m_internalBitDepth[CHANNEL_TYPE_LUMA])-1;
     for (Int y1 = 0; y1 < bs; y1++)
     {
       const Pel *origRow = origOrigin + (y+y1)*origStride + 0;
@@ -344,7 +348,7 @@ Int TEncTemporalFilter::motionErrorLuma(const TComPicYuv &orig,
         iSum += yFilter[6] * tempArray[y1 + 6][x1];
 
         iSum = (iSum + (1 << 11)) >> 12;
-        iSum = iSum < 0 ? 0 : (iSum > 1023 ? 1023 : iSum);
+        iSum = iSum < 0 ? 0 : (iSum > maxSampleValue ? maxSampleValue : iSum);
 
         error += (iSum - origRow[x + x1]) * (iSum - origRow[x + x1]);
       }
@@ -358,7 +362,7 @@ Int TEncTemporalFilter::motionErrorLuma(const TComPicYuv &orig,
 }
 
 Void TEncTemporalFilter::motionEstimationLuma(Array2D<MotionVector> &mvs, const TComPicYuv &orig, const TComPicYuv &buffer, const Int blockSize,
-    const Array2D<MotionVector> *previous, const Int factor, const Bool doubleRes)
+    const Array2D<MotionVector> *previous, const Int factor, const Bool doubleRes) const
 {
   Int range = 5;
   const Int stepSize = blockSize;
@@ -446,7 +450,7 @@ Void TEncTemporalFilter::motionEstimationLuma(Array2D<MotionVector> &mvs, const 
   }
 }
 
-Void TEncTemporalFilter::motionEstimation(Array2D<MotionVector> &mv, const TComPicYuv &orgPic, const TComPicYuv &buffer)
+Void TEncTemporalFilter::motionEstimation(Array2D<MotionVector> &mv, const TComPicYuv &orgPic, const TComPicYuv &buffer, const TComPicYuv &origSubsampled2, const TComPicYuv &origSubsampled4) const
 {
   const Int width = m_sourceWidth;
   const Int height = m_sourceHeight;
@@ -460,14 +464,14 @@ Void TEncTemporalFilter::motionEstimation(Array2D<MotionVector> &mv, const TComP
   subsampleLuma(buffer, bufferSub2);
   subsampleLuma(bufferSub2, bufferSub4);
 
-  motionEstimationLuma(mv_0, m_orgSub4, bufferSub4, 16);
-  motionEstimationLuma(mv_1, m_orgSub2, bufferSub2, 16, &mv_0, 2);
+  motionEstimationLuma(mv_0, origSubsampled4, bufferSub4, 16);
+  motionEstimationLuma(mv_1, origSubsampled2, bufferSub2, 16, &mv_0, 2);
   motionEstimationLuma(mv_2, orgPic, buffer, 16, &mv_1, 2);
 
   motionEstimationLuma(mv, orgPic, buffer, 8, &mv_2, 1, true);
 }
 
-Void TEncTemporalFilter::applyMotion(const Array2D<MotionVector> &mvs, const TComPicYuv &input, TComPicYuv &output)
+Void TEncTemporalFilter::applyMotion(const Array2D<MotionVector> &mvs, const TComPicYuv &input, TComPicYuv &output) const
 {
   static const Int lumaBlockSize=8;
 
@@ -481,8 +485,7 @@ Void TEncTemporalFilter::applyMotion(const Array2D<MotionVector> &mvs, const TCo
     const Int height = input.getHeight(compID);
     const Int width  = input.getWidth(compID);
 
-    const Int bitDepthBits=10;
-    const Int maxValue=(1<<bitDepthBits)-1;
+    const Pel maxValue = (1<<m_internalBitDepth[toChannelType(compID)])-1;
 
     const Pel *pSrcImage=input.getAddr(compID);
     const Int srcStride=input.getStride(compID);
@@ -556,7 +559,7 @@ Void TEncTemporalFilter::applyMotion(const Array2D<MotionVector> &mvs, const TCo
 Void TEncTemporalFilter::bilateralFilter(const TComPicYuv &orgPic,
                                          const std::deque<TemporalFilterSourcePicInfo> &srcFrameInfo,
                                                TComPicYuv &newOrgPic,
-                                               Double overallStrength)
+                                               Double overallStrength) const
 {
   const int numRefs = Int(srcFrameInfo.size());
   std::vector<TComPicYuv> correctedPics(numRefs);
@@ -590,6 +593,7 @@ Void TEncTemporalFilter::bilateralFilter(const TComPicYuv &orgPic,
     const Int dstStride = newOrgPic.getStride(compID);
     const Double sigmaSq = isChroma(compID)? chromaSigmaSq : lumaSigmaSq;
     const Double weightScaling = overallStrength * (isChroma(compID) ? s_chromaFactor : 0.4);
+    const Pel maxSampleValue = (1<<m_internalBitDepth[toChannelType(compID)])-1;
 
     for (Int y = 0; y < height; y++, srcPelRow+=srcStride, dstPelRow+=dstStride)
     {
@@ -612,7 +616,9 @@ Void TEncTemporalFilter::bilateralFilter(const TComPicYuv &orgPic,
           temporalWeightSum += weight;
         }
         newVal /= temporalWeightSum;
-        *dstPel = (Pel)round(newVal); // clipping
+        Pel sampleVal = (Pel)round(newVal);
+        sampleVal=(sampleVal<0?0 : (sampleVal>maxSampleValue ? maxSampleValue : sampleVal));
+        *dstPel = sampleVal;
       }
     }
   }

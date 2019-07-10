@@ -111,7 +111,7 @@ public:
             const Int frames,
             const Bool Rec709,
             const std::string &filename,
-            const ChromaFormat inputChroma,
+            const ChromaFormat inputChromaFormatIDC,
             const InputColourSpaceConversion colorSpaceConv,
             const Int qp,
             const Int GOPSize,
@@ -134,9 +134,9 @@ private:
   // Private member variables
   Int m_FrameSkip;
   std::string m_inputFileName;
-  Int m_inputBitDepth[3];
-  Int m_MSBExtendedBitDepth[3];
-  Int m_internalBitDepth[3];
+  Int m_inputBitDepth[MAX_NUM_CHANNEL_TYPE];
+  Int m_MSBExtendedBitDepth[MAX_NUM_CHANNEL_TYPE];
+  Int m_internalBitDepth[MAX_NUM_CHANNEL_TYPE];
   ChromaFormat m_chromaFormatIDC;
   Int m_sourceWidth;
   Int m_sourceHeight;
@@ -149,22 +149,15 @@ private:
   InputColourSpaceConversion m_inputColourSpaceConvert;
   Bool m_gopBasedTemporalFilterFutureReference;
 
-  Int m_maxCUWidth;
-  Int m_maxCUHeight;
-  Int m_maxTotalCUDepth;
-
-  TComPicYuv m_orgSub2;
-  TComPicYuv m_orgSub4;
-
   // Private functions
-  Void subsampleLuma(const TComPicYuv &input, TComPicYuv &output, const Int factor = 2);
-  Int motionErrorLuma(const TComPicYuv &orig, const TComPicYuv &buffer, const Int x, const Int y, Int dx, Int dy, const Int bs, const Int besterror);
+  Void subsampleLuma(const TComPicYuv &input, TComPicYuv &output, const Int factor = 2) const;
+  Int motionErrorLuma(const TComPicYuv &orig, const TComPicYuv &buffer, const Int x, const Int y, Int dx, Int dy, const Int bs, const Int besterror) const;
   Void motionEstimationLuma(Array2D<MotionVector> &mvs, const TComPicYuv &orig, const TComPicYuv &buffer, const Int bs,
-      const Array2D<MotionVector> *previous=0, const Int factor = 1, const Bool doubleRes = false);
-  Void motionEstimation(Array2D<MotionVector> &mvs, const TComPicYuv &orgPic, const TComPicYuv &buffer);
+      const Array2D<MotionVector> *previous=0, const Int factor = 1, const Bool doubleRes = false) const;
+  Void motionEstimation(Array2D<MotionVector> &mvs, const TComPicYuv &orgPic, const TComPicYuv &buffer, const TComPicYuv &origSubsampled2, const TComPicYuv &origSubsampled4) const;
 
-  Void bilateralFilter(const TComPicYuv &orgPic, const std::deque<TemporalFilterSourcePicInfo> &srcFrameInfo, TComPicYuv &newOrgPic, Double overallStrength);
-  Void applyMotion(const Array2D<MotionVector> &mvs, const TComPicYuv &input, TComPicYuv &output);
+  Void bilateralFilter(const TComPicYuv &orgPic, const std::deque<TemporalFilterSourcePicInfo> &srcFrameInfo, TComPicYuv &newOrgPic, Double overallStrength) const;
+  Void applyMotion(const Array2D<MotionVector> &mvs, const TComPicYuv &input, TComPicYuv &output) const;
 }; // END CLASS DEFINITION TEncTemporalFilter
 
 //! \}

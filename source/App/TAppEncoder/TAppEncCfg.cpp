@@ -2831,7 +2831,6 @@ Void TAppEncCfg::xCheckParameter()
 
   if (m_gopBasedTemporalFilterEnabled)
   {
-    xConfirmPara(m_inputColourSpaceConvert != IPCOLOURSPACE_UNCHANGED, "GOP Based Temporal Filter only supports IPCOLOURSPACE_UNCHANGED.");
     xConfirmPara(m_temporalSubsampleRatio != 1, "GOP Based Temporal Filter only support Temporal sub-sample ratio 1");
   }
 

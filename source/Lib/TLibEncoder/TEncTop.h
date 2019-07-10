@@ -169,14 +169,15 @@ public:
   /// encode several number of pictures until end-of-sequence
   Void encode( Bool bEos,
                TComPicYuv* pcPicYuvOrg,
-               TComPicYuv* pcPicYuvTrueOrg, const InputColourSpaceConversion snrCSC, // used for SNR calculations. Picture in original colour space.
+               TComPicYuv* pcPicYuvTrueOrg,
+               const InputColourSpaceConversion ipCSC, const InputColourSpaceConversion snrCSC, // used for SNR calculations. Picture in original colour space.
                TComList<TComPicYuv*>& rcListPicYuvRecOut,
                std::list<AccessUnit>& accessUnitsOut, Int& iNumEncoded );
 
   /// encode several number of pictures until end-of-sequence
   Void encode( Bool bEos, TComPicYuv* pcPicYuvOrg,
                TComPicYuv* pcPicYuvTrueOrg,
-               const InputColourSpaceConversion snrCSC, // used for SNR calculations. Picture in original colour space.
+               const InputColourSpaceConversion ipCSC, const InputColourSpaceConversion snrCSC, // used for SNR calculations. Picture in original colour space.
                TComList<TComPicYuv*>& rcListPicYuvRecOut,
                std::list<AccessUnit>& accessUnitsOut, Int& iNumEncoded, Bool isTff);
 
