@@ -105,17 +105,9 @@ Void SyntaxElementParser::xReadSCode (UInt uiLength, Int& rValue)
 #endif
 {
   UInt val;
-  assert ( uiLength > 0 );
+  assert ( uiLength > 0 && uiLength<=32);
   m_pcBitstream->read (uiLength, val);
-  if((val & (1 << (uiLength-1))) == 0)
-  {
-    rValue = val;
-  }
-  else
-  {
-    val &= (1<< (uiLength-1)) - 1;
-    rValue = ~val + 1;
-  }
+  rValue= uiLength>=32 ? Int(val) : ( (-Int( val & (UInt(1)<<(uiLength-1)))) | Int(val) );
 
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
   TComCodingStatistics::IncrementStatisticEP(pSymbolName, uiLength, rValue);
