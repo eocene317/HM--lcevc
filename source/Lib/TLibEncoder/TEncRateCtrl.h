@@ -86,12 +86,22 @@ struct TRCLCU
   Int m_numberOfPixel;
   Double m_costIntra;
   Int m_targetBitsLeft;
+#if JVET_K0390_RATE_CTRL
+  double m_actualSSE;
+  double m_actualMSE;
+#endif
 };
 
 struct TRCParameter
 {
   Double m_alpha;
   Double m_beta;
+#if JVET_K0390_RATE_CTRL
+  int    m_validPix;
+#endif
+#if JVET_M0600_RATE_CTRL
+  double m_skipRatio;
+#endif
 };
 
 class TEncRCSeq
@@ -195,8 +205,11 @@ public:
 private:
   Int  xEstGOPTargetBits( TEncRCSeq* encRCSeq, Int GOPSize );
   Void   xCalEquaCoeff( TEncRCSeq* encRCSeq, Double* lambdaRatio, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize );
+#if JVET_K0390_RATE_CTRL
+  Double xSolveEqua(TEncRCSeq* encRCSeq, double targetBpp, double* equaCoeffA, double* equaCoeffB, int GOPSize);
+#else
   Double xSolveEqua( Double targetBpp, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize );
-
+#endif
 public:
   TEncRCSeq* getEncRCSeq()        { return m_encRCSeq; }
   Int  getNumPic()                { return m_numPic;}
@@ -235,8 +248,11 @@ public:
   Double getLCUEstLambdaAndQP(Double bpp, Int clipPicQP, Int *estQP);
   Double getLCUEstLambda( Double bpp );
   Int    getLCUEstQP( Double lambda, Int clipPicQP );
-
+#if JVET_M0600_RATE_CTRL
+  void updateAfterCTU( Int LCUIdx, Int bits, Int QP, Double lambda, Double skipRatio, Bool updateLCUParameter = true);
+#else
   Void updateAfterCTU( Int LCUIdx, Int bits, Int QP, Double lambda, Bool updateLCUParameter = true );
+#endif
   Void updateAfterPicture( Int actualHeaderBits, Int actualTotalBits, Double averageQP, Double averageLambda, SliceType eSliceType);
 
   Void addToPictureLsit( list<TEncRCPic*>& listPreviousPictures );
@@ -279,6 +295,11 @@ public:
   Double getPicEstLambda()                                { return m_estPicLambda; }
   Void setPicEstLambda( Double lambda )                   { m_picLambda = lambda; }
 
+#if JVET_K0390_RATE_CTRL
+  double getPicMSE()                                      { return m_picMSE; }
+  void  setPicMSE(double avgMSE)                           { m_picMSE = avgMSE; }
+#endif
+
 private:
   TEncRCSeq* m_encRCSeq;
   TEncRCGOP* m_encRCGOP;
@@ -303,6 +324,10 @@ private:
   Int m_picActualBits;          // the whole picture, including header
   Int m_picQP;                  // in integer form
   Double m_picLambda;
+#if JVET_K0390_RATE_CTRL
+  Double m_picMSE;
+  Int m_validPixelsInPic;
+#endif
 };
 
 class TEncRateCtrl

@@ -934,6 +934,16 @@ Void TEncSlice::compressSlice( TComPic* pcPic, const Bool bCompressEntireSlice, 
       Double actualLambda = m_pcRdCost->getLambda();
       Int actualBits      = pCtu->getTotalBits();
       Int numberOfEffectivePixels    = 0;
+
+#if JVET_M0600_RATE_CTRL
+      Int numberOfSkipPixel = 0;      
+      for (Int idx = 0; idx < pcPic->getNumPartitionsInCtu(); idx++)
+      {
+        
+        numberOfSkipPixel += 16 * pCtu->isSkipped(idx);
+      }
+#endif
+
       for ( Int idx = 0; idx < pcPic->getNumPartitionsInCtu(); idx++ )
       {
         if ( pCtu->getPredictionMode( idx ) != NUMBER_OF_PREDICTION_MODES && ( !pCtu->isSkipped( idx ) ) )
@@ -943,6 +953,10 @@ Void TEncSlice::compressSlice( TComPic* pcPic, const Bool bCompressEntireSlice, 
         }
       }
 
+#if JVET_M0600_RATE_CTRL
+      Double skipRatio = (Double)numberOfSkipPixel / m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_numberOfPixel;
+#endif
+
       if ( numberOfEffectivePixels == 0 )
       {
         actualQP = g_RCInvalidQPValue;
@@ -951,15 +965,24 @@ Void TEncSlice::compressSlice( TComPic* pcPic, const Bool bCompressEntireSlice, 
       {
         actualQP = pCtu->getQP( 0 );
       }
+#if JVET_K0390_RATE_CTRL
+      m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_actualMSE = (double)pCtu->getTotalDistortion() / (double)m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_numberOfPixel;
+#endif
       m_pcRdCost->setLambda(oldLambda, pcSlice->getSPS()->getBitDepths());
+#if JVET_M0600_RATE_CTRL
+      m_pcRateCtrl->getRCPic()->updateAfterCTU(m_pcRateCtrl->getRCPic()->getLCUCoded(), actualBits, actualQP, actualLambda, skipRatio,
+        pCtu->getSlice()->getSliceType() == I_SLICE ? 0 : m_pcCfg->getLCULevelRC());
+#else
       m_pcRateCtrl->getRCPic()->updateAfterCTU( m_pcRateCtrl->getRCPic()->getLCUCoded(), actualBits, actualQP, actualLambda,
                                                 pCtu->getSlice()->getSliceType() == I_SLICE ? 0 : m_pcCfg->getLCULevelRC() );
+#endif
     }
 
     m_uiPicTotalBits += pCtu->getTotalBits();
     m_dPicRdCost     += pCtu->getTotalCost();
     m_uiPicDist      += pCtu->getTotalDistortion();
   }
+
 
   // store context state at the end of this slice-segment, in case the next slice is a dependent slice and continues using the CABAC contexts.
   if( pcSlice->getPPS()->getDependentSliceSegmentsEnabledFlag() )
