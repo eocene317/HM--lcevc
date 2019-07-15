@@ -292,7 +292,7 @@ Void TEncRCSeq::setAllBitRatio( Double basicLambda, Double* equaCoeffA, Double* 
   for ( Int i=0; i<m_GOPSize; i++ )
   {
 #if JVET_K0390_RATE_CTRL
-    bitsRatio[i] = (int)( equaCoeffA[i] * pow(basicLambda, equaCoeffB[i]) * (double)getPicPara(getGOPID2Level(i)).m_validPix);
+    bitsRatio[i] = (Int)( equaCoeffA[i] * pow(basicLambda, equaCoeffB[i]) * (Double)getPicPara(getGOPID2Level(i)).m_validPix);
 #else
     bitsRatio[i] = (Int)( equaCoeffA[i] * pow( basicLambda, equaCoeffB[i] ) * m_numberOfPixel );
 #endif
@@ -375,17 +375,17 @@ Void TEncRCGOP::create( TEncRCSeq* encRCSeq, Int numPic )
 #if JVET_K0390_RATE_CTRL
     else if (encRCSeq->getAdaptiveBits() == 3)  // for GOP size = 16, random access case
     {
-      double hierarQp = 4.2005 * log(encRCSeq->getLastLambda()) + 13.7122;  //  the qp of POC16
-      double qpLev2 = (hierarQp + 0.0) + 0.2016    * (hierarQp + 0.0) - 4.8848;
-      double qpLev3 = (hierarQp + 3.0) + 0.22286 * (hierarQp + 3.0) - 5.7476;
-      double qpLev4 = (hierarQp + 4.0) + 0.2333    * (hierarQp + 4.0) - 5.9;
-      double qpLev5 = (hierarQp + 5.0) + 0.3            * (hierarQp + 5.0) - 7.1444;
+      Double hierarQp = 4.2005 * log(encRCSeq->getLastLambda()) + 13.7122;  //  the qp of POC16
+      Double qpLev2 = (hierarQp + 0.0) + 0.2016    * (hierarQp + 0.0) - 4.8848;
+      Double qpLev3 = (hierarQp + 3.0) + 0.22286 * (hierarQp + 3.0) - 5.7476;
+      Double qpLev4 = (hierarQp + 4.0) + 0.2333    * (hierarQp + 4.0) - 5.9;
+      Double qpLev5 = (hierarQp + 5.0) + 0.3            * (hierarQp + 5.0) - 7.1444;
 
-      double lambdaLev1 = exp((hierarQp - 13.7122) / 4.2005);
-      double lambdaLev2 = exp((qpLev2 - 13.7122) / 4.2005);
-      double lambdaLev3 = exp((qpLev3 - 13.7122) / 4.2005);
-      double lambdaLev4 = exp((qpLev4 - 13.7122) / 4.2005);
-      double lambdaLev5 = exp((qpLev5 - 13.7122) / 4.2005);
+      Double lambdaLev1 = exp((hierarQp - 13.7122) / 4.2005);
+      Double lambdaLev2 = exp((qpLev2 - 13.7122) / 4.2005);
+      Double lambdaLev3 = exp((qpLev3 - 13.7122) / 4.2005);
+      Double lambdaLev4 = exp((qpLev4 - 13.7122) / 4.2005);
+      Double lambdaLev5 = exp((qpLev5 - 13.7122) / 4.2005);
 
       lambdaRatio[0] = 1.0;
       lambdaRatio[1] = lambdaLev2 / lambdaLev1;
@@ -404,24 +404,24 @@ Void TEncRCGOP::create( TEncRCSeq* encRCSeq, Int numPic )
       lambdaRatio[14] = lambdaLev5 / lambdaLev1;
       lambdaRatio[15] = lambdaLev5 / lambdaLev1;
 #if JVET_M0600_RATE_CTRL
-      const double qdfParaLev2A = 0.5847;
-      const double qdfParaLev2B = -0.0782;
-      const double qdfParaLev3A = 0.5468;
-      const double qdfParaLev3B = -0.1364;
-      const double qdfParaLev4A = 0.6539;
-      const double qdfParaLev4B = -0.203;
-      const double qdfParaLev5A = 0.8623;
-      const double qdfParaLev5B = -0.4676;
-      double qdfLev1Lev2 = Clip3(0.12, 0.9, qdfParaLev2A * encRCSeq->getPicPara(2).m_skipRatio + qdfParaLev2B);
-      double qdfLev1Lev3 = Clip3(0.13, 0.9, qdfParaLev3A * encRCSeq->getPicPara(3).m_skipRatio + qdfParaLev3B);
-      double qdfLev1Lev4 = Clip3(0.15, 0.9, qdfParaLev4A * encRCSeq->getPicPara(4).m_skipRatio + qdfParaLev4B);
-      double qdfLev1Lev5 = Clip3(0.20, 0.9, qdfParaLev5A * encRCSeq->getPicPara(5).m_skipRatio + qdfParaLev5B);
-      double qdfLev2Lev3 = Clip3(0.09, 0.9, qdfLev1Lev3 * (1 - qdfLev1Lev2));
-      double qdfLev2Lev4 = Clip3(0.12, 0.9, qdfLev1Lev4 * (1 - qdfLev1Lev2));
-      double qdfLev2Lev5 = Clip3(0.14, 0.9, qdfLev1Lev5 * (1 - qdfLev1Lev2));
-      double qdfLev3Lev4 = Clip3(0.06, 0.9, qdfLev1Lev4 * (1 - qdfLev1Lev3));
-      double qdfLev3Lev5 = Clip3(0.09, 0.9, qdfLev1Lev5 * (1 - qdfLev1Lev3));
-      double qdfLev4Lev5 = Clip3(0.10, 0.9, qdfLev1Lev5 * (1 - qdfLev1Lev4));
+      const Double qdfParaLev2A = 0.5847;
+      const Double qdfParaLev2B = -0.0782;
+      const Double qdfParaLev3A = 0.5468;
+      const Double qdfParaLev3B = -0.1364;
+      const Double qdfParaLev4A = 0.6539;
+      const Double qdfParaLev4B = -0.203;
+      const Double qdfParaLev5A = 0.8623;
+      const Double qdfParaLev5B = -0.4676;
+      Double qdfLev1Lev2 = Clip3(0.12, 0.9, qdfParaLev2A * encRCSeq->getPicPara(2).m_skipRatio + qdfParaLev2B);
+      Double qdfLev1Lev3 = Clip3(0.13, 0.9, qdfParaLev3A * encRCSeq->getPicPara(3).m_skipRatio + qdfParaLev3B);
+      Double qdfLev1Lev4 = Clip3(0.15, 0.9, qdfParaLev4A * encRCSeq->getPicPara(4).m_skipRatio + qdfParaLev4B);
+      Double qdfLev1Lev5 = Clip3(0.20, 0.9, qdfParaLev5A * encRCSeq->getPicPara(5).m_skipRatio + qdfParaLev5B);
+      Double qdfLev2Lev3 = Clip3(0.09, 0.9, qdfLev1Lev3 * (1 - qdfLev1Lev2));
+      Double qdfLev2Lev4 = Clip3(0.12, 0.9, qdfLev1Lev4 * (1 - qdfLev1Lev2));
+      Double qdfLev2Lev5 = Clip3(0.14, 0.9, qdfLev1Lev5 * (1 - qdfLev1Lev2));
+      Double qdfLev3Lev4 = Clip3(0.06, 0.9, qdfLev1Lev4 * (1 - qdfLev1Lev3));
+      Double qdfLev3Lev5 = Clip3(0.09, 0.9, qdfLev1Lev5 * (1 - qdfLev1Lev3));
+      Double qdfLev4Lev5 = Clip3(0.10, 0.9, qdfLev1Lev5 * (1 - qdfLev1Lev4));
 
       lambdaLev1 = 1 / (1 + 2 * (qdfLev1Lev2 + 2 * qdfLev1Lev3 + 4 * qdfLev1Lev4 + 8 * qdfLev1Lev5));
       lambdaLev2 = 1 / (1 + (3 * qdfLev2Lev3 + 5 * qdfLev2Lev4 + 8 * qdfLev2Lev5));
@@ -495,7 +495,7 @@ Void TEncRCGOP::xCalEquaCoeff( TEncRCSeq* encRCSeq, Double* lambdaRatio, Double*
 }
 
 #if JVET_K0390_RATE_CTRL
-double TEncRCGOP::xSolveEqua(TEncRCSeq* encRCSeq, Double targetBpp, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize)
+Double TEncRCGOP::xSolveEqua(TEncRCSeq* encRCSeq, Double targetBpp, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize)
 #else
 Double TEncRCGOP::xSolveEqua( Double targetBpp, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize )
 #endif
@@ -509,8 +509,8 @@ Double TEncRCGOP::xSolveEqua( Double targetBpp, Double* equaCoeffA, Double* equa
     for ( Int j=0; j<GOPSize; j++ )
     {
 #if JVET_K0390_RATE_CTRL
-      double tmpBpp = equaCoeffA[j] * pow(solution, equaCoeffB[j]);
-      double actualBpp = tmpBpp * (double)encRCSeq->getPicPara(encRCSeq->getGOPID2Level(j)).m_validPix / (double)encRCSeq->getNumPixel();
+      Double tmpBpp = equaCoeffA[j] * pow(solution, equaCoeffB[j]);
+      Double actualBpp = tmpBpp * (Double)encRCSeq->getPicPara(encRCSeq->getGOPID2Level(j)).m_validPix / (Double)encRCSeq->getNumPixel();
       fx += actualBpp;
 #else
       fx += equaCoeffA[j] * pow( solution, equaCoeffB[j] );
@@ -794,7 +794,7 @@ Double TEncRCPic::estimatePicLambda( list<TEncRCPic*>& listPreviousPictures, Sli
   }
   if (lastPicValPix > 0)
   {
-    bpp = (double)m_targetBits / (double)lastPicValPix;
+    bpp = (Double)m_targetBits / (Double)lastPicValPix;
   }
 #endif
   
@@ -853,7 +853,7 @@ Double TEncRCPic::estimatePicLambda( list<TEncRCPic*>& listPreviousPictures, Sli
   }
 #if JVET_K0390_RATE_CTRL
   //Avoid different results in different platforms. The problem is caused by the different results of pow() in different platforms.
-  estLambda = double(int64_t(estLambda * (double)LAMBDA_PREC + 0.5)) / (double)LAMBDA_PREC;
+  estLambda = Double(int64_t(estLambda * (Double)LAMBDA_PREC + 0.5)) / (Double)LAMBDA_PREC;
 #endif
   m_estPicLambda = estLambda;
 
@@ -1024,7 +1024,7 @@ Double TEncRCPic::getLCUEstLambda( Double bpp )
   }
 #if JVET_K0390_RATE_CTRL
   //Avoid different results in different platforms. The problem is caused by the different results of pow() in different platforms.
-  estLambda = double(int64_t(estLambda * (double)LAMBDA_PREC + 0.5)) / (double)LAMBDA_PREC;
+  estLambda = Double(int64_t(estLambda * (Double)LAMBDA_PREC + 0.5)) / (Double)LAMBDA_PREC;
 #endif
   return estLambda;
 }
@@ -1115,9 +1115,9 @@ Void TEncRCPic::updateAfterCTU( Int LCUIdx, Int bits, Int QP, Double lambda, Boo
       rcPara.m_validPix = LCUTotalPixels;
     }
 
-    double MSE = m_LCUs[LCUIdx].m_actualMSE;
-    double updatedK = bpp * inputLambda / MSE;
-    double updatedC = MSE / pow(bpp, -updatedK);
+    Double MSE = m_LCUs[LCUIdx].m_actualMSE;
+    Double updatedK = bpp * inputLambda / MSE;
+    Double updatedC = MSE / pow(bpp, -updatedK);
     rcPara.m_alpha = updatedC * updatedK;
     rcPara.m_beta = -updatedK - 1.0;
 
@@ -1161,9 +1161,9 @@ Void TEncRCPic::updateAfterCTU( Int LCUIdx, Int bits, Int QP, Double lambda, Boo
     rcPara.m_validPix = LCUTotalPixels;
   }
 
-  double MSE = m_LCUs[LCUIdx].m_actualMSE;
-  double updatedK = bpp * inputLambda / MSE;
-  double updatedC = MSE / pow(bpp, -updatedK);
+  Double MSE = m_LCUs[LCUIdx].m_actualMSE;
+  Double updatedK = bpp * inputLambda / MSE;
+  Double updatedC = MSE / pow(bpp, -updatedK);
   rcPara.m_alpha = updatedC * updatedK;
   rcPara.m_beta = -updatedK - 1.0;
 
@@ -1213,8 +1213,8 @@ Double TEncRCPic::calAverageLambda()
   Double totalLambdas = 0.0;
   Int numTotalLCUs = 0;
 #if JVET_K0390_RATE_CTRL
-  double totalSSE = 0.0;
-  int totalPixels = 0;
+  Double totalSSE = 0.0;
+  Int totalPixels = 0;
 #endif
   Int i;
   for ( i=0; i<m_numberOfLCU; i++ )
@@ -1244,7 +1244,7 @@ Double TEncRCPic::calAverageLambda()
     }
   }
 #if JVET_K0390_RATE_CTRL
-  setPicMSE(totalPixels > 0 ? totalSSE / (double)totalPixels : 1.0); //1.0 is useless in the following process, just to make sure the divisor not be 0
+  setPicMSE(totalPixels > 0 ? totalSSE / (Double)totalPixels : 1.0); //1.0 is useless in the following process, just to make sure the divisor not be 0
 #endif
 
   Double avgLambda;
@@ -1294,7 +1294,7 @@ Void TEncRCPic::updateAfterPicture( Int actualHeaderBits, Int actualTotalBits, D
     // update parameters
     Double picActualBits = ( Double )m_picActualBits;
 #if JVET_K0390_RATE_CTRL
-    double picActualBpp = picActualBits / (double)m_validPixelsInPic;
+    Double picActualBpp = picActualBits / (Double)m_validPixelsInPic;
 #else
     Double picActualBpp  = picActualBits/(Double)m_numberOfPixel;
 #endif
@@ -1316,9 +1316,9 @@ Void TEncRCPic::updateAfterPicture( Int actualHeaderBits, Int actualTotalBits, D
       rcPara.m_skipRatio = skipRatio;
 #endif
 #if JVET_K0390_RATE_CTRL
-      double avgMSE = getPicMSE();
-      double updatedK = picActualBpp * averageLambda / avgMSE;
-      double updatedC = avgMSE / pow(picActualBpp, -updatedK);
+      Double avgMSE = getPicMSE();
+      Double updatedK = picActualBpp * averageLambda / avgMSE;
+      Double updatedC = avgMSE / pow(picActualBpp, -updatedK);
 
       if (m_frameLevel > 0)  //only use for level > 0
       {
@@ -1358,11 +1358,11 @@ Void TEncRCPic::updateAfterPicture( Int actualHeaderBits, Int actualTotalBits, D
 
 #endif
 #if JVET_K0390_RATE_CTRL
-  double picActualBpp = (double)m_picActualBits / (double)m_validPixelsInPic;
+  Double picActualBpp = (Double)m_picActualBits / (Double)m_validPixelsInPic;
 
-  double avgMSE = getPicMSE();
-  double updatedK = picActualBpp * averageLambda / avgMSE;
-  double updatedC = avgMSE / pow(picActualBpp, -updatedK);
+  Double avgMSE = getPicMSE();
+  Double updatedK = picActualBpp * averageLambda / avgMSE;
+  Double updatedC = avgMSE / pow(picActualBpp, -updatedK);
   if (m_frameLevel > 0)  //only use for level > 0
   {
     rcPara.m_alpha = updatedC * updatedK;
@@ -1471,7 +1471,7 @@ Double TEncRCPic::getLCUEstLambdaAndQP(Double bpp, Int clipPicQP, Int *estQP)
   estLambda = Clip3(minLambda, maxLambda, estLambda);
 #if JVET_K0390_RATE_CTRL
   //Avoid different results in different platforms. The problem is caused by the different results of pow() in different platforms.
-  estLambda = double(int64_t(estLambda * (double)LAMBDA_PREC + 0.5)) / (double)LAMBDA_PREC;
+  estLambda = Double(int64_t(estLambda * (Double)LAMBDA_PREC + 0.5)) / (Double)LAMBDA_PREC;
 #endif
   *estQP = Int( 4.2005 * log(estLambda) + 13.7122 + 0.5 );
   *estQP = Clip3(minQP, maxQP, *estQP);

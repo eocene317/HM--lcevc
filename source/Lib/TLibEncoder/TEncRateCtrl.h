@@ -87,8 +87,8 @@ struct TRCLCU
   Double m_costIntra;
   Int m_targetBitsLeft;
 #if JVET_K0390_RATE_CTRL
-  double m_actualSSE;
-  double m_actualMSE;
+  Double m_actualSSE;
+  Double m_actualMSE;
 #endif
 };
 
@@ -97,10 +97,10 @@ struct TRCParameter
   Double m_alpha;
   Double m_beta;
 #if JVET_K0390_RATE_CTRL
-  int    m_validPix;
+  Int    m_validPix;
 #endif
 #if JVET_M0600_RATE_CTRL
-  double m_skipRatio;
+  Double m_skipRatio;
 #endif
 };
 
@@ -206,7 +206,7 @@ private:
   Int  xEstGOPTargetBits( TEncRCSeq* encRCSeq, Int GOPSize );
   Void   xCalEquaCoeff( TEncRCSeq* encRCSeq, Double* lambdaRatio, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize );
 #if JVET_K0390_RATE_CTRL
-  Double xSolveEqua(TEncRCSeq* encRCSeq, double targetBpp, double* equaCoeffA, double* equaCoeffB, int GOPSize);
+  Double xSolveEqua(TEncRCSeq* encRCSeq, Double targetBpp, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize);
 #else
   Double xSolveEqua( Double targetBpp, Double* equaCoeffA, Double* equaCoeffB, Int GOPSize );
 #endif
@@ -296,8 +296,8 @@ public:
   Void setPicEstLambda( Double lambda )                   { m_picLambda = lambda; }
 
 #if JVET_K0390_RATE_CTRL
-  double getPicMSE()                                      { return m_picMSE; }
-  void  setPicMSE(double avgMSE)                           { m_picMSE = avgMSE; }
+  Double getPicMSE()                                      { return m_picMSE; }
+  void  setPicMSE(Double avgMSE)                           { m_picMSE = avgMSE; }
 #endif
 
 private:

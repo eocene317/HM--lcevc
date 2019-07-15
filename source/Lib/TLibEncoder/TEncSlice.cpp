@@ -966,7 +966,7 @@ Void TEncSlice::compressSlice( TComPic* pcPic, const Bool bCompressEntireSlice, 
         actualQP = pCtu->getQP( 0 );
       }
 #if JVET_K0390_RATE_CTRL
-      m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_actualMSE = (double)pCtu->getTotalDistortion() / (double)m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_numberOfPixel;
+      m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_actualMSE = (Double)pCtu->getTotalDistortion() / (Double)m_pcRateCtrl->getRCPic()->getLCU(ctuTsAddr).m_numberOfPixel;
 #endif
       m_pcRdCost->setLambda(oldLambda, pcSlice->getSPS()->getBitDepths());
 #if JVET_M0600_RATE_CTRL
