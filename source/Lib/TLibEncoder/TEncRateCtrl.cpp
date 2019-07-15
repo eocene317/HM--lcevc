@@ -1277,13 +1277,13 @@ Void TEncRCPic::updateAfterPicture( Int actualHeaderBits, Int actualTotalBits, D
   Double alpha = m_encRCSeq->getPicPara( m_frameLevel ).m_alpha;
   Double beta  = m_encRCSeq->getPicPara( m_frameLevel ).m_beta;
 #if JVET_M0600_RATE_CTRL //calculate the skipRatio of picture
-  double skipRatio = 0;
-  int numOfSkipPixel = 0;
-  for (int LCUIdx = 0; LCUIdx < m_numberOfLCU; LCUIdx++)
+  Double skipRatio = 0;
+  Int numOfSkipPixel = 0;
+  for (Int LCUIdx = 0; LCUIdx < m_numberOfLCU; LCUIdx++)
   {
-    numOfSkipPixel += int(m_encRCSeq->getLCUPara(m_frameLevel, LCUIdx).m_skipRatio*m_LCUs[LCUIdx].m_numberOfPixel);
+    numOfSkipPixel += Int(m_encRCSeq->getLCUPara(m_frameLevel, LCUIdx).m_skipRatio*m_LCUs[LCUIdx].m_numberOfPixel);
   }
-  skipRatio = (double)numOfSkipPixel / (double)m_numberOfPixel;
+  skipRatio = (Double)numOfSkipPixel / (Double)m_numberOfPixel;
 #endif
   if (eSliceType == I_SLICE)
   {
