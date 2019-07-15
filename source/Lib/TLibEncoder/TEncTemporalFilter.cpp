@@ -594,6 +594,7 @@ Void TEncTemporalFilter::bilateralFilter(const TComPicYuv &orgPic,
     const Double sigmaSq = isChroma(compID)? chromaSigmaSq : lumaSigmaSq;
     const Double weightScaling = overallStrength * (isChroma(compID) ? s_chromaFactor : 0.4);
     const Pel maxSampleValue = (1<<m_internalBitDepth[toChannelType(compID)])-1;
+    const Double bitDepthDiffWeighting=1024.0 / (maxSampleValue+1);
 
     for (Int y = 0; y < height; y++, srcPelRow+=srcStride, dstPelRow+=dstStride)
     {
@@ -609,6 +610,7 @@ Void TEncTemporalFilter::bilateralFilter(const TComPicYuv &orgPic,
           const Pel *pCorrectedPelPtr=correctedPics[i].getAddr(compID)+(y*correctedPics[i].getStride(compID)+x);
           const Int refVal = (Int) *pCorrectedPelPtr;
           Double diff = (Double)(refVal - orgVal);
+          diff *= bitDepthDiffWeighting;
           Double diffSq = diff * diff;
           const Int index = std::min(1, std::abs(srcFrameInfo[i].origOffset) - 1);
           const Double weight = weightScaling * s_refStrengths[refStrengthRow][index] * exp(-diffSq / (2 * sigmaSq));
