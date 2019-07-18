@@ -38,7 +38,7 @@
 #include <list>
 #include <algorithm>
 #include <functional>
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "TEncTop.h"
 #include "TEncGOP.h"
@@ -1190,7 +1190,7 @@ printHash(const HashType hashType, const std::string &digestStr)
 // ====================================================================================================================
 Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rcListPic,
                            TComList<TComPicYuv*>& rcListPicYuvRecOut, std::list<AccessUnit>& accessUnitsInGOP,
-                           Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl )
+                           Bool isField, Bool isTff, const InputColourSpaceConversion ip_conversion, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl )
 {
   // TODO: Split this function up.
 
@@ -1952,7 +1952,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
     Double PSNR_Y;
 
-    xCalculateAddPSNRs( isField, isTff, iGOPid, pcPic, accessUnit, rcListPic, dEncTime, snr_conversion, outputLogCtrl, &PSNR_Y );
+    xCalculateAddPSNRs( isField, isTff, iGOPid, pcPic, accessUnit, rcListPic, dEncTime, ip_conversion, snr_conversion, outputLogCtrl, &PSNR_Y );
     
     // Only produce the Green Metadata SEI message with the last picture.
     if( m_pcCfg->getSEIGreenMetadataInfoSEIEnable() && pcSlice->getPOC() == ( m_pcCfg->getFramesToBeEncoded() - 1 )  )
@@ -2198,9 +2198,9 @@ UInt64 TEncGOP::xFindDistortionFrame (TComPicYuv* pcPic0, TComPicYuv* pcPic1, co
   return uiTotalDiff;
 }
 
-Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopFieldFirst, const Int iGOPid, TComPic* pcPic, const AccessUnit&accessUnit, TComList<TComPic*> &rcListPic, const Double dEncTime, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
+Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopFieldFirst, const Int iGOPid, TComPic* pcPic, const AccessUnit&accessUnit, TComList<TComPic*> &rcListPic, const Double dEncTime, const InputColourSpaceConversion ip_conversion, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
 {
-  xCalculateAddPSNR( pcPic, pcPic->getPicYuvRec(), accessUnit, dEncTime, snr_conversion, outputLogCtrl, PSNR_Y );
+  xCalculateAddPSNR( pcPic, pcPic->getPicYuvRec(), accessUnit, dEncTime, ip_conversion, snr_conversion, outputLogCtrl, PSNR_Y );
   //In case of field coding, compute the interlaced PSNR for both fields
   if(isField)
   {
@@ -2264,28 +2264,59 @@ Void TEncGOP::xCalculateAddPSNRs( const Bool isField, const Bool isFieldTopField
   }
 }
 
-Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const AccessUnit& accessUnit, Double dEncTime, const InputColourSpaceConversion conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
+Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const AccessUnit& accessUnit, Double dEncTime, const InputColourSpaceConversion ip_conversion, const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y )
 {
   TEncAnalyze::ResultData result;
 
+  // calculate colour space of reconstructed data
+
   TComPicYuv cscd;
-  if (conversion!=IPCOLOURSPACE_UNCHANGED)
+
+  if (snr_conversion!=IPCOLOURSPACE_UNCHANGED)
   {
     cscd.createWithoutCUInfo(pcPicD->getWidth(COMPONENT_Y), pcPicD->getHeight(COMPONENT_Y), pcPicD->getChromaFormat() );
-    TVideoIOYuv::ColourSpaceConvert(*pcPicD, cscd, conversion, false);
+    TVideoIOYuv::ColourSpaceConvert(*pcPicD, cscd, snr_conversion, false);
   }
-  TComPicYuv &picd=(conversion==IPCOLOURSPACE_UNCHANGED)?*pcPicD : cscd;
+  TComPicYuv &picd=(snr_conversion==IPCOLOURSPACE_UNCHANGED)?*pcPicD : cscd;
+
+  // calculate colour space of source data
+
+  TComPicYuv tmpTrueOrgInInternalMap;
+  const TComPicYuv *pOrgPicYuv=0;
+
+  const bool bOrgDataHasBeenAdjusted=m_pcCfg->getGopBasedTemporalFilterEnabled();
+  if (snr_conversion==IPCOLOURSPACE_UNCHANGED)
+  {
+    // Comparison in same colour space as internal.
+    if (bOrgDataHasBeenAdjusted)
+    {
+      // have to map true original data into internal data format
+      tmpTrueOrgInInternalMap.createWithoutCUInfo(pcPicD->getWidth(COMPONENT_Y), pcPicD->getHeight(COMPONENT_Y), pcPicD->getChromaFormat());
+      TVideoIOYuv::ColourSpaceConvert(*pcPic->getPicYuvTrueOrg(), tmpTrueOrgInInternalMap, ip_conversion, true);
+      pOrgPicYuv = &tmpTrueOrgInInternalMap;
+    }
+    else
+    {
+      // original data not corrupted, so just use original
+      pOrgPicYuv = pcPic->getPicYuvOrg();
+    }
+  }
+  else
+  {
+    // we are doing comparison in true original, which has not been corrupted.
+    pOrgPicYuv = pcPic ->getPicYuvTrueOrg();
+  }
+
 
   //===== calculate PSNR =====
 
 #if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && pcPicD->getChromaFormat() != CHROMA_400)
   {
-    TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
-    Pel*   pOrg[MAX_NUM_COMPONENT];
+    const Pel*   pOrg[MAX_NUM_COMPONENT];
     Double dWeightPel[MAX_NUM_COMPONENT];
     Int    iWeightSize[MAX_NUM_COMPONENT] = {1, 1, 1};
-    Pel*   pRec[MAX_NUM_COMPONENT];
+    const Pel*   pRec[MAX_NUM_COMPONENT];
     Int    iOrgStride[MAX_NUM_COMPONENT], iRecStride[MAX_NUM_COMPONENT];
     Int    iWidth[MAX_NUM_COMPONENT], iHeight[MAX_NUM_COMPONENT], iSize[MAX_NUM_COMPONENT];
     UInt64 uiSSDtemp[MAX_NUM_COMPONENT];
@@ -2366,7 +2397,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
       const ComponentID ch=ComponentID(chan);
-      const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
       const Pel*  pOrg       = pOrgPicYuv->getAddr(ch);
       const Int   iOrgStride = pOrgPicYuv->getStride(ch);
       Pel*  pRec             = picd.getAddr(ch);
@@ -2404,7 +2434,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
       const ComponentID ch  = ComponentID(chan);
-      const TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
       const Pel*  pOrg      = pOrgPicYuv->getAddr(ch);
       const Int   orgStride = pOrgPicYuv->getStride(ch);
       const Pel*  pRec      = picd.getAddr(ch);
@@ -2752,6 +2781,7 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
 
   assert(apcPicRecFields[0]->getChromaFormat()==apcPicRecFields[1]->getChromaFormat());
   const UInt numValidComponents=apcPicRecFields[0]->getNumberValidComponents();
+  const Bool   useTrueOrg = conversion != IPCOLOURSPACE_UNCHANGED || m_pcCfg->getGopBasedTemporalFilterEnabled();
 
 #if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && apcPicRecFields[0]->getChromaFormat() != CHROMA_400 && apcPicRecFields[1]->getChromaFormat() != CHROMA_400)
@@ -2772,7 +2802,7 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
     {
       TComPic *pcPic=apcPicOrgFields[fieldNum];
       TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
-      TComPicYuv *pOrgPicYuv =(conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
+      TComPicYuv *pOrgPicYuv = useTrueOrg ? pcPic ->getPicYuvTrueOrg() : pcPic ->getPicYuvOrg();
 
       for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
       {
@@ -2860,7 +2890,7 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
         TComPic *pcPic=apcPicOrgFields[fieldNum];
         TComPicYuv *pcPicD=apcPicRecFields[fieldNum];
 
-        const Pel*  pOrg    = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
+        const Pel*  pOrg    = useTrueOrg ? pcPic ->getPicYuvTrueOrg()->getAddr(ch) : pcPic ->getPicYuvOrg()->getAddr(ch);
         Pel*  pRec    = pcPicD->getAddr(ch);
         const Int   iStride = pcPicD->getStride(ch);
 
@@ -2901,8 +2931,8 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
         TComPic    *pcPic      = apcPicOrgFields[fieldNum];
         TComPicYuv *pcPicD     = apcPicRecFields[fieldNum];
 
-        const Pel*  pOrg       = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getAddr(ch)   : pcPic ->getPicYuvOrg()->getAddr(ch);
-        const Int   orgStride  = (conversion!=IPCOLOURSPACE_UNCHANGED) ? pcPic ->getPicYuvTrueOrg()->getStride(ch) : pcPic ->getPicYuvOrg()->getStride(ch);
+        const Pel*  pOrg       = useTrueOrg ? pcPic ->getPicYuvTrueOrg()->getAddr(ch)   : pcPic ->getPicYuvOrg()->getAddr(ch);
+        const Int   orgStride  = useTrueOrg ? pcPic ->getPicYuvTrueOrg()->getStride(ch) : pcPic ->getPicYuvOrg()->getStride(ch);
         Pel*        pRec       = pcPicD->getAddr(ch);
         const Int   recStride  = pcPicD->getStride(ch);
         const UInt  bitDepth   = sps.getBitDepth(toChannelType(ch));

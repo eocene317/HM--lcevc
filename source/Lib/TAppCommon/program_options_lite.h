@@ -186,6 +186,7 @@ namespace df
           }
         }
         std::list<std::string> opt_long;
+        std::list<std::string> opt_prefix;
         std::list<std::string> opt_short;
         OptionBase* opt;
       };
@@ -198,6 +199,7 @@ namespace df
       typedef std::map<std::string, NamesPtrList> NamesMap;
       NamesMap opt_long_map;
       NamesMap opt_short_map;
+      NamesMap opt_prefix_map;
     };
 
     /* Class with templated overloaded operator(), for use by Options::addOptions() */

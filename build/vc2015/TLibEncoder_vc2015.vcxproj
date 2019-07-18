@@ -147,6 +147,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\source\Lib\TLibEncoder\TEncTemporalFilter.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibEncoder\NALwrite.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibEncoder\SEIEncoder.cpp" />
     <ClCompile Include="..\..\source\Lib\TLibEncoder\SEIwrite.cpp" />
@@ -169,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\Lib\TLibEncoder\AnnexBwrite.h" />
+    <ClInclude Include="..\..\source\Lib\TLibEncoder\TEncTemporalFilter.h" />
     <ClInclude Include="..\..\source\Lib\TLibEncoder\NALwrite.h" />
     <ClInclude Include="..\..\source\Lib\TLibEncoder\SEIEncoder.h" />
     <ClInclude Include="..\..\source\Lib\TLibEncoder\SEIwrite.h" />

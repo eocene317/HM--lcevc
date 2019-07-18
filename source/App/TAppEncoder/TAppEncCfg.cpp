@@ -53,7 +53,6 @@
 #define MACRO_TO_STRING(val) MACRO_TO_STRING_HELPER(val)
 
 using namespace std;
-namespace po = df::program_options_lite;
 
 enum UIProfileName // this is used for determining profile strings, where multiple profiles map to a single profile idc with various constraint flag combinations
 {
@@ -559,6 +558,25 @@ static inline istream& operator >> (std::istream &in, TAppEncCfg::OptionalValue<
   return in;
 }
 #endif
+
+template <class T1, class T2>
+static inline istream& operator >> (std::istream &in, std::map<T1, T2> &map)
+{
+  T1 key;
+  T2 value;
+  try
+  {
+    in >> key;
+    in >> value;
+  }
+  catch (...)
+  {
+    in.setstate(ios::failbit);
+  }
+
+  map[key] = value;
+  return in;
+}
 
 static Void
 automaticallySelectRExtProfile(const Bool bUsingGeneralRExtTools,
@@ -1174,9 +1192,9 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEICCVAvgLuminanceValue",                         m_ccvSEIAvgLuminanceValue,              0.01, "specifies the CCV avg luminance value  in the content colour volume SEI message")
 #endif
 #if ERP_SR_OV_SEI_MESSAGE
-  ("SEIErpEnabled",                                   m_erpSEIEnabled,                                   false, "Control generation of equirectangular projection SEI messages")           
+  ("SEIErpEnabled",                                   m_erpSEIEnabled,                                   false, "Control generation of equirectangular projection SEI messages")
   ("SEIErpCancelFlag",                                m_erpSEICancelFlag,                                 true, "Indicate that equirectangular projection SEI message cancels the persistence or follows")
-  ("SEIErpPersistenceFlag",                           m_erpSEIPersistenceFlag,                           false, "Specifies the persistence of the equirectangular projection SEI messages")     
+  ("SEIErpPersistenceFlag",                           m_erpSEIPersistenceFlag,                           false, "Specifies the persistence of the equirectangular projection SEI messages")
   ("SEIErpGuardBandFlag",                             m_erpSEIGuardBandFlag,                             false, "Indicate the existence of guard band areas in the constituent picture")
   ("SEIErpGuardBandType",                             m_erpSEIGuardBandType,                                0u, "Indicate the type of the guard band")
   ("SEIErpLeftGuardBandWidth",                        m_erpSEILeftGuardBandWidth,                           0u, "Indicate the width of the guard band on the left side of the constituent picture")
@@ -1187,7 +1205,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEISphereRotationYaw",                            m_sphereRotationSEIYaw,                                0, "Specifies the value of the yaw rotation angle")
   ("SEISphereRotationPitch",                          m_sphereRotationSEIPitch,                              0, "Specifies the value of the pitch rotation angle")
   ("SEISphereRotationRoll",                           m_sphereRotationSEIRoll,                               0, "Specifies the value of the roll rotation angle")
-  ("SEIOmniViewportEnabled",                          m_omniViewportSEIEnabled,                          false, "Control generation of omni viewport SEI messages")   
+  ("SEIOmniViewportEnabled",                          m_omniViewportSEIEnabled,                          false, "Control generation of omni viewport SEI messages")
   ("SEIOmniViewportId",                               m_omniViewportSEIId,                                  0u, "An identifying number that may be used to identify the purpose of the one or more recommended viewport regions")
   ("SEIOmniViewportCancelFlag",                       m_omniViewportSEICancelFlag,                        true, "Indicate that omni viewport SEI message cancels the persistence or follows")
   ("SEIOmniViewportPersistenceFlag",                  m_omniViewportSEIPersistenceFlag,                  false, "Specifies the persistence of the omni viewport SEI messages")
@@ -1234,6 +1252,12 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIRegionalNestingFileRoot,-rns",                 m_regionalNestingSEIFileRoot,                    string(""), "Regional nesting SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-rns rns\" will search for files rns_0.txt, rns_1.txt, ...")
 #endif
   ;
+
+  opts.addOptions()
+    ("TemporalFilter", m_gopBasedTemporalFilterEnabled, false, "Enable GOP based temporal filter. Disabled per default")
+    ("TemporalFilterFutureReference", m_gopBasedTemporalFilterFutureReference, true, "Enable referencing of future frames in the GOP based temporal filter. This is typically disabled for Low Delay configurations.")
+    ("TemporalFilterStrengthFrame*", m_gopBasedTemporalFilterStrengths, std::map<Int, Double>(), "Strength for every * frame in GOP based temporal filter, where * is an integer."
+                                                                                                   " E.g. --TemporalFilterStrengthFrame8 0.95 will enable GOP based temporal filter at every 8th frame with strength 0.95");
 
 #if EXTENSION_360_VIDEO
   TExt360AppEncCfg::TExt360AppEncCfgContext ext360CfgContext;
@@ -2804,6 +2828,11 @@ Void TAppEncCfg::xCheckParameter()
     }
   }
 #endif
+
+  if (m_gopBasedTemporalFilterEnabled)
+  {
+    xConfirmPara(m_temporalSubsampleRatio != 1, "GOP Based Temporal Filter only support Temporal sub-sample ratio 1");
+  }
 
 #if EXTENSION_360_VIDEO
   check_failed |= m_ext360.verifyParameters();

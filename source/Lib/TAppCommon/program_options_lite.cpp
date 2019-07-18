@@ -96,8 +96,17 @@ namespace df
         }
         else
         {
-          names->opt_long.push_back(opt_name);
-          opt_long_map[opt_name].push_back(names);
+          if (opt_name.size() > 0 && opt_name.back() == '*')
+          {
+            string prefix_name = opt_name.substr(0, opt_name.size() - 1);
+            names->opt_prefix.push_back(prefix_name);
+            opt_prefix_map[prefix_name].push_back(names);
+          }
+          else
+          {
+            names->opt_long.push_back(opt_name);
+            opt_long_map[opt_name].push_back(names);
+          }
         }
         opt_start += opt_end + 1;
       }
@@ -149,6 +158,10 @@ namespace df
       if (!entry.opt_long.empty())
       {
         out << "--" << entry.opt_long.front();
+      }
+      else if (!entry.opt_prefix.empty())
+      {
+        out << "--" << entry.opt_prefix.front() << "*";
       }
     }
 
@@ -271,6 +284,7 @@ namespace df
     bool OptionWriter::storePair(bool allow_long, bool allow_short, const string& name, const string& value)
     {
       bool found = false;
+      std::string val = value;
       Options::NamesMap::iterator opt_it;
       if (allow_long)
       {
@@ -291,6 +305,22 @@ namespace df
         }
       }
 
+      bool allow_prefix = allow_long;
+      if (allow_prefix && !found)
+      {
+        for (opt_it = opts.opt_prefix_map.begin(); opt_it != opts.opt_prefix_map.end(); opt_it++)
+        {
+          std::string name_prefix = name.substr(0, opt_it->first.size());
+          if (name_prefix == opt_it->first)
+          {
+            // prepend value matching *
+            val = name.substr(name_prefix.size()) + std::string(" ") + val;
+            found = true;
+            break;
+          }
+        }
+      }
+
       if (!found)
       {
         error_reporter.error(where())
@@ -298,7 +328,7 @@ namespace df
         return false;
       }
 
-      setOptions((*opt_it).second, value, error_reporter);
+      setOptions((*opt_it).second, val, error_reporter);
       return true;
     }
 

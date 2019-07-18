@@ -39,6 +39,7 @@
 #define __TAPPENCCFG__
 
 #include "TLibCommon/CommonDef.h"
+#include "TAppCommon/program_options_lite.h"
 
 #include "TLibEncoder/TEncCfg.h"
 #if EXTENSION_360_VIDEO
@@ -46,6 +47,9 @@
 #endif
 #include <sstream>
 #include <vector>
+
+namespace po = df::program_options_lite;
+
 //! \ingroup TAppEncoder
 //! \{
 
@@ -427,7 +431,11 @@ protected:
   std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
-#endif     
+#endif
+  Bool                  m_gopBasedTemporalFilterEnabled;               ///< GOP-based Temporal Filter enable/disable
+  Bool                  m_gopBasedTemporalFilterFutureReference;       ///< Enable/disable future frame references in the GOP-based Temporal Filter
+  std::map<Int, Double> m_gopBasedTemporalFilterStrengths;             ///< Filter strength per frame for the GOP-based Temporal Filter
+
   // weighted prediction
   Bool      m_useWeightedPred;                    ///< Use of weighted prediction in P slices
   Bool      m_useWeightedBiPred;                  ///< Use of bi-directional weighted prediction in B slices

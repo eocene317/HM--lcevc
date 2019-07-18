@@ -68,6 +68,9 @@
     <ClCompile Include="..\..\source\Lib\TLibEncoder\SEIEncoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\Lib\TLibEncoder\TEncTemporalFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\source\Lib\TLibEncoder\AnnexBwrite.h">
@@ -137,6 +140,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\source\Lib\TLibEncoder\SEIEncoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\source\Lib\TLibEncoder\TEncTemporalFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

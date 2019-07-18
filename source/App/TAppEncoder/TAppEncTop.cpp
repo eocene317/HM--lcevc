@@ -44,6 +44,7 @@
 #include <iomanip>
 
 #include "TAppEncTop.h"
+#include "TLibEncoder/TEncTemporalFilter.h"
 #include "TLibEncoder/AnnexBwrite.h"
 
 #if EXTENSION_360_VIDEO
@@ -406,6 +407,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setOmniViewportSEIHorRange                           ( m_omniViewportSEIHorRange );         
   m_cTEncTop.setOmniViewportSEIVerRange                           ( m_omniViewportSEIVerRange );         
 #endif
+  m_cTEncTop.setGopBasedTemporalFilterEnabled                     ( m_gopBasedTemporalFilterEnabled );
 #if CMP_SEI_MESSAGE
   m_cTEncTop.setCmpSEIEnabled                                     (m_cmpSEIEnabled);
   m_cTEncTop.setCmpSEICmpCancelFlag                               (m_cmpSEICmpCancelFlag);
@@ -609,7 +611,14 @@ Void TAppEncTop::encode()
 #if EXTENSION_360_VIDEO
   TExt360AppEncTop           ext360(*this, m_cTEncTop.getGOPEncoder()->getExt360Data(), *(m_cTEncTop.getGOPEncoder()), *pcPicYuvOrg);
 #endif
-
+  TEncTemporalFilter temporalFilter;
+  if (m_gopBasedTemporalFilterEnabled)
+  {
+    temporalFilter.init(m_FrameSkip, m_inputBitDepth, m_MSBExtendedBitDepth, m_internalBitDepth, m_iSourceWidth, m_iSourceHeight,
+      m_aiPad, m_framesToBeEncoded, m_bClipInputVideoToRec709Range, m_inputFileName, m_chromaFormatIDC,
+      m_inputColourSpaceConvert, m_iQP, m_iGOPSize, m_gopBasedTemporalFilterStrengths,
+      m_gopBasedTemporalFilterFutureReference);
+  }
   while ( !bEos )
   {
     // get buffers
@@ -629,6 +638,11 @@ Void TAppEncTop::encode()
     m_cTVideoIOYuvInputFile.read( pcPicYuvOrg, &cPicYuvTrueOrg, ipCSC, m_aiPad, m_InputChromaFormatIDC, m_bClipInputVideoToRec709Range );
 #endif
 
+    if (m_gopBasedTemporalFilterEnabled)
+    {
+      temporalFilter.filter(pcPicYuvOrg, m_iFrameRcvd);
+    }
+
     // increase number of received frames
     m_iFrameRcvd++;
 
@@ -647,11 +661,11 @@ Void TAppEncTop::encode()
     // call encoding function for one frame
     if ( m_isField )
     {
-      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded, m_isTopFieldFirst );
+      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, ipCSC, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded, m_isTopFieldFirst );
     }
     else
     {
-      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded );
+      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, ipCSC, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded );
     }
 
     // write bistream to file if necessary
