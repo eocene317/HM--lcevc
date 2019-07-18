@@ -39,9 +39,7 @@
 #include "../TLibCommon/TComChromaFormat.h"
 
 #include <cmath>
-#if JVET_K0390_RATE_CTRL
-#define LAMBDA_PREC                                           1000000
-#endif
+
 using namespace std;
 
 //sequence level

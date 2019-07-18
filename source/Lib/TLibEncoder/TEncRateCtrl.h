@@ -71,6 +71,9 @@ const Double g_RCAlphaMinValue = 0.05;
 const Double g_RCAlphaMaxValue = 500.0;
 const Double g_RCBetaMinValue  = -3.0;
 const Double g_RCBetaMaxValue  = -0.1;
+#if JVET_K0390_RATE_CTRL
+const Int LAMBDA_PREC = 1000000;
+#endif
 
 #define ALPHA     6.7542;
 #define BETA1     1.2517
