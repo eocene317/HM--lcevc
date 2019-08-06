@@ -378,6 +378,13 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       xParseSEIRegionWisePacking((SEIRegionWisePacking&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
 #endif
+
+#if AR_SEI_MESSAGE
+    case SEI::ANNOTATED_REGIONS:
+      sei = new SEIAnnotatedRegions;
+      xParseSEIAnnotatedRegions((SEIAnnotatedRegions&)*sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+#endif
 #if RNSEI
     case SEI::REGIONAL_NESTING:
       sei = new SEIRegionalNesting;
@@ -1624,6 +1631,121 @@ Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, st
   {
     sei.m_omniViewportRegions.clear();
     sei.m_omniViewportPersistenceFlag=false;
+  }
+}
+#endif
+
+#if AR_SEI_MESSAGE
+Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+  UInt val;
+
+  sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_cancel_flag");                                   sei.m_annotatedRegionsCancelFlag = val;
+  if (!sei.m_annotatedRegionsCancelFlag)
+  {
+    sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_not_opt_for_view_flag");                       sei.m_annotatedRegionsNotOptimizedForViewFlag = val;
+    sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_true_motion_flag");                            sei.m_annotatedRegionsTrueMotionFlag = val;
+    sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_occluded_objects_flag");                       sei.m_annotatedRegionsOccludedObjsFlag = val;
+    sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_partial_objects_flag_present_flag");           sei.m_annotatedRegionsPartialObjsFlagPresentFlag = val;
+    sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_object_label_present_flag");                   sei.m_annotatedRegionsObjLabelPresentFlag = val;
+    sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_object_conf_info_present_flag");               sei.m_annotatedRegionsObjDetConfInfoPresentFlag = val;
+    if (sei.m_annotatedRegionsObjDetConfInfoPresentFlag)
+    {
+      sei_read_code(pDecodedMessageOutputStream, 4, val, "annotated_regions_object_detection_conf_length_minus_1"); sei.m_annotatedRegionsObjDetConfLength = (val + 1);
+    }
+    if (sei.m_annotatedRegionsObjLabelPresentFlag)
+    {
+      sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_object_label_language_present_flag");      sei.m_annotatedRegionsObjLabelLangPresentFlag = val;
+      if (sei.m_annotatedRegionsObjLabelLangPresentFlag)
+      {
+        // byte alignment
+        while (m_pcBitstream->getNumBitsRead() % 8 != 0)
+        {
+          UInt code;
+          sei_read_flag(pDecodedMessageOutputStream, code, "ar_zero_bit");
+        }
+        do
+        {
+          sei_read_code(pDecodedMessageOutputStream, 8, val, "annotated_regions_label_language");
+          if (val)
+          {
+            sei.m_annotatedRegionsObjLabelLang.push_back((char)val);
+          }
+        } while (val != '\0');
+      }
+    }
+
+    UInt numLabelUpdates;
+    sei_read_uvlc(pDecodedMessageOutputStream, numLabelUpdates, "annotated_regions_num_label_updates");         sei.m_annotatedRegionsNumLabelUpdates = numLabelUpdates;
+    sei.m_annotatedLabels.clear();
+    for (Int i = 0; i < numLabelUpdates; i++)
+    {
+      SEIAnnotatedRegions::AnnotatedLabel &ar = sei.m_annotatedLabels[i];
+      sei_read_uvlc(pDecodedMessageOutputStream, val, "annotated_regions_label_idx");               ar.labelIdx = val;
+      sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_label_cancel_flag");       ar.bLabelCancelFlag = val;
+      if (!ar.bLabelCancelFlag)
+      {
+        // byte alignment
+        while (m_pcBitstream->getNumBitsRead() % 8 != 0)
+        {
+          UInt code;
+          sei_read_flag(pDecodedMessageOutputStream, code, "ar_zero_bit");
+        }
+        do
+        {
+          sei_read_code(pDecodedMessageOutputStream, 8, val, "annotated_regions_label");
+          if (val)
+          {
+            ar.label.push_back((char)val);
+          }
+        } while (val != '\0');
+      }
+    }
+
+    UInt numObjUpdates;
+    sei_read_uvlc(pDecodedMessageOutputStream, numObjUpdates, "annotated_regions_num_object_updates");        sei.m_annotatedRegionsNumObjUpdates = numObjUpdates;
+    sei.m_annotatedRegions.clear();
+    for (UInt i = 0; i < numObjUpdates; i++)
+    {
+      UInt objIdx;
+      sei_read_uvlc(pDecodedMessageOutputStream, objIdx, "annotated_regions_obj_idx");
+      SEIAnnotatedRegions::AnnotatedRegion &ar = sei.m_annotatedRegions[i];                           ar.objIdx = objIdx;
+      sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_obj_cancel_flag");                           ar.bObjCancelFlag = val;
+      if (!ar.bObjCancelFlag)
+      {
+        if (sei.m_annotatedRegionsObjLabelPresentFlag)
+        {
+          sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_obj_label_update_flag");             ar.bObjLabelUpdateFlag = val;
+          if (ar.bObjLabelUpdateFlag)
+          {
+            sei_read_uvlc(pDecodedMessageOutputStream, val, "annotated_regions_label_idc");                      ar.objLabelIdc = val;
+          }
+        }
+        sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_bounding_box_update_flag");              ar.bObjBoundBoxUpdateFlag = val;
+        if (ar.bObjBoundBoxUpdateFlag)
+        {
+          // byte alignment
+          while (m_pcBitstream->getNumBitsRead() % 8 != 0)
+          {
+            UInt code;
+            sei_read_flag(pDecodedMessageOutputStream, code, "ar_zero_bit");
+          }
+          sei_read_code(pDecodedMessageOutputStream, 16, val, "annotated_regions_object_top");                      ar.boundingBoxTop = val;
+          sei_read_code(pDecodedMessageOutputStream, 16, val, "annotated_regions_object_left");                     ar.boundingBoxLeft = val;
+          sei_read_code(pDecodedMessageOutputStream, 16, val, "annotated_regions_object_width");                    ar.boundingBoxWidth = val;
+          sei_read_code(pDecodedMessageOutputStream, 16, val, "annotated_regions_object_height");                   ar.boundingBoxHeight = val;
+          if (sei.m_annotatedRegionsPartialObjsFlagPresentFlag)
+          {
+            sei_read_flag(pDecodedMessageOutputStream, val, "annotated_regions_partial_obj_flag");                ar.bPartObjFlag = val;
+          }
+          if (sei.m_annotatedRegionsObjDetConfInfoPresentFlag)
+          {
+            sei_read_code(pDecodedMessageOutputStream, sei.m_annotatedRegionsObjDetConfLength, val, "annotated_regions_object_conf"); ar.objConf = val;
+          }
+        }
+      }
+    }
   }
 }
 #endif

@@ -38,6 +38,7 @@
 #include <list>
 #include <vector>
 #include <cstring>
+#include <map>
 
 #include "CommonDef.h"
 #include "libmd5/MD5.h"
@@ -111,6 +112,9 @@ public:
 #endif
 #if MCTS_EXTRACTION
     MCTS_EXTRACTION_INFO_SET             = 158,
+#endif
+#if AR_SEI_MESSAGE
+    ANNOTATED_REGIONS                    = 202,
 #endif
   };
 
@@ -842,6 +846,57 @@ public:
   Bool  m_omniViewportPersistenceFlag;
   UChar m_omniViewportCntMinus1;
   std::vector<OmniViewport> m_omniViewportRegions;  
+};
+#endif
+
+#if AR_SEI_MESSAGE
+class SEIAnnotatedRegions : public SEI
+{
+public:
+  PayloadType payloadType() const { return ANNOTATED_REGIONS; }
+  SEIAnnotatedRegions() {}
+  virtual ~SEIAnnotatedRegions() {}
+
+  Void copyFrom(const SEIAnnotatedRegions &seiAnnotaedRegions)
+  {
+    (*this) = seiAnnotaedRegions;
+  }
+
+  struct AnnotatedRegion
+  {
+    Bool bObjCancelFlag;
+    Bool bObjLabelUpdateFlag;
+    UInt objIdx;
+    UInt objLabelIdc;            // only valid if !bNewObjFlag && m_annotatedRegionsObjLabelPresentFlag
+    Bool bObjBoundBoxUpdateFlag; // only valid if !bNewObjFlag. (not required when not valid)
+    UInt boundingBoxTop;         // only valid if bObjBoundBoxUpdateFlag or bNewObjFlag
+    UInt boundingBoxLeft;
+    UInt boundingBoxWidth;
+    UInt boundingBoxHeight;
+    Bool bPartObjFlag;
+    UInt objConf;                // only valid if m_annotatedRegionsObjDetConfLength
+  };
+  struct AnnotatedLabel
+  {
+    UInt        labelIdx;
+    Bool        bLabelCancelFlag;
+    std::string label;
+  };
+  Bool      m_annotatedRegionsSEIEnabled;
+  Bool      m_annotatedRegionsCancelFlag;
+  Bool      m_annotatedRegionsNotOptimizedForViewFlag;
+  Bool      m_annotatedRegionsTrueMotionFlag;
+  Bool      m_annotatedRegionsOccludedObjsFlag;
+  Bool      m_annotatedRegionsPartialObjsFlagPresentFlag;
+  Bool      m_annotatedRegionsObjLabelPresentFlag;
+  Bool      m_annotatedRegionsObjDetConfInfoPresentFlag;
+  UInt      m_annotatedRegionsObjDetConfLength; //Only valid if m_annotatedRegionsObjDetConfInfoPresentFlag is present
+  Bool      m_annotatedRegionsObjLabelLangPresentFlag; //Only valid if m_annotatedRegionsObjLabelPresentFlag is present
+  std::string m_annotatedRegionsObjLabelLang;
+  UInt      m_annotatedRegionsNumLabelUpdates;
+  UInt      m_annotatedRegionsNumObjUpdates;
+  std::map<UInt, AnnotatedRegion> m_annotatedRegions;
+  std::map<UInt, AnnotatedLabel> m_annotatedLabels;
 };
 #endif
 

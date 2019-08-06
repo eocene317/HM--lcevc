@@ -69,6 +69,10 @@ private:
 
   SEIColourRemappingInfo*         m_pcSeiColourRemappingInfoPrevious;
 
+#if AR_SEI_MESSAGE
+  SEIAnnotatedRegions*            m_pcSeiAnnotatedRegions;       ///< Annotated regions SEI message
+#endif
+
 public:
   TAppDecTop();
   virtual ~TAppDecTop() {}
@@ -90,6 +94,9 @@ protected:
 private:
   Void applyColourRemapping(const TComPicYuv& pic, SEIColourRemappingInfo& pCriSEI, const TComSPS &activeSPS);
   Void xOutputColourRemapPic(TComPic* pcPic);
+#if AR_SEI_MESSAGE
+  Void xOutputAnnotatedRegions(TComPic* pcPic);
+#endif
 };
 
 //! \}

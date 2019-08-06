@@ -324,6 +324,9 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
 #if MCTS_EXTRACTION
     case SEI::MCTS_EXTRACTION_INFO_SET:             return "MCTS extraction information";
 #endif
+#if AR_SEI_MESSAGE
+    case SEI::ANNOTATED_REGIONS:                    return "Annotated Region";
+#endif
     default:                                        return "Unknown";
   }
 }

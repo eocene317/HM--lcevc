@@ -58,6 +58,9 @@
 TAppDecTop::TAppDecTop()
 : m_iPOCLastDisplay(-MAX_INT)
  ,m_pcSeiColourRemappingInfoPrevious(NULL)
+#if AR_SEI_MESSAGE
+ ,m_pcSeiAnnotatedRegions(NULL)
+#endif
 {
 }
 
@@ -122,6 +125,19 @@ Void TAppDecTop::decode()
       exit(EXIT_FAILURE);
     }
   }
+
+#if AR_SEI_MESSAGE
+  // clear contents of annotated-Regions-SEI output file
+  if (!m_annotatedRegionsSEIFileName.empty())
+  {
+    std::ofstream ofile(m_annotatedRegionsSEIFileName.c_str());
+    if (!ofile.good() || !ofile.is_open())
+    {
+      fprintf(stderr, "\nUnable to open file '%s' for writing annotated-Regions-SEI\n", m_annotatedRegionsSEIFileName.c_str());
+      exit(EXIT_FAILURE);
+    }
+  }
+#endif
 
   // main decoder loop
   Bool openedReconFile = false; // reconstruction file not yet opened. (must be performed after SPS is seen)
@@ -284,6 +300,13 @@ Void TAppDecTop::xDestroyDecLib()
     delete m_pcSeiColourRemappingInfoPrevious;
     m_pcSeiColourRemappingInfoPrevious = NULL;
   }
+#if AR_SEI_MESSAGE
+  if (m_pcSeiAnnotatedRegions != NULL)
+  {
+    delete m_pcSeiAnnotatedRegions;
+    m_pcSeiAnnotatedRegions = NULL;
+  }
+#endif
 }
 
 Void TAppDecTop::xInitDecLib()
@@ -307,6 +330,13 @@ Void TAppDecTop::xInitDecLib()
     delete m_pcSeiColourRemappingInfoPrevious;
     m_pcSeiColourRemappingInfoPrevious = NULL;
   }
+#if AR_SEI_MESSAGE
+  if (m_pcSeiAnnotatedRegions != NULL)
+  {
+    delete m_pcSeiAnnotatedRegions;
+    m_pcSeiAnnotatedRegions = NULL;
+  }
+#endif
 }
 
 /** \param pcListPic list of pictures to be written to file
@@ -462,6 +492,13 @@ Void TAppDecTop::xWriteOutput( TComList<TComPic*>* pcListPic, UInt tId )
                                          NUM_CHROMA_FORMAT, m_bClipOutputVideoToRec709Range  );
         }
 
+#if AR_SEI_MESSAGE
+        if (!m_annotatedRegionsSEIFileName.empty())
+        {
+          xOutputAnnotatedRegions(pcPic);
+        }
+#endif
+
         if (!m_colourRemapSEIFileName.empty())
         {
           xOutputColourRemapPic(pcPic);
@@ -590,6 +627,13 @@ Void TAppDecTop::xFlushOutput( TComList<TComPic*>* pcListPic )
           xOutputColourRemapPic(pcPic);
         }
 
+#if AR_SEI_MESSAGE
+        if (!m_annotatedRegionsSEIFileName.empty())
+        {
+          xOutputAnnotatedRegions(pcPic);
+        }
+#endif
+
         // update POC of display order
         m_iPOCLastDisplay = pcPic->getPOC();
 
@@ -668,6 +712,151 @@ Void TAppDecTop::xOutputColourRemapPic(TComPic* pcPic)
     }
   }
 }
+
+#if AR_SEI_MESSAGE
+Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
+{
+
+  // Check if any annotated region SEI has arrived
+  std::map<UInt, SEIAnnotatedRegions::AnnotatedLabel>::iterator labIt;
+  std::map<UInt, SEIAnnotatedRegions::AnnotatedRegion>::iterator objIt;
+  SEIMessages annotatedRegionSEIs = getSeisByType(pcPic->getSEIs(), SEI::ANNOTATED_REGIONS);
+  SEIAnnotatedRegions *seiAnnotatedRegions = ( annotatedRegionSEIs.size() > 0 ) ? (SEIAnnotatedRegions*) *(annotatedRegionSEIs.begin()) : NULL;
+  if (seiAnnotatedRegions)
+  {
+    if (annotatedRegionSEIs.size() > 1)
+    {
+      printf ("Warning: Got multiple Annotated Regions SEI messages. Using first.");
+    }
+    
+    if (m_pcSeiAnnotatedRegions == NULL)
+    {
+        m_pcSeiAnnotatedRegions = new SEIAnnotatedRegions();
+        m_pcSeiAnnotatedRegions->copyFrom(*seiAnnotatedRegions);
+    }
+    else 
+    {
+      if (seiAnnotatedRegions->m_annotatedRegionsCancelFlag)
+      {
+        m_pcSeiAnnotatedRegions->m_annotatedRegions.clear();
+        m_pcSeiAnnotatedRegions->m_annotatedLabels.clear();
+      }
+      else
+      {
+        // Label pool updates
+        if (seiAnnotatedRegions->m_annotatedRegionsObjLabelPresentFlag)
+        {
+          int numLabelUpdates = seiAnnotatedRegions->m_annotatedRegionsNumLabelUpdates;
+          for (UInt i = 0; i < numLabelUpdates; i++)
+          {
+            UInt labIdx = seiAnnotatedRegions->m_annotatedLabels[i].labelIdx;
+            labIt = m_pcSeiAnnotatedRegions->m_annotatedLabels.find(labIdx);
+            //New label, needs to be appended to the existing pool
+            if (labIt == m_pcSeiAnnotatedRegions->m_annotatedLabels.end())
+            {
+              m_pcSeiAnnotatedRegions->m_annotatedLabels[labIdx] = seiAnnotatedRegions->m_annotatedLabels[i];
+            }
+            //Existing label, modifications to be done
+            else
+            {
+              //Modify the existing label
+              if (!m_pcSeiAnnotatedRegions->m_annotatedLabels.at(labIdx).bLabelCancelFlag)
+              {
+                m_pcSeiAnnotatedRegions->m_annotatedLabels.at(labIdx).label = seiAnnotatedRegions->m_annotatedLabels[i].label;
+              }
+              //Label is removed from the pool
+              else
+              {
+                m_pcSeiAnnotatedRegions->m_annotatedLabels.erase(labIdx);
+              }
+            }
+          }
+        }
+        
+        //Object updates
+        for (UInt i = 0; i < seiAnnotatedRegions->m_annotatedRegionsNumObjUpdates; i++)
+        {
+          UInt objIdx = seiAnnotatedRegions->m_annotatedRegions[i].objIdx;
+          objIt = m_pcSeiAnnotatedRegions->m_annotatedRegions.find(objIdx);
+          //New object arrived, needs to be appended to the list
+          if (objIt ==  m_pcSeiAnnotatedRegions->m_annotatedRegions.end())
+          {
+            m_pcSeiAnnotatedRegions->m_annotatedRegions[objIdx] = seiAnnotatedRegions->m_annotatedRegions[i];
+          }
+          //Existing object, modifications to be done
+          else
+          {
+            SEIAnnotatedRegions::AnnotatedRegion &annObjInfo = m_pcSeiAnnotatedRegions->m_annotatedRegions[objIdx];
+            if (!seiAnnotatedRegions->m_annotatedRegions[i].bObjCancelFlag)
+            {
+              if (seiAnnotatedRegions->m_annotatedRegionsObjLabelPresentFlag)
+              {
+                if (seiAnnotatedRegions->m_annotatedRegions[i].bObjLabelUpdateFlag)
+                {
+                  annObjInfo.objLabelIdc = seiAnnotatedRegions->m_annotatedRegions[i].objLabelIdc;
+                }
+              }
+              if (seiAnnotatedRegions->m_annotatedRegions[i].bObjBoundBoxUpdateFlag)
+              {
+                annObjInfo.boundingBoxTop = seiAnnotatedRegions->m_annotatedRegions[i].boundingBoxTop;
+                annObjInfo.boundingBoxLeft = seiAnnotatedRegions->m_annotatedRegions[i].boundingBoxLeft;
+                annObjInfo.boundingBoxWidth = seiAnnotatedRegions->m_annotatedRegions[i].boundingBoxWidth;
+                annObjInfo.boundingBoxHeight = seiAnnotatedRegions->m_annotatedRegions[i].boundingBoxHeight;
+                if (seiAnnotatedRegions->m_annotatedRegionsPartialObjsFlagPresentFlag)
+                {
+                  annObjInfo.bPartObjFlag = seiAnnotatedRegions->m_annotatedRegions[i].bPartObjFlag;
+                }
+                if (seiAnnotatedRegions->m_annotatedRegionsObjDetConfInfoPresentFlag)
+                {
+                  annObjInfo.objConf = seiAnnotatedRegions->m_annotatedRegions[i].objConf;
+                }
+              }
+            }
+            //Object no longer needs to be tracked
+            else
+            {
+              m_pcSeiAnnotatedRegions->m_annotatedRegions.erase(objIdx);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  UInt numObjs = (UInt)m_pcSeiAnnotatedRegions->m_annotatedRegions.size();
+  if (numObjs > 0)
+  {
+    FILE *fp_persist = fopen(m_annotatedRegionsSEIFileName.c_str(), "ab");
+    if (fp_persist == NULL)
+    {
+      std::cout << "Not able to open file for writing persist SEI messages" << std::endl;
+    }
+    else
+    {
+      fprintf(fp_persist, "\n");
+      fprintf(fp_persist, "Number of objects = %d\n", numObjs);
+      for (auto it = m_pcSeiAnnotatedRegions->m_annotatedRegions.begin(); it != m_pcSeiAnnotatedRegions->m_annotatedRegions.end(); ++it)
+      {
+        fprintf(fp_persist, "Object Idx = %d\n", it->first);
+        fprintf(fp_persist, "Object Top = %d\n", it->second.boundingBoxTop);
+        fprintf(fp_persist, "Object Left = %d\n", it->second.boundingBoxLeft);
+        fprintf(fp_persist, "Object Width = %d\n", it->second.boundingBoxWidth);
+        fprintf(fp_persist, "Object Height = %d\n", it->second.boundingBoxHeight);
+        if (m_pcSeiAnnotatedRegions->m_annotatedRegionsObjLabelPresentFlag)
+        {
+          fprintf(fp_persist, "Object Label = %s\n", m_pcSeiAnnotatedRegions->m_annotatedLabels[it->second.objLabelIdc].label.c_str());
+        }
+        if (m_pcSeiAnnotatedRegions->m_annotatedRegionsObjDetConfInfoPresentFlag)
+        {
+          fprintf(fp_persist, "Object Conf = %d\n", it->second.objConf);
+        }
+      }
+      fclose(fp_persist);
+    }
+  }
+}
+#endif
+
 
 // compute lut from SEI
 // use at lutPoints points aligned on a power of 2 value

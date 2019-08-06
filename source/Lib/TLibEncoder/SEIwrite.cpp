@@ -207,6 +207,12 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
     xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
     break;
 #endif
+
+#if AR_SEI_MESSAGE
+  case SEI::ANNOTATED_REGIONS:
+    xWriteSEIAnnotatedRegions(*static_cast<const SEIAnnotatedRegions*>(&sei), sps);
+    break;
+#endif
   default:
     assert(!"Trying to write unhandled SEI message");
     break;
@@ -1364,6 +1370,90 @@ Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting
       WRITE_CODE(listOfRegions[j],               8, "regional_nesting_sei_region_idx[i][j]");
     }
     xWriteSEImessage(bs, nestedSEI, sps);
+  }
+}
+#endif
+#if AR_SEI_MESSAGE
+Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const TComSPS *sps)
+{
+  WRITE_FLAG(sei.m_annotatedRegionsCancelFlag, "annotated_regions_cancel_flag");
+  if (!sei.m_annotatedRegionsCancelFlag)
+  {
+    WRITE_FLAG(sei.m_annotatedRegionsNotOptimizedForViewFlag, "annotated_regions_not_opt_for_view_flag");
+    WRITE_FLAG(sei.m_annotatedRegionsTrueMotionFlag, "annotated_regions_true_motion_flag");
+    WRITE_FLAG(sei.m_annotatedRegionsOccludedObjsFlag, "annotated_regions_occluded_objects_flag");
+    WRITE_FLAG(sei.m_annotatedRegionsPartialObjsFlagPresentFlag, "annotated_regions_partial_objects_flag_present_flag");
+    WRITE_FLAG(sei.m_annotatedRegionsObjLabelPresentFlag, "annotated_regions_object_label_present_flag");
+    WRITE_FLAG(sei.m_annotatedRegionsObjDetConfInfoPresentFlag, "annotated_regions_object_conf_info_present_flag");
+    if (sei.m_annotatedRegionsObjDetConfInfoPresentFlag)
+    {
+      WRITE_CODE((sei.m_annotatedRegionsObjDetConfLength - 1), 4, "annotated_regions_object_detection_conf_length_minus_1");
+    }
+    if (sei.m_annotatedRegionsObjLabelPresentFlag)
+    {
+      WRITE_FLAG(sei.m_annotatedRegionsObjLabelLangPresentFlag, "annotated_regions_object_detection_label_language_present_flag");
+      if (sei.m_annotatedRegionsObjLabelLangPresentFlag)
+      {
+        xWriteByteAlign();
+        for (UInt j = 0; j < strlen(sei.m_annotatedRegionsObjLabelLang.c_str()); j++)
+        {
+          UChar ch = sei.m_annotatedRegionsObjLabelLang.c_str()[j];
+          WRITE_CODE(ch, 8, "annotated_regions_label_language");
+        }
+        WRITE_CODE('\0', 8, "annotated_regions_label_language");
+      }
+    }
+    WRITE_UVLC(sei.m_annotatedRegionsNumLabelUpdates, "annotated_regions_num_label_updates");
+    for (Int i = 0; i < sei.m_annotatedRegionsNumLabelUpdates; i++)
+    {
+      WRITE_UVLC(sei.m_annotatedLabels.at(i).labelIdx, "annotated_regions_label_idx");
+      WRITE_FLAG(sei.m_annotatedLabels.at(i).bLabelCancelFlag, "annotated_regions_label_cancel_flag");
+      if (!sei.m_annotatedLabels.at(i).bLabelCancelFlag)
+      {
+        xWriteByteAlign();
+        for (UInt j = 0; j < strlen(sei.m_annotatedLabels.at(i).label.c_str()); j++)
+        {
+          UChar ch = sei.m_annotatedLabels.at(i).label.c_str()[j];
+          WRITE_CODE(ch, 8, "annotated_regions_label");
+        }
+        WRITE_CODE('\0', 8, "annotated_regions_label");
+      }
+    }
+    WRITE_UVLC(sei.m_annotatedRegionsNumObjUpdates, "annotated_regions_num_object_updates");
+    for (Int i = 0; i < sei.m_annotatedRegionsNumObjUpdates; i++)
+    {
+      SEIAnnotatedRegions::AnnotatedRegion ar = sei.m_annotatedRegions.at(i);
+      WRITE_UVLC(ar.objIdx, "annotated_regions_obj_idx");
+      WRITE_FLAG(ar.bObjCancelFlag, "annotated_regions_obj_cancel_flag");
+      if (!ar.bObjCancelFlag)
+      {
+        if (sei.m_annotatedRegionsObjLabelPresentFlag)
+        {
+          WRITE_FLAG(ar.bObjLabelUpdateFlag, "annotated_regions_obj_label_update_flag");
+          if (ar.bObjLabelUpdateFlag)
+          {
+            WRITE_UVLC(ar.objLabelIdc, "annotated_regions_obj_label_idx");
+          }
+        }
+        WRITE_FLAG(ar.bObjBoundBoxUpdateFlag, "annotated_regions_obj_bounding_box_update_flag");
+        if (ar.bObjBoundBoxUpdateFlag)
+        {
+          xWriteByteAlign();
+          WRITE_CODE(ar.boundingBoxTop,  16,"annotated_regions_obj_top");
+          WRITE_CODE(ar.boundingBoxLeft, 16,"annotated_regions_obj_left");
+          WRITE_CODE(ar.boundingBoxWidth,16,"annotated_regions_obj_width");
+          WRITE_CODE(ar.boundingBoxHeight,16,"annotated_regions_obj_height");
+          if (sei.m_annotatedRegionsPartialObjsFlagPresentFlag)
+          {
+            WRITE_UVLC(ar.bPartObjFlag, "annotated_regions_partial_obj_flag");
+          }
+          if (sei.m_annotatedRegionsObjDetConfInfoPresentFlag)
+          {
+            WRITE_CODE(ar.objConf, sei.m_annotatedRegionsObjDetConfLength, "annotated_regions_obj_conf");
+          }
+        }
+      }
+    }
   }
 }
 #endif
