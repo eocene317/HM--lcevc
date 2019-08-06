@@ -740,7 +740,7 @@ Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
         for(auto srcIt=seiAnnotatedRegions.m_annotatedLabels.begin(); srcIt!=seiAnnotatedRegions.m_annotatedLabels.end(); srcIt++)
         {
           const UInt labIdx = srcIt->first;
-          if (srcIt->second.bLabelValid)
+          if (srcIt->second.labelValid)
           {
             m_arLabels[labIdx] = srcIt->second.label;
           }
@@ -757,7 +757,7 @@ Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
         UInt objIdx = srcIt->first;
         const SEIAnnotatedRegions::AnnotatedRegionObject &src =srcIt->second;
 
-        if (src.bObjectCancelFlag)
+        if (src.objectCancelFlag)
         {
           m_arObjects.erase(objIdx);
         }
@@ -774,12 +774,12 @@ Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
           {
             SEIAnnotatedRegions::AnnotatedRegionObject &dst=destIt->second;
 
-            if (seiAnnotatedRegions.m_hdr.m_objectLabelPresentFlag && src.bObjectLabelValid)
+            if (seiAnnotatedRegions.m_hdr.m_objectLabelPresentFlag && src.objectLabelValid)
             {
-              dst.bObjectLabelValid=true;
+              dst.objectLabelValid=true;
               dst.objLabelIdx = src.objLabelIdx;
             }
-            if (src.bBoundingBoxValid)
+            if (src.boundingBoxValid)
             {
               dst.boundingBoxTop    = src.boundingBoxTop   ;
               dst.boundingBoxLeft   = src.boundingBoxLeft  ;
@@ -787,7 +787,7 @@ Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
               dst.boundingBoxHeight = src.boundingBoxHeight;
               if (seiAnnotatedRegions.m_hdr.m_partialObjectFlagPresentFlag)
               {
-                dst.bPartialObjectFlag = src.bPartialObjectFlag;
+                dst.partialObjectFlag = src.partialObjectFlag;
               }
               if (seiAnnotatedRegions.m_hdr.m_objectConfidenceInfoPresentFlag)
               {
@@ -818,14 +818,14 @@ Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
         fprintf(fp_persist, "Object Left = %d\n",   it->second.boundingBoxLeft);
         fprintf(fp_persist, "Object Width = %d\n",  it->second.boundingBoxWidth);
         fprintf(fp_persist, "Object Height = %d\n", it->second.boundingBoxHeight);
-        if (it->second.bObjectLabelValid)
+        if (it->second.objectLabelValid)
         {
           auto labelIt=m_arLabels.find(it->second.objLabelIdx);
           fprintf(fp_persist, "Object Label = %s\n", labelIt!=m_arLabels.end() ? (labelIt->second.c_str()) : "<UNKNOWN>");
         }
         if (m_arHeader.m_partialObjectFlagPresentFlag)
         {
-          fprintf(fp_persist, "Object Partial = %d\n", it->second.bPartialObjectFlag?1:0);
+          fprintf(fp_persist, "Object Partial = %d\n", it->second.partialObjectFlag?1:0);
         }
         if (m_arHeader.m_objectConfidenceInfoPresentFlag)
         {

@@ -1375,8 +1375,8 @@ Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *
         readTokenValueAndValidate(it->first, failed, fic, "SEIArLabelIdc[c]", UInt(0), UInt(255));
         bool cancelFlag;
         readTokenValueAndValidate(cancelFlag, failed, fic, "SEIArLabelCancelFlag[c]");
-        ar.bLabelValid=!cancelFlag;
-        if (ar.bLabelValid)
+        ar.labelValid=!cancelFlag;
+        if (ar.labelValid)
         {
           readTokenValue(ar.label, failed, fic, "SEIArLabel[c]");
         }
@@ -1389,20 +1389,20 @@ Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *
     {
       SEIAnnotatedRegions::AnnotatedRegionObject &ar = it->second;
       readTokenValueAndValidate(it->first, failed, fic, "SEIArObjIdx[c]", UInt(0), UInt(255));
-      readTokenValueAndValidate(ar.bObjectCancelFlag, failed, fic, "SEIArObjCancelFlag[c]");
-      ar.bObjectLabelValid=false;
-      ar.bBoundingBoxValid=false;
-      if (!ar.bObjectCancelFlag)
+      readTokenValueAndValidate(ar.objectCancelFlag, failed, fic, "SEIArObjCancelFlag[c]");
+      ar.objectLabelValid=false;
+      ar.boundingBoxValid=false;
+      if (!ar.objectCancelFlag)
       {
         if (seiAnnoRegion->m_hdr.m_objectLabelPresentFlag)
         {
-          readTokenValueAndValidate(ar.bObjectLabelValid, failed, fic, "SEIArObjLabelUpdateFlag[c]");
-          if (ar.bObjectLabelValid)
+          readTokenValueAndValidate(ar.objectLabelValid, failed, fic, "SEIArObjLabelUpdateFlag[c]");
+          if (ar.objectLabelValid)
           {
             readTokenValueAndValidate<UInt>(ar.objLabelIdx, failed, fic, "SEIArObjectLabelIdc[c]", UInt(0), UInt(255));
           }
-          readTokenValueAndValidate(ar.bBoundingBoxValid, failed, fic, "SEIArBoundBoxUpdateFlag[c]");
-          if (ar.bBoundingBoxValid)
+          readTokenValueAndValidate(ar.boundingBoxValid, failed, fic, "SEIArBoundBoxUpdateFlag[c]");
+          if (ar.boundingBoxValid)
           {
             readTokenValueAndValidate<UInt>(ar.boundingBoxTop, failed, fic, "SEIArObjTop[c]", UInt(0), UInt(0x7fffffff));
             readTokenValueAndValidate<UInt>(ar.boundingBoxLeft, failed, fic, "SEIArObjLeft[c]", UInt(0), UInt(0x7fffffff));
@@ -1410,7 +1410,7 @@ Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *
             readTokenValueAndValidate<UInt>(ar.boundingBoxHeight, failed, fic, "SEIArObjHeight[c]", UInt(0), UInt(0x7fffffff));
             if (seiAnnoRegion->m_hdr.m_partialObjectFlagPresentFlag)
             {
-              readTokenValueAndValidate(ar.bPartialObjectFlag, failed, fic, "SEIArObjPartUpdateFlag[c]");
+              readTokenValueAndValidate(ar.partialObjectFlag, failed, fic, "SEIArObjPartUpdateFlag[c]");
             }
             if (seiAnnoRegion->m_hdr.m_objectConfidenceInfoPresentFlag)
             {

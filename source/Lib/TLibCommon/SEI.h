@@ -865,28 +865,28 @@ public:
   struct AnnotatedRegionObject
   {
     AnnotatedRegionObject() :
-      bObjectCancelFlag(false),
-      bObjectLabelValid(false),
-      bBoundingBoxValid(false)
+      objectCancelFlag(false),
+      objectLabelValid(false),
+      boundingBoxValid(false)
     { }
-    Bool bObjectCancelFlag;
+    Bool objectCancelFlag;
 
-    Bool bObjectLabelValid;
+    Bool objectLabelValid;
     UInt objLabelIdx;            // only valid if bObjectLabelValid
 
-    Bool bBoundingBoxValid;
+    Bool boundingBoxValid;
     UInt boundingBoxTop;         // only valid if bBoundingBoxValid
     UInt boundingBoxLeft;
     UInt boundingBoxWidth;
     UInt boundingBoxHeight;
 
-    Bool bPartialObjectFlag;        // only valid if bPartialObjectFlagValid
+    Bool partialObjectFlag;        // only valid if bPartialObjectFlagValid
     UInt objectConfidence;
   };
   struct AnnotatedRegionLabel
   {
-    AnnotatedRegionLabel() : bLabelValid(false) { }
-    Bool        bLabelValid;
+    AnnotatedRegionLabel() : labelValid(false) { }
+    Bool        labelValid;
     std::string label;           // only valid if bLabelValid
   };
 

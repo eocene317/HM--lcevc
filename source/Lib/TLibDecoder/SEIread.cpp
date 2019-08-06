@@ -1689,8 +1689,8 @@ Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payload
       SEIAnnotatedRegions::AnnotatedRegionLabel &ar = it->second;
       sei_read_uvlc(pDecodedMessageOutputStream, val, "ar_label_idx[]");             it->first = val;
       assert(val<256);
-      sei_read_flag(pDecodedMessageOutputStream, val, "ar_label_cancel_flag");       ar.bLabelValid = !val;
-      if (ar.bLabelValid)
+      sei_read_flag(pDecodedMessageOutputStream, val, "ar_label_cancel_flag");       ar.labelValid = !val;
+      if (ar.labelValid)
       {
         ar.label.clear();
         // byte alignment
@@ -1721,23 +1721,23 @@ Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payload
       sei_read_uvlc(pDecodedMessageOutputStream, val, "ar_object_idx"); it->first=val;
       assert(val<256);
       SEIAnnotatedRegions::AnnotatedRegionObject &ar = it->second;
-      sei_read_flag(pDecodedMessageOutputStream, val, "ar_object_cancel_flag");                           ar.bObjectCancelFlag = val;
-      ar.bObjectLabelValid=false;
-      ar.bBoundingBoxValid=false;
+      sei_read_flag(pDecodedMessageOutputStream, val, "ar_object_cancel_flag");                           ar.objectCancelFlag = val;
+      ar.objectLabelValid=false;
+      ar.boundingBoxValid=false;
 
-      if (!ar.bObjectCancelFlag)
+      if (!ar.objectCancelFlag)
       {
         if (sei.m_hdr.m_objectLabelPresentFlag)
         {
-          sei_read_flag(pDecodedMessageOutputStream, val, "ar_object_label_update_flag");             ar.bObjectLabelValid = val;
-          if (ar.bObjectLabelValid)
+          sei_read_flag(pDecodedMessageOutputStream, val, "ar_object_label_update_flag");             ar.objectLabelValid = val;
+          if (ar.objectLabelValid)
           {
             sei_read_uvlc(pDecodedMessageOutputStream, val, "ar_object_label_idx");                      ar.objLabelIdx = val;
             assert(val<256);
           }
         }
-        sei_read_flag(pDecodedMessageOutputStream, val, "ar_bounding_box_update_flag");              ar.bBoundingBoxValid = val;
-        if (ar.bBoundingBoxValid)
+        sei_read_flag(pDecodedMessageOutputStream, val, "ar_bounding_box_update_flag");              ar.boundingBoxValid = val;
+        if (ar.boundingBoxValid)
         {
           sei_read_code(pDecodedMessageOutputStream, 16, val, "ar_bounding_box_top");                      ar.boundingBoxTop = val;
           sei_read_code(pDecodedMessageOutputStream, 16, val, "ar_bounding_box_left");                     ar.boundingBoxLeft = val;
@@ -1745,7 +1745,7 @@ Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payload
           sei_read_code(pDecodedMessageOutputStream, 16, val, "ar_bounding_box_height");                   ar.boundingBoxHeight = val;
           if (sei.m_hdr.m_partialObjectFlagPresentFlag)
           {
-            sei_read_flag(pDecodedMessageOutputStream, val, "ar_partial_object_flag");                ar.bPartialObjectFlag = val;
+            sei_read_flag(pDecodedMessageOutputStream, val, "ar_partial_object_flag");                ar.partialObjectFlag = val;
           }
           if (sei.m_hdr.m_objectConfidenceInfoPresentFlag)
           {

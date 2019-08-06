@@ -1413,8 +1413,8 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
       assert(it->first < 256);
       WRITE_UVLC(it->first, "ar_label_idx[]");
       const SEIAnnotatedRegions::AnnotatedRegionLabel &ar=it->second;
-      WRITE_FLAG(!ar.bLabelValid, "ar_label_cancel_flag");
-      if (ar.bLabelValid)
+      WRITE_FLAG(!ar.labelValid, "ar_label_cancel_flag");
+      if (ar.labelValid)
       {
         xWriteByteAlign();
         assert(ar.label.size()<256);
@@ -1432,20 +1432,20 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
     {
       const SEIAnnotatedRegions::AnnotatedRegionObject &ar = it->second;
       WRITE_UVLC(it->first, "ar_object_idx");
-      WRITE_FLAG(ar.bObjectCancelFlag, "ar_object_cancel_flag");
-      if (!ar.bObjectCancelFlag)
+      WRITE_FLAG(ar.objectCancelFlag, "ar_object_cancel_flag");
+      if (!ar.objectCancelFlag)
       {
         if (sei.m_hdr.m_objectLabelPresentFlag)
         {
-          WRITE_FLAG(ar.bObjectLabelValid, "ar_object_label_update_flag");
-          if (ar.bObjectLabelValid)
+          WRITE_FLAG(ar.objectLabelValid, "ar_object_label_update_flag");
+          if (ar.objectLabelValid)
           {
             assert(ar.objLabelIdx<256);
             WRITE_UVLC(ar.objLabelIdx, "ar_object_label_idx");
           }
         }
-        WRITE_FLAG(ar.bBoundingBoxValid, "ar_object_bounding_box_update_flag");
-        if (ar.bBoundingBoxValid)
+        WRITE_FLAG(ar.boundingBoxValid, "ar_object_bounding_box_update_flag");
+        if (ar.boundingBoxValid)
         {
           WRITE_CODE(ar.boundingBoxTop,   16, "ar_bounding_box_top");
           WRITE_CODE(ar.boundingBoxLeft,  16, "ar_bounding_box_left");
@@ -1453,7 +1453,7 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
           WRITE_CODE(ar.boundingBoxHeight,16, "ar_bounding_box_height");
           if (sei.m_hdr.m_partialObjectFlagPresentFlag)
           {
-            WRITE_UVLC(ar.bPartialObjectFlag, "ar_partial_object_flag");
+            WRITE_UVLC(ar.partialObjectFlag, "ar_partial_object_flag");
           }
           if (sei.m_hdr.m_objectConfidenceInfoPresentFlag)
           {
