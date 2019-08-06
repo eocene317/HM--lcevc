@@ -436,6 +436,9 @@ protected:
   Bool                  m_gopBasedTemporalFilterFutureReference;       ///< Enable/disable future frame references in the GOP-based Temporal Filter
   std::map<Int, Double> m_gopBasedTemporalFilterStrengths;             ///< Filter strength per frame for the GOP-based Temporal Filter
 
+#if AR_SEI_MESSAGE
+  std::string           m_arSEIFileRoot;
+#endif
   // weighted prediction
   Bool      m_useWeightedPred;                    ///< Use of weighted prediction in P slices
   Bool      m_useWeightedBiPred;                  ///< Use of bi-directional weighted prediction in B slices

@@ -108,7 +108,10 @@ public:
   Bool initSEIRegionalNesting(SEIRegionalNesting *sei, Int currPOC); // returns true on success, false on failure.
   Void readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed );
 #endif
-
+#if AR_SEI_MESSAGE
+  Bool initSEIAnnotatedRegions(SEIAnnotatedRegions *sei, Int currPOC);
+  Void readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed);
+#endif
   // trailing SEIs
   Void initDecodedPictureHashSEI(SEIDecodedPictureHash *sei, TComPic *pcPic, std::string &rHashString, const BitDepths &bitDepths);
   Void initTemporalLevel0IndexSEI(SEITemporalLevel0Index *sei, TComSlice *slice);

@@ -451,6 +451,9 @@ protected:
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
 #endif
+#if AR_SEI_MESSAGE
+  std::string           m_arSEIFileRoot;  // Annotated region SEI - initialized from external file
+#endif
 #if RNSEI
   std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
 #endif
@@ -1131,6 +1134,11 @@ public:
 #if RNSEI
   Void  setRegionalNestingSEIFileRoot( const std::string &s )        { m_regionalNestingSEIFileRoot = s; }
   const std::string &getRegionalNestingSEIFileRoot() const           { return m_regionalNestingSEIFileRoot; }
+#endif
+
+#if AR_SEI_MESSAGE
+  Void  setAnnotatedRegionSEIFileRoot(const std::string &s)          { m_arSEIFileRoot = s; }
+  const std::string &getAnnotatedRegionSEIFileRoot() const           { return m_arSEIFileRoot; }
 #endif
 
   const TComSEIMasteringDisplay &getMasteringDisplaySEI() const      { return m_masteringDisplay; }

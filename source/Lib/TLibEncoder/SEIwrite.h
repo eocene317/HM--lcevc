@@ -113,6 +113,10 @@ protected:
   Void xWriteSEIRegionalNesting                   (TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps);
 #endif
 
+#if AR_SEI_MESSAGE
+  Void xWriteSEIAnnotatedRegions                  (const SEIAnnotatedRegions& sei, const TComSPS *sps);
+#endif
+
   Void xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSPS *sps);
   Void xWriteByteAlign();
 };
