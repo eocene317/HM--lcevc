@@ -38,7 +38,7 @@
 #include <time.h>
 #include <iostream>
 #include "TAppEncTop.h"
-#include "TAppCommon/program_options_lite.h"
+#include "Utilities/program_options_lite.h"
 
 //! \ingroup TAppEncoder
 //! \{

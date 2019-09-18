@@ -38,7 +38,7 @@
 #ifndef __TEMPORAL_FILTER__
 #define __TEMPORAL_FILTER__
 #include "TLibCommon/TComPicYuv.h"
-#include "TLibVideoIO/TVideoIOYuv.h"
+#include "Utilities/TVideoIOYuv.h"
 #include <sstream>
 #include <map>
 #include <deque>

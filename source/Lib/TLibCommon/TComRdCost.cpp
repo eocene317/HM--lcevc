@@ -59,7 +59,7 @@ TComRdCost::~TComRdCost()
 }
 
 // Calculate RD functions
-Double TComRdCost::calcRdCost( Double numBits, Double distortion, DFunc eDFunc )
+Double TComRdCost::calcRdCost( Double numBits, Distortion distortion, DFunc eDFunc )
 {
   Double lambda = 1.0;
 

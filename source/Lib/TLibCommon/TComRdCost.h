@@ -131,7 +131,7 @@ public:
   TComRdCost();
   virtual ~TComRdCost();
 
-  Double calcRdCost( Double numBits, Double distortion, DFunc eDFunc = DF_DEFAULT );
+  Double calcRdCost( Double numBits, Distortion distortion, DFunc eDFunc = DF_DEFAULT );
 
   Void    setDistortionWeight  ( const ComponentID compID, const Double distortionWeight ) { m_distortionWeight[compID] = distortionWeight; }
   Void    setLambda      ( Double dLambda, const BitDepths &bitDepths );

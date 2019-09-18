@@ -39,7 +39,7 @@
 #include <cstring>
 #include <string>
 #include "TAppDecCfg.h"
-#include "TAppCommon/program_options_lite.h"
+#include "Utilities/program_options_lite.h"
 #include "TLibCommon/TComChromaFormat.h"
 #ifdef WIN32
 #define strdup _strdup

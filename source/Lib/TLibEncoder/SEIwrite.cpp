@@ -1406,7 +1406,7 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
         WRITE_CODE('\0', 8, "ar_label_language");
       }
     }
-    WRITE_UVLC(sei.m_annotatedLabels.size(), "ar_num_label_updates");
+    WRITE_UVLC((UInt)sei.m_annotatedLabels.size(), "ar_num_label_updates");
     assert(sei.m_annotatedLabels.size()<256);
     for(auto it=sei.m_annotatedLabels.begin(); it!=sei.m_annotatedLabels.end(); it++)
     {
@@ -1426,7 +1426,7 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
         WRITE_CODE('\0', 8, "ar_label[]");
       }
     }
-    WRITE_UVLC(sei.m_annotatedRegions.size(), "ar_num_object_updates");
+    WRITE_UVLC((UInt)sei.m_annotatedRegions.size(), "ar_num_object_updates");
     assert(sei.m_annotatedRegions.size()<256);
     for (auto it=sei.m_annotatedRegions.begin(); it!=sei.m_annotatedRegions.end(); it++)
     {

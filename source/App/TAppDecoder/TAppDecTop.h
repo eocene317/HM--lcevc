@@ -42,7 +42,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "TLibVideoIO/TVideoIOYuv.h"
+#include "Utilities/TVideoIOYuv.h"
 #include "TLibCommon/TComList.h"
 #include "TLibCommon/TComPicYuv.h"
 #include "TLibDecoder/TDecTop.h"

@@ -40,6 +40,7 @@
 
 #include <algorithm>
 #include <iostream>
+#undef NDEBUG
 #include <assert.h>
 #include <limits>
 

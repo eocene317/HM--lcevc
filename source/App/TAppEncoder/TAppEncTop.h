@@ -42,7 +42,7 @@
 #include <ostream>
 
 #include "TLibEncoder/TEncTop.h"
-#include "TLibVideoIO/TVideoIOYuv.h"
+#include "Utilities/TVideoIOYuv.h"
 #include "TLibCommon/AccessUnit.h"
 #include "TAppEncCfg.h"
 

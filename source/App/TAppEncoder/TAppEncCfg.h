@@ -39,7 +39,7 @@
 #define __TAPPENCCFG__
 
 #include "TLibCommon/CommonDef.h"
-#include "TAppCommon/program_options_lite.h"
+#include "Utilities/program_options_lite.h"
 
 #include "TLibEncoder/TEncCfg.h"
 #if EXTENSION_360_VIDEO
