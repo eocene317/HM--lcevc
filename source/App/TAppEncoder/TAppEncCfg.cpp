@@ -50,7 +50,7 @@ template <class T1, class T2>
 static inline std::istream& operator >> (std::istream &in, std::map<T1, T2> &map);
 
 #include "TAppEncCfg.h"
-#include "TAppCommon/program_options_lite.h"
+#include "Utilities/program_options_lite.h"
 #include "TLibEncoder/TEncRateCtrl.h"
 #ifdef WIN32
 #define strdup _strdup

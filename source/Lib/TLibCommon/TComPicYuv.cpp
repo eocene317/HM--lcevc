@@ -46,7 +46,7 @@
 #endif
 
 #include "TComPicYuv.h"
-#include "TLibVideoIO/TVideoIOYuv.h"
+#include "Utilities/TVideoIOYuv.h"
 
 //! \ingroup TLibCommon
 //! \{

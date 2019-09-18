@@ -45,7 +45,7 @@
 #include "TLibCommon/TComLoopFilter.h"
 #include "TLibCommon/AccessUnit.h"
 
-#include "TLibVideoIO/TVideoIOYuv.h"
+#include "Utilities/TVideoIOYuv.h"
 
 #include "TEncCfg.h"
 #include "TEncGOP.h"
