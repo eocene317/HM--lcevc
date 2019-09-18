@@ -36,12 +36,19 @@
 */
 
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <cassert>
 #include <cstring>
 #include <string>
 #include <limits>
+#include <map>
+
 #include "TLibCommon/TComRom.h"
+
+template <class T1, class T2>
+static inline std::istream& operator >> (std::istream &in, std::map<T1, T2> &map);
+
 #include "TAppEncCfg.h"
 #include "TAppCommon/program_options_lite.h"
 #include "TLibEncoder/TEncRateCtrl.h"
