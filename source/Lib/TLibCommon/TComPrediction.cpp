@@ -732,7 +732,10 @@ Void TComPrediction::xPredIntraPlanar( const Pel* pSrc, Int srcStride, Pel* rpDs
 {
   assert(width <= height);
 
-  Int leftColumn[MAX_CU_SIZE+1], topRow[MAX_CU_SIZE+1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+  Int leftColumn[MAX_CU_SIZE+1] = {0};
+  Int topRow[MAX_CU_SIZE+1] = {0};
+  Int bottomRow[MAX_CU_SIZE] = {0};
+  Int rightColumn[MAX_CU_SIZE] = {0};
   UInt shift1Dhor = g_aucConvertToBit[ width ] + 2;
   UInt shift1Dver = g_aucConvertToBit[ height ] + 2;
 
