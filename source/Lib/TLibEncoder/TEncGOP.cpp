@@ -951,7 +951,7 @@ cabac_zero_word_padding(TComSlice *const pcSlice, TComPic *const pcPic, const st
   const Int paddedWidth = ((sps.getPicWidthInLumaSamples()  + minCuWidth  - 1) / minCuWidth) * minCuWidth;
   const Int paddedHeight= ((sps.getPicHeightInLumaSamples() + minCuHeight - 1) / minCuHeight) * minCuHeight;
   const Int rawBits = paddedWidth * paddedHeight *
-                         (sps.getBitDepth(CHANNEL_TYPE_LUMA) + 2*(sps.getBitDepth(CHANNEL_TYPE_CHROMA)>>log2subWidthCxsubHeightC));
+                         (sps.getBitDepth(CHANNEL_TYPE_LUMA) + ((2*sps.getBitDepth(CHANNEL_TYPE_CHROMA))>>log2subWidthCxsubHeightC));
   const std::size_t threshold = (32/3)*numBytesInVclNalUnits + (rawBits/32);
   if (binCountsInNalUnits >= threshold)
   {
