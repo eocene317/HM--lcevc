@@ -111,6 +111,9 @@ protected:
 #if RWP_SEI_MESSAGE
   Void xParseSEIRegionWisePacking             (SEIRegionWisePacking& sei,             UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
 #endif
+#if FVI_SEI_MESSAGE
+  Void xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream);
+#endif
   Void xParseSEIColourRemappingInfo           (SEIColourRemappingInfo& sei,           UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIDeinterlaceFieldIdentification(SEIDeinterlaceFieldIdentification& sei,UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIContentLightLevelInfo         (SEIContentLightLevelInfo& sei,         UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);

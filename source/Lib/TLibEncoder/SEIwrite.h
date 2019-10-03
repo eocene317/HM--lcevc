@@ -102,6 +102,9 @@ protected:
 #if RWP_SEI_MESSAGE
   Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
 #endif
+#if FVI_SEI_MESSAGE
+  Void xWriteSEIFisheyeVideoInfo                  (const SEIFisheyeVideoInfo &sei);
+#endif
   Void xWriteSEIColourRemappingInfo               (const SEIColourRemappingInfo& sei);
   Void xWriteSEIDeinterlaceFieldIdentification    (const SEIDeinterlaceFieldIdentification& sei);
   Void xWriteSEIContentLightLevelInfo             (const SEIContentLightLevelInfo& sei);

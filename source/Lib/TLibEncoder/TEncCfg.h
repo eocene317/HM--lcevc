@@ -454,6 +454,10 @@ protected:
 #if AR_SEI_MESSAGE
   std::string           m_arSEIFileRoot;  // Annotated region SEI - initialized from external file
 #endif
+#if FVI_SEI_MESSAGE
+  Bool                    m_fviSEIEnabled;
+  TComSEIFisheyeVideoInfo m_fisheyeVideoInfo;
+#endif
 #if RNSEI
   std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
 #endif
@@ -1117,6 +1121,12 @@ public:
   Bool    getRwpSEIRwpGuardBandNotUsedForPredFlag(UInt idx) const                                         { return m_rwpSEIRwpGuardBandNotUsedForPredFlag[idx]; }
   Void    setRwpSEIRwpGuardBandType(const std::vector<UChar>& rwpGuardBandType)                           { m_rwpSEIRwpGuardBandType = rwpGuardBandType; }
   UChar   getRwpSEIRwpGuardBandType(UInt idx) const                                                       { return m_rwpSEIRwpGuardBandType[idx]; } 
+#endif
+#if FVI_SEI_MESSAGE
+  Void    setFviSEIDisabled()                                        { m_fviSEIEnabled = false; }
+  Void    setFviSEIEnabled(const TComSEIFisheyeVideoInfo& fvi)       { m_fisheyeVideoInfo=fvi; m_fviSEIEnabled=true; }
+  Bool    getFviSEIEnabled() const                                   { return m_fviSEIEnabled; }
+  const TComSEIFisheyeVideoInfo& getFviSEIData() const               { return m_fisheyeVideoInfo; }
 #endif
   Void  setColourRemapInfoSEIFileRoot( const std::string &s )        { m_colourRemapSEIFileRoot = s; }
   const std::string &getColourRemapInfoSEIFileRoot() const           { return m_colourRemapSEIFileRoot; }

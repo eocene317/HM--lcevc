@@ -107,6 +107,8 @@
 #define CMP_SEI_MESSAGE                                   1 // cubemap projection SEI message
 #define ERP_SR_OV_SEI_MESSAGE                             1 // equirectangular projection, sphere rotation, and omni viewport SEI message
 
+#define FVI_SEI_MESSAGE                                   1 // Fisheye Video Information SEI message	
+
 #define RNSEI                                             1  ///< Support for signalling regional nesting SEI message
 
 #define AR_SEI_MESSAGE                                    1  ///< Annotated Region SEI message
@@ -916,6 +918,38 @@ struct WCGChromaQPControl
   Double chromaQpScale;   ///< Chroma QP Scale (0.0:default)
   Double chromaQpOffset;  ///< Chroma QP Offset (0.0:default)
 };
+
+#if FVI_SEI_MESSAGE
+struct TComSEIFisheyeVideoInfo
+{
+  struct ActiveAreaInfo
+  {
+    UInt m_fisheyeCircularRegionCentreX;
+    UInt m_fisheyeCircularRegionCentreY;
+    UInt m_fisheyeRectRegionTop;
+    UInt m_fisheyeRectRegionLeft;
+    UInt m_fisheyeRectRegionWidth;
+    UInt m_fisheyeRectRegionHeight;
+    UInt m_fisheyeCircularRegionRadius;
+    UInt m_fisheyeSceneRadius;
+
+    Int  m_fisheyeCameraCentreAzimuth;
+    Int  m_fisheyeCameraCentreElevation;
+    Int  m_fisheyeCameraCentreTilt;
+    UInt m_fisheyeCameraCentreOffsetX;
+    UInt m_fisheyeCameraCentreOffsetY;
+    UInt m_fisheyeCameraCentreOffsetZ;
+    UInt m_fisheyeFieldOfView;
+    std::vector<Int> m_fisheyePolynomialCoeff;
+  };
+
+  Bool  m_fisheyeCancelFlag;
+  Bool  m_fisheyePersistenceFlag;
+  UInt  m_fisheyeViewDimensionIdc;
+  std::vector<ActiveAreaInfo> m_fisheyeActiveAreas;
+  TComSEIFisheyeVideoInfo() : m_fisheyeCancelFlag(false), m_fisheyePersistenceFlag(false), m_fisheyeViewDimensionIdc(0), m_fisheyeActiveAreas() { }
+};
+#endif
 
 class Window
 {
