@@ -202,6 +202,11 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
     xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
     break;
 #endif
+#if FVI_SEI_MESSAGE
+  case SEI::FISHEYE_VIDEO_INFO:
+    xWriteSEIFisheyeVideoInfo(*static_cast<const SEIFisheyeVideoInfo*>(&sei));
+    break;
+#endif
 #if RNSEI
   case SEI::REGIONAL_NESTING:
     xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
@@ -1235,6 +1240,51 @@ Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
           WRITE_CODE( (UInt)sei.m_rwpGuardBandType[i*4 + j],  3,             "rwp_guard_band_type");
         }
         WRITE_CODE( 0, 3,                                                    "rwp_guard_band_reserved_zero_3bits" );
+      }
+    }
+  }
+}
+#endif
+
+#if FVI_SEI_MESSAGE
+Void SEIWriter::xWriteSEIFisheyeVideoInfo(const SEIFisheyeVideoInfo &sei)
+{
+  const TComSEIFisheyeVideoInfo &info=sei.values;
+  WRITE_FLAG(info.m_fisheyeCancelFlag, "fisheye_cancel_flag");
+  if (!info.m_fisheyeCancelFlag)
+  {
+    WRITE_FLAG(info.m_fisheyePersistenceFlag, "fisheye_persistence_flag");
+    WRITE_CODE((UInt)info.m_fisheyeViewDimensionIdc, 3, "fisheye_view_dimension_idc");
+    WRITE_CODE(0, 3, "fisheye_reserved_zero_3bits");
+    assert(info.m_fisheyeActiveAreas.size());
+    WRITE_CODE((UInt)info.m_fisheyeActiveAreas.size()-1, 8, "fisheye_num_active_area_minus1");
+
+    for (std::size_t i = 0; i < info.m_fisheyeActiveAreas.size(); i++)
+    {
+      const TComSEIFisheyeVideoInfo::ActiveAreaInfo &area=info.m_fisheyeActiveAreas[i];
+      
+      WRITE_CODE((UInt)area.m_fisheyeCircularRegionCentreX, 32, "fisheye_circular_region_centre_x[i]");
+      WRITE_CODE((UInt)area.m_fisheyeCircularRegionCentreY, 32, "fisheye_circular_region_centre_y[i]");
+      WRITE_CODE((UInt)area.m_fisheyeRectRegionTop, 32, "fisheye_rect_region_top[i]");
+      WRITE_CODE((UInt)area.m_fisheyeRectRegionLeft, 32, "fisheye_rect_region_left[i]");
+      WRITE_CODE((UInt)area.m_fisheyeRectRegionWidth, 32, "fisheye_rect_region_width[i]");
+      WRITE_CODE((UInt)area.m_fisheyeRectRegionHeight, 32, "fisheye_rect_region_Height[i]");
+      WRITE_CODE((UInt)area.m_fisheyeCircularRegionRadius, 32, "fisheye_circular_region_radius[i]");
+      WRITE_CODE((UInt)area.m_fisheyeSceneRadius, 32, "fisheye_scene_radius[i]");
+
+      WRITE_SCODE((Int)area.m_fisheyeCameraCentreAzimuth, 32, "fisheye_camera_centre_azimuth[i]");
+      WRITE_SCODE((Int)area.m_fisheyeCameraCentreElevation, 32, "fisheye_camera_centre_elevation[i]");
+      WRITE_SCODE((Int)area.m_fisheyeCameraCentreTilt, 32, "fisheye_camera_centre_tilt[i]");
+
+      WRITE_CODE((UInt)area.m_fisheyeCameraCentreOffsetX, 32, "fisheye_camera_centre_offset_x[i]");
+      WRITE_CODE((UInt)area.m_fisheyeCameraCentreOffsetY, 32, "fisheye_camera_centre_offset_x[i]");
+      WRITE_CODE((UInt)area.m_fisheyeCameraCentreOffsetZ, 32, "fisheye_camera_centre_offset_z[i]");
+      WRITE_CODE((UInt)area.m_fisheyeFieldOfView, 32, "fisheye_field_of_view[i]");
+      WRITE_CODE((UInt)area.m_fisheyePolynomialCoeff.size(), 16, "fisheye_num_polynomial_coeffs[i]");
+
+      for (std::size_t j = 0; j < area.m_fisheyePolynomialCoeff.size(); j++)
+      {
+        WRITE_SCODE((Int)area.m_fisheyePolynomialCoeff[j], 32, "fisheye_polynomial_coeff[i][j]");
       }
     }
   }

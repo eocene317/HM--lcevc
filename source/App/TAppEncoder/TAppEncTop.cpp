@@ -440,6 +440,16 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setRwpSEIRwpGuardBandNotUsedForPredFlag              (m_rwpSEIRwpGuardBandNotUsedForPredFlag);
   m_cTEncTop.setRwpSEIRwpGuardBandType                            (m_rwpSEIRwpGuardBandType);
 #endif
+#if FVI_SEI_MESSAGE
+  if (m_fisheyeVIdeoInfoSEIEnabled)
+  {
+    m_cTEncTop.setFviSEIEnabled(m_fisheyeVideoInfoSEI);
+  }
+  else
+  {
+    m_cTEncTop.setFviSEIDisabled();
+  }
+#endif
   m_cTEncTop.setColourRemapInfoSEIFileRoot                        ( m_colourRemapSEIFileRoot );
   m_cTEncTop.setMasteringDisplaySEI                               ( m_masteringDisplay );
   m_cTEncTop.setSEIAlternativeTransferCharacteristicsSEIEnable    ( m_preferredTransferCharacteristics>=0     );

@@ -531,6 +531,14 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     seiMessages.push_back(seiRegionWisePacking);
   }
 #endif
+#if FVI_SEI_MESSAGE
+  if (m_pcCfg->getFviSEIEnabled())
+  {
+    SEIFisheyeVideoInfo *sei = new SEIFisheyeVideoInfo;
+    m_seiEncoder.initSEIFisheyeVideoInfo(sei);
+    seiMessages.push_back(sei);
+  }
+#endif
     
   if(m_pcCfg->getMasteringDisplaySEI().colourVolumeSEIEnabled)
   {

@@ -751,6 +751,26 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandNotUsedForPredFlag   (0, 1,   0, std::numeric_limits<UChar>::max());
   SMultiValueInput<UInt>   cfg_rwpSEIRwpGuardBandType                 (0, 7,   0, 4*std::numeric_limits<UChar>::max());
 #endif
+#if FVI_SEI_MESSAGE
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionCentreX     (0, std::numeric_limits<UInt>::max(), 0, 4); // CONFIRM: all the '3's have been changed to '4's since "The value of fisheye_num_active_areas_minus1 shall be in the range of 0 to 3, inclusive", so up to 4 entries.
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionCentreY     (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeRectRegionTop             (0, std::numeric_limits<UInt>::max(), 0, 4); // do not know the height of the picture at this point, so cannot limit region top.
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeRectRegionLeft            (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeRectRegionWidth           (1, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeRectRegionHeight          (1, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionRadius      (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeSceneRadius               (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<Int>    cfg_fviSEIFisheyeCameraCentreAzimuth       (-180*65536, 180*65536-1, 0, 4);
+  SMultiValueInput<Int>    cfg_fviSEIFisheyeCameraCentreElevation     ( -90*65536,  90*65536  , 0, 4);
+  SMultiValueInput<Int>    cfg_fviSEIFisheyeCameraCentreTilt          (-180*65536, 180*65536-1, 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeCameraCentreOffsetX       (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeCameraCentreOffsetY       (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeCameraCentreOffsetZ       (0, std::numeric_limits<UInt>::max(), 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeFieldOfView               (0, 360*65536, 0, 4);
+  SMultiValueInput<UInt>   cfg_fviSEIFisheyeNumPolynomialCoeffs       (0, 8, 0, 4);
+  SMultiValueInput<Int>    cfg_fviSEIFisheyePolynomialCoeff           (std::numeric_limits<Int>::min(), std::numeric_limits<Int>::max(), 0, 4*8);
+  UInt cfg_fviSEIFisheyeNumActiveAreasMinus1=0;
+#endif
   Int warnUnknowParameter = 0;
   po::Options opts;
   opts.addOptions()
@@ -1254,6 +1274,30 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIRwpBottomGuardBandHeight",                     cfg_rwpSEIRwpBottomGuardBandHeight,       cfg_rwpSEIRwpBottomGuardBandHeight,       "specifies the height of the guard band below the i-th packed region.")
   ("SEIRwpGuardBandNotUsedForPredFlag",               cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, "Specifies if the guard bands is used in the inter prediction process.")
   ("SEIRwpGuardBandType",                             cfg_rwpSEIRwpGuardBandType,               cfg_rwpSEIRwpGuardBandType,               "Specifies the type of the guard bands for the i-th packed region.")
+#endif
+#if FVI_SEI_MESSAGE
+  ("SEIFviEnabled",                                   m_fisheyeVIdeoInfoSEIEnabled,             false,                                   "Controls if fisheye video information SEI message enabled")
+  ("SEIFviCancelFlag",                                m_fisheyeVideoInfoSEI.m_fisheyeCancelFlag,                true,                    "Specifies the persistence of any previous fisheye video information SEI message in output order.")
+  ("SEIFviPersistenceFlag",                           m_fisheyeVideoInfoSEI.m_fisheyePersistenceFlag,           false,                   "Specifies the persistence of the fisheye video information SEI message for the current layer.")
+  ("SEIFviViewDimensionIdc",                          m_fisheyeVideoInfoSEI.m_fisheyeViewDimensionIdc,          0u,                      "Specifies the alignment and viewing direction of a fisheye lens")
+  ("SEIFviNumActiveAreasMinus1",                      cfg_fviSEIFisheyeNumActiveAreasMinus1,    0u,                                      "Specifies the number of active areas in the coded picture minus 1")
+  ("SEIFviCircularRegionCentreX",                     cfg_fviSEIFisheyeCircularRegionCentreX,   cfg_fviSEIFisheyeCircularRegionCentreX,  "Specifies the horizontal coordinates of the centre of the circular region that contains the i-th active area in the coded picture")
+  ("SEIFviCircularRegionCentreY",                     cfg_fviSEIFisheyeCircularRegionCentreY,   cfg_fviSEIFisheyeCircularRegionCentreY,  "Specifies the vertical coordinates of the centre of the circular region that contains the i-th active area in the coded picture")
+  ("SEIFviRectRegionTop",                             cfg_fviSEIFisheyeRectRegionTop,           cfg_fviSEIFisheyeRectRegionTop,          "Specifies the vertical coordinates of the top-left corner of the i-th rectangular region that contains the i-th active area")
+  ("SEIFviRectRegionLeft",                            cfg_fviSEIFisheyeRectRegionLeft,          cfg_fviSEIFisheyeRectRegionLeft,         "Specifies the horizontal coordinates of the top-left corner of the i-th rectangular region that contains the i-th active area")
+  ("SEIFviRectRegionWidth",                           cfg_fviSEIFisheyeRectRegionWidth,         cfg_fviSEIFisheyeRectRegionWidth,        "Specifies the width of the i-th rectangular region that contains the i-th active area")
+  ("SEIFviRectRegionHeight",                          cfg_fviSEIFisheyeRectRegionHeight,        cfg_fviSEIFisheyeRectRegionHeight,       "Specifies the height of the i-th rectangular region that contains the i-th active area")
+  ("SEIFviCircularRegionRadius",                      cfg_fviSEIFisheyeCircularRegionRadius,    cfg_fviSEIFisheyeCircularRegionRadius,   "Specifies the radius of the circular region that contains the i-th active area that is defined as a length from the centre of the circular region to the outermost pixel boundary of the circular region, that corresponds to the maximum field of view of the i-th fisheye lens")
+  ("SEIFviSceneRadius",                               cfg_fviSEIFisheyeSceneRadius,             cfg_fviSEIFisheyeSceneRadius,            "Specifies the radius of a circular region within the i-th active area where the obstruction is not included in the region")
+  ("SEIFviCameraCentreAzimuth",                       cfg_fviSEIFisheyeCameraCentreAzimuth,     cfg_fviSEIFisheyeCameraCentreAzimuth,    "Indicates the spherical coordinates that correspond to the centre of the circular region that contains the i-th active area")
+  ("SEIFviCameraCentreElevation",                     cfg_fviSEIFisheyeCameraCentreElevation,   cfg_fviSEIFisheyeCameraCentreElevation,  "Indicates the spherical coordinates that correspond to the centre of the circular region that contains the i-th active area")
+  ("SEIFviCameraCentreTilt",                          cfg_fviSEIFisheyeCameraCentreTilt,        cfg_fviSEIFisheyeCameraCentreTilt,       "Indicates the spherical coordinates that correspond to the centre of the circular region that contains the i-th active area")
+  ("SEIFviCameraCentreOffsetX",                       cfg_fviSEIFisheyeCameraCentreOffsetX,     cfg_fviSEIFisheyeCameraCentreOffsetX,    "Indicates the XYZ offset values of the focal centre of the fisheye camera lens corresponding to the i-th active area from the focal centre origin of the overall fisheye camera configuration.")
+  ("SEIFviCameraCentreOffsetY",                       cfg_fviSEIFisheyeCameraCentreOffsetY,     cfg_fviSEIFisheyeCameraCentreOffsetY,    "Indicates the XYZ offset values of the focal centre of the fisheye camera lens corresponding to the i-th active area from the focal centre origin of the overall fisheye camera configuration.")
+  ("SEIFviCameraCenterOffsetZ",                       cfg_fviSEIFisheyeCameraCentreOffsetZ,     cfg_fviSEIFisheyeCameraCentreOffsetZ,    "Indicates the XYZ offset values of the focal centre of the fisheye camera lens corresponding to the i-th active area from the focal centre origin of the overall fisheye camera configuration.")
+  ("SEIFviFieldOfView",                               cfg_fviSEIFisheyeFieldOfView,             cfg_fviSEIFisheyeFieldOfView,            "Specifies the field of view of the lens that corresponds to the i-th active area")
+  ("SEIFviNumPolynomialCoeffs",                       cfg_fviSEIFisheyeNumPolynomialCoeffs,     cfg_fviSEIFisheyeNumPolynomialCoeffs,    "Specifies the number of polynomial coefficients for the circular region")
+  ("SEIFviPolynomialCoeff",                           cfg_fviSEIFisheyePolynomialCoeff,         cfg_fviSEIFisheyePolynomialCoeff,        "Specifies the j-th polynomial coefficient value of the curve function that maps the normalized distance of a luma sample from the centre of the circular region corresponding to the i-th active area to the angular value of a sphere coordinate from the normal vector of a nominal imaging plane that passes through the centre of the sphere coordinate system for the i-th active region.")
 #endif
 #if RNSEI
   ("SEIRegionalNestingFileRoot,-rns",                 m_regionalNestingSEIFileRoot,                    string(""), "Regional nesting SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-rns rns\" will search for files rns_0.txt, rns_1.txt, ...")
@@ -1915,6 +1959,68 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
           m_rwpSEIRwpGuardBandType[i*4 + j]           =  cfg_rwpSEIRwpGuardBandType.values[i*4 + j];
         }
 
+      }
+    }
+  }
+#endif
+#if FVI_SEI_MESSAGE
+  if (!m_fisheyeVideoInfoSEI.m_fisheyeCancelFlag && m_fisheyeVIdeoInfoSEIEnabled)
+  {
+    if (cfg_fviSEIFisheyeNumActiveAreasMinus1 < 0 || cfg_fviSEIFisheyeNumActiveAreasMinus1 > 3)             { fprintf(stderr, "Bad number of FVI active areas\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCircularRegionCentreX.values.size() != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI circular region centre X entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCircularRegionCentreY.values.size() != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI circular region centre Y entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeRectRegionTop.values.size()         != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI rect region top entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeRectRegionLeft.values.size()        != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI rect region left entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeRectRegionWidth.values.size()       != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI rect region width entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeRectRegionHeight.values.size()      != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI rect region height entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCircularRegionRadius.values.size()  != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI circular region radius entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeSceneRadius.values.size()           != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI scene radius entries\n"); exit(EXIT_FAILURE); }
+
+    if (cfg_fviSEIFisheyeCameraCentreAzimuth.values.size()   != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI camera centre azimuth entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCameraCentreElevation.values.size() != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI camera centre elevation entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCameraCentreTilt.values.size()      != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI camera centre tilt entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCameraCentreOffsetX.values.size()   != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI camera centre offsetX entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCameraCentreOffsetY.values.size()   != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI camera centre offsetY entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeCameraCentreOffsetZ.values.size()   != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI camera centre offsetZ entries\n"); exit(EXIT_FAILURE); }
+    if (cfg_fviSEIFisheyeFieldOfView.values.size()           != cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1)  { fprintf(stderr, "Bad number of FVI field of view entries\n"); exit(EXIT_FAILURE); }
+
+    m_fisheyeVideoInfoSEI.m_fisheyeActiveAreas.resize(cfg_fviSEIFisheyeNumActiveAreasMinus1 + 1);
+
+    for (std::size_t i = 0, extractPolynomialIdx = 0; i < m_fisheyeVideoInfoSEI.m_fisheyeActiveAreas.size(); i++)
+    {
+      TComSEIFisheyeVideoInfo::ActiveAreaInfo &info=m_fisheyeVideoInfoSEI.m_fisheyeActiveAreas[i];
+      info.m_fisheyeCircularRegionCentreX           = cfg_fviSEIFisheyeCircularRegionCentreX.values[i];
+      info.m_fisheyeCircularRegionCentreY           = cfg_fviSEIFisheyeCircularRegionCentreY.values[i];
+      info.m_fisheyeRectRegionTop                   = cfg_fviSEIFisheyeRectRegionTop.values[i];
+      info.m_fisheyeRectRegionLeft                  = cfg_fviSEIFisheyeRectRegionLeft.values[i];
+      info.m_fisheyeRectRegionWidth                 = cfg_fviSEIFisheyeRectRegionWidth.values[i];
+      info.m_fisheyeRectRegionHeight                = cfg_fviSEIFisheyeRectRegionHeight.values[i];
+      info.m_fisheyeCircularRegionRadius            = cfg_fviSEIFisheyeCircularRegionRadius.values[i];
+      info.m_fisheyeSceneRadius                     = cfg_fviSEIFisheyeSceneRadius.values[i];
+
+      // check rectangular region is within the conformance window.
+      if ( (!( info.m_fisheyeRectRegionHeight >= 1 && m_confWinTop  <= info.m_fisheyeRectRegionTop  && info.m_fisheyeRectRegionTop  + info.m_fisheyeRectRegionHeight < m_iSourceHeight -m_confWinBottom ) ) ||
+           (!( info.m_fisheyeRectRegionWidth  >= 1 && m_confWinLeft <= info.m_fisheyeRectRegionLeft && info.m_fisheyeRectRegionLeft + info.m_fisheyeRectRegionWidth  < m_iSourceWidth  -m_confWinRight  ) ) )
+      {
+        fprintf(stderr, "Fisheye region is not within visible area\n");
+        exit (EXIT_FAILURE);
+      }
+
+      info.m_fisheyeCameraCentreAzimuth             = cfg_fviSEIFisheyeCameraCentreAzimuth.values[i];
+      info.m_fisheyeCameraCentreElevation           = cfg_fviSEIFisheyeCameraCentreElevation.values[i];
+      info.m_fisheyeCameraCentreTilt                = cfg_fviSEIFisheyeCameraCentreTilt.values[i];
+      info.m_fisheyeCameraCentreOffsetX             = cfg_fviSEIFisheyeCameraCentreOffsetX.values[i];
+      info.m_fisheyeCameraCentreOffsetY             = cfg_fviSEIFisheyeCameraCentreOffsetY.values[i];
+      info.m_fisheyeCameraCentreOffsetZ             = cfg_fviSEIFisheyeCameraCentreOffsetZ.values[i];
+
+      info.m_fisheyeFieldOfView                     = cfg_fviSEIFisheyeFieldOfView.values[i];
+      assert(cfg_fviSEIFisheyeNumPolynomialCoeffs.values[i] >= 0 && cfg_fviSEIFisheyeNumPolynomialCoeffs.values[i] <= 8);
+      info.m_fisheyePolynomialCoeff.resize(cfg_fviSEIFisheyeNumPolynomialCoeffs.values[i]);
+
+      for (Int j = 0; j < info.m_fisheyePolynomialCoeff.size(); j++)
+      {
+        assert(cfg_fviSEIFisheyePolynomialCoeff.values.size() > extractPolynomialIdx);
+        info.m_fisheyePolynomialCoeff[j] = cfg_fviSEIFisheyePolynomialCoeff.values[extractPolynomialIdx++];
       }
     }
   }

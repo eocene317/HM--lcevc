@@ -385,6 +385,12 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       xParseSEIAnnotatedRegions((SEIAnnotatedRegions&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
 #endif
+#if FVI_SEI_MESSAGE
+    case SEI::FISHEYE_VIDEO_INFO:
+      sei = new SEIFisheyeVideoInfo;
+      xParseSEIFisheyeVideoInfo((SEIFisheyeVideoInfo&)*sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+#endif
 #if RNSEI
     case SEI::REGIONAL_NESTING:
       sei = new SEIRegionalNesting;
@@ -1834,6 +1840,59 @@ Void SEIReader::xParseSEIRegionWisePacking(SEIRegionWisePacking& sei, UInt paylo
           sei_read_code( pDecodedMessageOutputStream, 3,  val,     "rwp_guard_band_type" ); sei.m_rwpGuardBandType[i*4 + j] = val;
         }
         sei_read_code( pDecodedMessageOutputStream,   3,  val,    "rwp_guard_band_reserved_zero_3bits" );
+      }
+    }
+  }
+}
+#endif
+
+#if FVI_SEI_MESSAGE
+Void SEIReader::xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  UInt val;
+
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+  sei.values = TComSEIFisheyeVideoInfo();
+  
+  TComSEIFisheyeVideoInfo &info=sei.values;
+
+  sei_read_flag(pDecodedMessageOutputStream, val, "fisheye_cancel_flag"); info.m_fisheyeCancelFlag = val;
+  if (!info.m_fisheyeCancelFlag)
+  {
+    Int sval;
+
+    sei_read_flag(pDecodedMessageOutputStream, val, "fisheye_persistence_flag");        info.m_fisheyePersistenceFlag = val;
+    sei_read_code(pDecodedMessageOutputStream, 3, val, "fisheye_view_dimension_idc");   info.m_fisheyeViewDimensionIdc = val;
+    sei_read_code(pDecodedMessageOutputStream, 3, val, "fisheye_reserved_zero_3bits");
+    sei_read_code(pDecodedMessageOutputStream, 8, val, "fisheye_num_active_area_minus1");
+    info.m_fisheyeActiveAreas.resize(val+1);
+
+    for (std::size_t i = 0; i < info.m_fisheyeActiveAreas.size(); i++)
+    {
+      TComSEIFisheyeVideoInfo::ActiveAreaInfo &area=info.m_fisheyeActiveAreas[i];
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_circular_region_centre_x[i]");  area.m_fisheyeCircularRegionCentreX = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_circular_region_centre_y[i]");  area.m_fisheyeCircularRegionCentreY = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_rect_region_top[i]");           area.m_fisheyeRectRegionTop = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_rect_region_left[i]");          area.m_fisheyeRectRegionLeft = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_rect_region_width[i]");         area.m_fisheyeRectRegionWidth = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_rect_region_Height[i]");        area.m_fisheyeRectRegionHeight = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_circular_region_radius[i]");    area.m_fisheyeCircularRegionRadius = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_scene_radius[i]");              area.m_fisheyeSceneRadius = val;
+
+      sei_read_scode(pDecodedMessageOutputStream, 32, sval, "fisheye_camera_centre_azimuth[i]");   area.m_fisheyeCameraCentreAzimuth = sval;
+      sei_read_scode(pDecodedMessageOutputStream, 32, sval, "fisheye_camera_centre_elevation[i]"); area.m_fisheyeCameraCentreElevation = sval;
+      sei_read_scode(pDecodedMessageOutputStream, 32, sval, "fisheye_camera_centre_tilt[i]");      area.m_fisheyeCameraCentreTilt = sval;
+
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_camera_centre_offset_x[i]");    area.m_fisheyeCameraCentreOffsetX = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_camera_centre_offset_y[i]");    area.m_fisheyeCameraCentreOffsetY = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_camera_centre_offset_z[i]");    area.m_fisheyeCameraCentreOffsetZ = val;
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "fisheye_field_of_view[i]");             area.m_fisheyeFieldOfView = val;
+      sei_read_code(pDecodedMessageOutputStream, 16, val, "fisheye_num_polynomial_coeffs[i]");
+      area.m_fisheyePolynomialCoeff.resize(val);
+
+      for (std::size_t j = 0; j < area.m_fisheyePolynomialCoeff.size(); j++)
+      {
+        sei_read_scode(pDecodedMessageOutputStream, 32, sval, "fisheye_polynomial_coeff[i][j]");   area.m_fisheyePolynomialCoeff[j] = sval;
       }
     }
   }

@@ -104,6 +104,9 @@ public:
 #if CMP_SEI_MESSAGE
     CUBEMAP_PROJECTION                   = 151,
 #endif
+#if FVI_SEI_MESSAGE
+    FISHEYE_VIDEO_INFO                   = 152,
+#endif
 #if RWP_SEI_MESSAGE
     REGION_WISE_PACKING                  = 155, 
 #endif
@@ -958,6 +961,17 @@ public:
   std::vector<UChar>    m_rwpBottomGuardBandHeight;
   std::vector<Bool>     m_rwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpGuardBandType;
+};
+#endif
+
+#if FVI_SEI_MESSAGE
+class SEIFisheyeVideoInfo : public SEI
+{
+public:
+  PayloadType payloadType() const { return FISHEYE_VIDEO_INFO; }
+  SEIFisheyeVideoInfo() {}
+  virtual ~SEIFisheyeVideoInfo() {}
+  TComSEIFisheyeVideoInfo values;
 };
 #endif
 

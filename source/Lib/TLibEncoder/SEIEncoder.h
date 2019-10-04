@@ -95,6 +95,9 @@ public:
 #if RWP_SEI_MESSAGE
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
 #endif
+#if FVI_SEI_MESSAGE
+  Void initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *sei);
+#endif
   Void initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *sei, Int iHorFilterIndex, Int iVerFilterIndex);
   Void initSEITimeCode(SEITimeCode *sei);
   Bool initSEIColourRemappingInfo(SEIColourRemappingInfo *sei, Int currPOC); // returns true on success, false on failure.
