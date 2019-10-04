@@ -27,6 +27,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions( ${EXE_NAME} PUBLIC RExt__DECODER_DEBUG_BIT_STATISTICS=1 )
 target_compile_definitions( ${EXE_NAME} PUBLIC RExt__DECODER_DEBUG_TOOL_STATISTICS=1 )
 
+if( HIGH_BITDEPTH )
+  target_compile_definitions( ${EXE_NAME} PUBLIC RExt__HIGH_BIT_DEPTH_SUPPORT=1 )
+endif()
+
 if( SET_ENABLE_TRACING )
   if( ENABLE_TRACING )
     target_compile_definitions( ${EXE_NAME} PUBLIC ENABLE_TRACING=1 )

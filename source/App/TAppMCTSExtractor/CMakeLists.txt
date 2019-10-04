@@ -25,6 +25,10 @@ endif()
 add_executable( ${EXE_NAME} ${SRC_FILES} ${INC_FILES} ${NATVIS_FILES} )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+if( HIGH_BITDEPTH )
+  target_compile_definitions( ${EXE_NAME} PUBLIC RExt__HIGH_BIT_DEPTH_SUPPORT=1 )
+endif()
+
 if( SET_ENABLE_TRACING )
   if( ENABLE_TRACING )
     target_compile_definitions( ${EXE_NAME} PUBLIC ENABLE_TRACING=1 )

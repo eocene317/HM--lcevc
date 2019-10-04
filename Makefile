@@ -78,6 +78,10 @@ ifneq ($(address-sanitizer),)
 CMAKE_OPTIONS += -DUSE_ADDRESS_SANITIZER=ON
 endif
 
+ifneq ($(high-bitdepth),)
+CMAKE_OPTIONS += -DHIGH_BITDEPTH=ON
+endif
+
 ifneq ($(verbose),)
 CMAKE_OPTIONS += -DCMAKE_VERBOSE_MAKEFILE=ON
 endif
