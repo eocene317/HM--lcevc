@@ -2248,7 +2248,7 @@ The table below lists the SEI messages defined for Version 1 and Range-Extension
    15 & Picture snapshot                         & (Not handled)\\
    16 & Progressive refinement segment start     & (Not handled)\\
    17 & Progressive refinement segment end       & (Not handled)\\
-   19 & Film grain characteristics               & (Not handled)\\
+   19 & Film grain characteristics               & Table \ref{tab:sei-film-grain} \\
    22 & Post-filter hint                         & (Not handled)\\
    23 & Tone mapping information                 & Table \ref{tab:sei-tone-mapping-info} \\
    45 & Frame packing arrangement                & Table \ref{tab:sei-frame-packing-arrangement} \\
@@ -2270,12 +2270,17 @@ The table below lists the SEI messages defined for Version 1 and Range-Extension
   141 & Knee function information                & Table \ref{tab:sei-knee-function} \\
   142 & Colour remapping information             & Table \ref{tab:sei-colour-remapping}\\
   143 & Deinterlaced field identification        & (Not handled)\\
+  144 & Content light level info                 & Table \ref{tab:sei-content-light-level}\\
+  147 & Alternative transfer characteristics     & Table \ref{tab:sei-alternative-transfer-characteristics}\\
+  148 & Ambient viewing environment              & Table \ref{tab:sei-ambient-viewing-environment}\\
+  149 & Content colour volume                    & Table \ref{tab:sei-content-colour-volume}\\
   150 & Equirectangular projection               & Table \ref{tab:sei-erp} \\
   151 & Cubemap projection                     	 & Table \ref{tab:sei-cmp} \\
   154 & Sphere rotation                          & Table \ref{tab:sei-sphere-rotation} \\
   155 & Region-wise packing                      & Table \ref{tab:sei-rwp} \\
   156 & Omni viewport                            & Table \ref{tab:sei-omni-viewport} \\  
   158 & Motion-constrained tile set extraction information        & Table \ref{tab:sei-mcts-extract} \\
+  203 & Shutter interval information             & Table \ref{tab:sei-sii}\\
 \end{SEIListTable}
 %%
 %% SEI messages
@@ -2309,6 +2314,61 @@ SEI messages. This option has no effect if VuiParametersPresent is disabled.
 \Default{0} &
 Enables or disables the insertion of the Recovery point
 SEI messages.
+\\
+\end{OptionTableNoShorthand}
+
+
+
+\begin{OptionTableNoShorthand}{Film grain characteristics SEI message encoder parameters}{tab:sei-film-grain}
+\Option{SEIFGCEnabled} &
+\Default{0} &
+Enables or disables the insertion of the film grain characteristics SEI message.
+\\
+\Option{SEIFGCCancelFlag} &
+\Default{0} &
+Specifies the persistence of any previous film grain characteristics SEI message in output order.
+\\
+\Option{SEIFGCPersistenceFlag} &
+\Default{1} &
+Specifies the persistence of the film grain characteristics SEI message for the current layer.
+\\
+\Option{SEIFGCModelID} &
+\Default{0} &
+Specifies the film grain simulation model.
+\par
+\begin{tabular}{cp{0.35\textwidth}}
+  0 & frequency filtering \\
+  1 & auto-regression \\
+\end{tabular}
+\\
+\Option{SEIFGCSepColourDescPresentFlag} &
+\Default{0} &
+Specifies the presence of a distinct colour space description for the film grain characteristics specified in the SEI message.
+\\
+\Option{SEIFGCBlendingModeID} &
+\Default{0} &
+Specifies the blending mode used to blend the simulated film grain with the decoded images.
+\par
+\begin{tabular}{cp{0.35\textwidth}}
+  0 & additive \\
+  1 & multiplicative \\
+\end{tabular}
+\\
+\Option{SEIFGCLog2ScaleFactor} &
+\Default{0} &
+Specifies a scale factor used in the film grain characterization equations.
+\\
+\Option{SEIFGCCompModelPresentComp0} &
+\Default{0} &
+Specifies the presence of film grain modelling on colour component 0.
+\\
+\Option{SEIFGCCompModelPresentComp1} &
+\Default{0} &
+Specifies the presence of film grain modelling on colour component 1.
+\\
+\Option{SEIFGCCompModelPresentComp2} &
+\Default{0} &
+Specifies the presence of film grain modelling on colour component 2.
 \\
 \end{OptionTableNoShorthand}
 
@@ -2890,6 +2950,120 @@ An example file can be found in cfg/misc/example_colour_remapping_sei_encoder_0.
 \\
 \end{OptionTableNoShorthand}
 
+\begin{OptionTableNoShorthand}{Content light level info SEI message encoder parameters}{tab:sei-content-light-level}
+\Option{SEICLLEnabled} &
+\Default{false} &
+Enables or disables the insertion of the content light level SEI message.
+\\
+\Option{SEICLLMaxContentLightLevel} &
+\Default{4000} &
+When not equal to 0, specifies an upper bound on the maximum light level among all individual samples in a 4:4:4 representation of red, green, and blue colour primary intensities in the linear light domain for the pictures of the CLVS, in units of candelas per square metre. When equal to 0, no such upper bound is indicated.
+\\
+\Option{SEICLLMaxPicAvgLightLevel} &
+\Default{0} &
+When not equal to 0, specifies an upper bound on the maximum average light level among the samples in a 4:4:4 representation of red, green, and blue colour primary intensities in the linear light domain for any individual picture of the CLVS, in units of candelas per square metre. When equal to 0, no such upper bound is indicated.
+\\
+\end{OptionTableNoShorthand}
+
+\begin{OptionTableNoShorthand}{Alternative transfer characteristics SEI message encoder parameters}{tab:sei-alternative-transfer-characteristics}
+\Option{SEIPreferredTransferCharacteristics} &
+\Default{18} &
+Indicates a preferred alternative value for the transfer_characteristics syntax element that is indicated by the colour description syntax of VUI parameters.
+\\
+\end{OptionTableNoShorthand}
+
+
+
+\begin{OptionTableNoShorthand}{Ambient viewing environment SEI message encoder parameters}{tab:sei-ambient-viewing-environment}
+\Option{SEIAVEEnabled} &
+\Default{false} &
+Enables or disables the insertion of the ambient viewing environment SEI message.
+\\
+\Option{SEIAVEAmbientIlluminance} &
+\Default{100000} &
+Specifies the environmental illuminance of the ambient viewing environment in units of 1/10000 lux. The value of shall not be 0.
+\\
+\Option{SEIAVEAmbientLightX} &
+\Default{15635} &
+Specifies the x chromaticity coordinate, according to the CIE 1931 definition, of the environmental ambient light in the nominal viewing environment in normalized increments of 1/50000. The value shall be in the range of 0 to 50,000, inclusive.
+\\
+\Option{SEIAVEAmbientLightY} &
+\Default{16450} &
+Specifies the y chromaticity coordinate, according to the CIE 1931 definition, of the environmental ambient light in the nominal viewing environment in normalized increments of 1/50000. The value shall be in the range of 0 to 50,000, inclusive.
+\\
+\end{OptionTableNoShorthand}
+
+
+
+\begin{OptionTableNoShorthand}{Content colour volume SEI message encoder parameters}{tab:sei-content-colour-volume}
+\Option{SEICCVEnabled} &
+\Default{false} &
+Enables or disables the insertion of the content colour volume SEI message.
+\\
+\Option{SEICCVCancelFlag} &
+\Default{false} &
+Specifies the persistence of any previous content colour volume SEI message in output order.
+\\
+\Option{SEICCVPersistenceFlag} &
+\Default{true} &
+Specifies the persistence of the content colour volume SEI message for the current layer.
+\\
+\Option{SEICCVPrimariesPresent} &
+\Default{true} &
+Specifies whether the CCV primaries are present in the content colour volume SEI message.
+\\
+\Option{m_ccvSEIPrimariesX0} &
+\Default{0.300} &
+Specifies the x coordinate, according to the CIE 1931 definition, of the first (green) colour primary component in normalized increments of 1/50000.
+\\
+\Option{m_ccvSEIPrimariesY0} &
+\Default{0.600} &
+Specifies the y coordinate, according to the CIE 1931 definition, of the first (green) colour primary component in normalized increments of 1/50000.
+\\
+\Option{m_ccvSEIPrimariesX1} &
+\Default{0.150} &
+Specifies the x coordinate, according to the CIE 1931 definition, of the second (blue) colour primary component in normalized increments of 1/50000.
+\\
+\Option{m_ccvSEIPrimariesY1} &
+\Default{0.060} &
+Specifies the y coordinate, according to the CIE 1931 definition, of the second (blue) colour primary component in normalized increments of 1/50000.
+\\
+\Option{m_ccvSEIPrimariesX2} &
+\Default{0.640} &
+Specifies the x coordinate, according to the CIE 1931 definition, of the third (red) colour primary component in normalized increments of 1/50000.
+\\
+\Option{m_ccvSEIPrimariesY2} &
+\Default{0.330} &
+Specifies the y coordinate, according to the CIE 1931 definition, of the third (red) colour primary component in normalized increments of 1/50000.
+\\
+\Option{SEICCVMinLuminanceValuePresent} &
+\Default{true} &
+Specifies whether the CCV min luminance value is present in the content colour volume SEI message.
+\\
+\Option{SEICCVMinLuminanceValue} &
+\Default{0.0} &
+specifies the CCV min luminance value in the content colour volume SEI message.
+\\
+\Option{SEICCVMaxLuminanceValuePresent} &
+\Default{1} &
+Specifies whether the CCV max luminance value is present in the content colour volume SEI message.
+\\
+\Option{SEICCVMaxLuminanceValue} &
+\Default{0.1} &
+specifies the CCV max luminance value in the content colour volume SEI message.
+\\
+\Option{SEICCVAvgLuminanceValuePresent} &
+\Default{1} &
+Specifies whether the CCV avg luminance value is present in the content colour volume SEI message.
+\\
+\Option{SEICCVAvgLuminanceValue} &
+\Default{0.01} &
+specifies the CCV avg luminance value in the content colour volume SEI message.
+\\
+\end{OptionTableNoShorthand}
+
+
+
 \begin{OptionTableNoShorthand}{Equirectangular Projection SEI message encoder parameters}{tab:sei-erp}
 \Option{SEIErpEnabled} &
 \Default{false} &
@@ -3123,6 +3297,33 @@ When true (non-zero), generates example motion-constrained tile sets extraction 
 \end{itemize}
 \\
 \end{OptionTableNoShorthand}
+
+
+
+\begin{OptionTableNoShorthand}{Shutter interval info SEI message encoder parameters}{tab:sei-sii}
+\Option{SEIShutterIntervalEnabled} &
+\Default{false} &
+Enables or disables the insertion of the shutter interval info SEI message.
+\\
+\Option{SEISiiNumUnitsInShutterInterval} &
+\Default{1080000} &
+Specifies the number of time units of a clock operating at the frequency sii_time_scale Hz that corresponds to one increment of an shutter clock tick counter. 
+\\
+\Option{SEISiiTimeScale} &
+\Default{27000000} &
+Specifies the number of time units that pass in one second.
+\\
+\Option{SEISiiMaxSubLayersMinus1} &
+\Default{0} &
+The value plus 1 specifies the maximum number of temporal sub-layers that may be present in each CVS referring to the SPS. The value shall be in the range of 0 to 6. 
+\\
+\Option{SEISiiFixedShutterIntervalWithinCVSFlag} &
+\Default{true} &
+Specifies if shutter interval info is the same for all temporal sub-layers in the CVS. 
+\\
+\end{OptionTableNoShorthand}
+
+
 
 %\Option{SEITimeCode} &
 %\Default{false} &

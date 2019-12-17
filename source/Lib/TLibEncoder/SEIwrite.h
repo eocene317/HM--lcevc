@@ -119,7 +119,9 @@ protected:
 #if AR_SEI_MESSAGE
   Void xWriteSEIAnnotatedRegions                  (const SEIAnnotatedRegions& sei, const TComSPS *sps);
 #endif
-
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  Void xWriteSEIShutterInterval                   (const SEIShutterIntervalInfo& sei);
+#endif
   Void xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSPS *sps);
   Void xWriteByteAlign();
 };

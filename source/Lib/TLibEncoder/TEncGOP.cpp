@@ -493,6 +493,38 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
   }
 #endif
 
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  if (m_pcCfg->getSiiSEIEnabled())
+  {
+    SEIShutterIntervalInfo *seiShutterInterval = new SEIShutterIntervalInfo;
+    m_seiEncoder.initSEIShutterIntervalInfo(seiShutterInterval);
+    seiMessages.push_back(seiShutterInterval);
+  }
+#endif
+
+#if SEI_ENCODER_CONTROL
+// film grain
+  if (m_pcCfg->getFilmGrainCharactersticsSEIEnabled())
+  {
+    SEIFilmGrainCharacteristics *seiFGC = new SEIFilmGrainCharacteristics;
+    m_seiEncoder.initSEIFilmGrainCharacteristics(seiFGC);
+    seiMessages.push_back(seiFGC);
+  }
+// content light level
+  if (m_pcCfg->getCLLSEIEnabled())
+  {
+    SEIContentLightLevelInfo *seiCLL = new SEIContentLightLevelInfo;
+    m_seiEncoder.initSEIContentLightLevel(seiCLL);
+    seiMessages.push_back(seiCLL);
+  }
+// ambient viewing environment
+  if (m_pcCfg->getAmbientViewingEnvironmentSEIEnabled())
+  {
+    SEIAmbientViewingEnvironment *seiAVE = new SEIAmbientViewingEnvironment;
+    m_seiEncoder.initSEIAmbientViewingEnvironment(seiAVE);
+    seiMessages.push_back(seiAVE);
+  }
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
   if (m_pcCfg->getErpSEIEnabled())
   {

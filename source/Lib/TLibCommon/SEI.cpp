@@ -97,6 +97,9 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
 #if RNSEI
   , SEI::REGIONAL_NESTING
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  , SEI::SHUTTER_INTERVAL_INFO
+#endif
 });
 
 const std::vector<SEI::PayloadType> SEI::suffix_sei_messages({
@@ -332,6 +335,9 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
 #endif
 #if AR_SEI_MESSAGE
     case SEI::ANNOTATED_REGIONS:                    return "Annotated Region";
+#endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+    case SEI::SHUTTER_INTERVAL_INFO:                return "Shutter interval information";
 #endif
     default:                                        return "Unknown";
   }

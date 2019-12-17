@@ -554,6 +554,64 @@ Void SEIEncoder::initSEIContentColourVolume(SEIContentColourVolume *seiContentCo
 }
 #endif
 
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+Void SEIEncoder::initSEIShutterIntervalInfo(SEIShutterIntervalInfo *seiShutterIntervalInfo)
+{
+  assert(m_isInitialized);
+  assert(seiShutterIntervalInfo != NULL);
+  seiShutterIntervalInfo->m_siiNumUnitsInShutterInterval = m_pcCfg->getSiiSEINumUnitsInShutterInterval();
+  seiShutterIntervalInfo->m_siiTimeScale = m_pcCfg->getSiiSEITimeScale();
+  seiShutterIntervalInfo->m_siiMaxSubLayersMinus1 = m_pcCfg->getSiiSEIMaxSubLayersMinus1();
+  seiShutterIntervalInfo->m_siiFixedSIwithinCVS = m_pcCfg->getSiiSEIFixedSIwithinCVS();
+  if (seiShutterIntervalInfo->m_siiFixedSIwithinCVS == false)
+  {
+    seiShutterIntervalInfo->m_siiSubLayerNumUnitsInSI.resize(seiShutterIntervalInfo->m_siiMaxSubLayersMinus1+1);
+    for (Int i = 0; i <= seiShutterIntervalInfo->m_siiMaxSubLayersMinus1; i++)
+    {
+      seiShutterIntervalInfo->m_siiSubLayerNumUnitsInSI[i] = m_pcCfg->getSiiSEISubLayerNumUnitsInSI(i);
+    }
+  }
+}
+#endif
+
+#if SEI_ENCODER_CONTROL
+Void SEIEncoder::initSEIFilmGrainCharacteristics(SEIFilmGrainCharacteristics *seiFilmGrain)
+{
+  assert(m_isInitialized);
+  assert(seiFilmGrain != NULL);
+  //  Set SEI message parameters read from command line options
+  seiFilmGrain->m_filmGrainCharacteristicsCancelFlag      = m_pcCfg->getFilmGrainCharactersticsSEICancelFlag();
+  seiFilmGrain->m_filmGrainCharacteristicsPersistenceFlag = m_pcCfg->getFilmGrainCharactersticsSEIPersistenceFlag();
+  seiFilmGrain->m_filmGrainModelId                        = m_pcCfg->getFilmGrainCharactersticsSEIModelID();
+  seiFilmGrain->m_separateColourDescriptionPresentFlag    = m_pcCfg->getFilmGrainCharactersticsSEISepColourDescPresent();
+  seiFilmGrain->m_blendingModeId                          = m_pcCfg->getFilmGrainCharactersticsSEIBlendingModeID();
+  seiFilmGrain->m_log2ScaleFactor                         = m_pcCfg->getFilmGrainCharactersticsSEILog2ScaleFactor();
+  for (int i = 0; i < MAX_NUM_COMPONENT; i++)
+  {
+    seiFilmGrain->m_compModel[i].bPresentFlag = m_pcCfg->getFGCSEICompModelPresent(i);
+  }
+}
+
+Void SEIEncoder::initSEIContentLightLevel(SEIContentLightLevelInfo *seiCLL)
+{
+  assert(m_isInitialized);
+  assert(seiCLL != NULL);
+  //  Set SEI message parameters read from command line options
+  seiCLL->m_maxContentLightLevel = m_pcCfg->getCLLSEIMaxContentLightLevel();
+  seiCLL->m_maxPicAverageLightLevel = m_pcCfg->getCLLSEIMaxPicAvgLightLevel();
+}
+
+Void SEIEncoder::initSEIAmbientViewingEnvironment(SEIAmbientViewingEnvironment *seiAmbViewEnvironment)
+{
+  assert(m_isInitialized);
+  assert(seiAmbViewEnvironment != NULL);
+  //  Set SEI message parameters read from command line options
+  seiAmbViewEnvironment->m_ambientIlluminance = m_pcCfg->getAmbientViewingEnvironmentSEIIlluminance();
+  seiAmbViewEnvironment->m_ambientLightX = m_pcCfg->getAmbientViewingEnvironmentSEIAmbientLightX();
+  seiAmbViewEnvironment->m_ambientLightY = m_pcCfg->getAmbientViewingEnvironmentSEIAmbientLightY();
+}
+#endif
+
 #if ERP_SR_OV_SEI_MESSAGE
 Void SEIEncoder::initSEIErp(SEIEquirectangularProjection* seiEquirectangularProjection)
 {

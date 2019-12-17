@@ -440,6 +440,36 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setRwpSEIRwpGuardBandNotUsedForPredFlag              (m_rwpSEIRwpGuardBandNotUsedForPredFlag);
   m_cTEncTop.setRwpSEIRwpGuardBandType                            (m_rwpSEIRwpGuardBandType);
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  m_cTEncTop.setSiiSEIEnabled                                     (m_siiSEIEnabled);
+  m_cTEncTop.setSiiSEINumUnitsInShutterInterval                   (m_siiSEINumUnitsInShutterInterval);
+  m_cTEncTop.setSiiSEITimeScale                                   (m_siiSEITimeScale);
+  m_cTEncTop.setSiiSEIMaxSubLayersMinus1                          (m_siiSEIMaxSubLayersMinus1);
+  m_cTEncTop.setSiiSEIFixedSIwithinCVS                            (m_siiSEIFixedSIwithinCVS);
+  m_cTEncTop.setSiiSEISubLayerNumUnitsInSI                        (m_siiSEISubLayerNumUnitsInSI);
+#endif
+#if SEI_ENCODER_CONTROL
+// film grain charcteristics
+  m_cTEncTop.setFilmGrainCharactersticsSEIEnabled                 (m_fgcSEIEnabled);
+  m_cTEncTop.setFilmGrainCharactersticsSEICancelFlag              (m_fgcSEICancelFlag);
+  m_cTEncTop.setFilmGrainCharactersticsSEIPersistenceFlag         (m_fgcSEIPersistenceFlag);
+  m_cTEncTop.setFilmGrainCharactersticsSEIModelID                 ((UChar)m_fgcSEIModelID);
+  m_cTEncTop.setFilmGrainCharactersticsSEISepColourDescPresent    (m_fgcSEISepColourDescPresentFlag);
+  m_cTEncTop.setFilmGrainCharactersticsSEIBlendingModeID          ((UChar)m_fgcSEIBlendingModeID);
+  m_cTEncTop.setFilmGrainCharactersticsSEILog2ScaleFactor         ((UChar)m_fgcSEILog2ScaleFactor);
+  for (int i = 0; i < MAX_NUM_COMPONENT; i++) {
+    m_cTEncTop.setFGCSEICompModelPresent                          (m_fgcSEICompModelPresent[i], i);
+  }
+// content light level
+  m_cTEncTop.setCLLSEIEnabled                                     (m_cllSEIEnabled);
+  m_cTEncTop.setCLLSEIMaxContentLightLevel                        ((UShort)m_cllSEIMaxContentLevel);
+  m_cTEncTop.setCLLSEIMaxPicAvgLightLevel                         ((UShort)m_cllSEIMaxPicAvgLevel);
+// ambient viewing enviornment
+  m_cTEncTop.setAmbientViewingEnvironmentSEIEnabled               (m_aveSEIEnabled);
+  m_cTEncTop.setAmbientViewingEnvironmentSEIIlluminance           (m_aveSEIAmbientIlluminance);
+  m_cTEncTop.setAmbientViewingEnvironmentSEIAmbientLightX         ((UShort)m_aveSEIAmbientLightX);
+  m_cTEncTop.setAmbientViewingEnvironmentSEIAmbientLightY         ((UShort)m_aveSEIAmbientLightY);
+#endif
 #if FVI_SEI_MESSAGE
   if (m_fisheyeVIdeoInfoSEIEnabled)
   {
