@@ -772,7 +772,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   UInt cfg_fviSEIFisheyeNumActiveAreasMinus1=0;
 #endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
-  SMultiValueInput<UInt>   cfg_siiSEISubLayerNumUnitsInSI             (0, 4294967295, 0, 7);
+  SMultiValueInput<UInt>   cfg_siiSEISubLayerNumUnitsInSI             (0, MAX_UINT, 0, 7);
 #endif
   Int warnUnknowParameter = 0;
   po::Options opts;
@@ -2065,8 +2065,8 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   if (m_siiSEIEnabled)
   {
-    assert(m_siiSEINumUnitsInShutterInterval >= 0 && m_siiSEINumUnitsInShutterInterval <= 4294967295);
-    assert(m_siiSEITimeScale >= 0 && m_siiSEITimeScale <= 4294967295);
+    assert(m_siiSEINumUnitsInShutterInterval >= 0 && m_siiSEINumUnitsInShutterInterval <= MAX_UINT);
+    assert(m_siiSEITimeScale >= 0 && m_siiSEITimeScale <= MAX_UINT);
     assert(m_siiSEIMaxSubLayersMinus1 >=0 && m_siiSEIMaxSubLayersMinus1 <= 6);
     if (!m_siiSEIFixedSIwithinCVS)
     {
@@ -2074,7 +2074,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       for (Int i = 0; i <= m_siiSEIMaxSubLayersMinus1; i++)
       {
         m_siiSEISubLayerNumUnitsInSI[i] = cfg_siiSEISubLayerNumUnitsInSI.values[i];
-        assert(m_siiSEISubLayerNumUnitsInSI[i] >= 0 && m_siiSEISubLayerNumUnitsInSI[i] <= 4294967295);
+        assert(m_siiSEISubLayerNumUnitsInSI[i] >= 0 && m_siiSEISubLayerNumUnitsInSI[i] <= MAX_UINT);
       }
     }
   }

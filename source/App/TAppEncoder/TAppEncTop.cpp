@@ -457,7 +457,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setFilmGrainCharactersticsSEISepColourDescPresent    (m_fgcSEISepColourDescPresentFlag);
   m_cTEncTop.setFilmGrainCharactersticsSEIBlendingModeID          ((UChar)m_fgcSEIBlendingModeID);
   m_cTEncTop.setFilmGrainCharactersticsSEILog2ScaleFactor         ((UChar)m_fgcSEILog2ScaleFactor);
-  for (int i = 0; i < MAX_NUM_COMPONENT; i++) {
+  for (Int i = 0; i < MAX_NUM_COMPONENT; i++) {
     m_cTEncTop.setFGCSEICompModelPresent                          (m_fgcSEICompModelPresent[i], i);
   }
 // content light level

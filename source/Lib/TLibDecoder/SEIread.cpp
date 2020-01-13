@@ -1589,7 +1589,7 @@ Void SEIReader::xParseSEIShutterInterval(SEIShutterIntervalInfo& sei, UInt paylo
   sei_read_code(pDecodedMessageOutputStream, 32, val, "sii_num_units_in_shutter_interval");   sei.m_siiNumUnitsInShutterInterval = val;
   sei_read_code(pDecodedMessageOutputStream, 32, val, "sii_time_scale");                      sei.m_siiTimeScale = val;
   sei_read_code(pDecodedMessageOutputStream, 3,  val, "sii_max_sub_layers_minus1 ");          sei.m_siiMaxSubLayersMinus1 = val;
-  sei_read_flag(pDecodedMessageOutputStream, val, "fixed_shutter_interval_within_cvs_flag");  sei.m_siiFixedSIwithinCVS = val;
+  sei_read_flag(pDecodedMessageOutputStream, val, "fixed_shutter_interval_within_clvs_flag"); sei.m_siiFixedSIwithinCVS = val;
   if (!sei.m_siiFixedSIwithinCVS)
   {
     sei.m_siiSubLayerNumUnitsInSI.resize(sei.m_siiMaxSubLayersMinus1 + 1);
