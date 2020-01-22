@@ -1148,12 +1148,15 @@ Void SEIWriter::xWriteSEIContentColourVolume(const SEIContentColourVolume &sei)
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 Void SEIWriter::xWriteSEIShutterInterval(const SEIShutterIntervalInfo &sei)
 {
-  WRITE_CODE(sei.m_siiNumUnitsInShutterInterval, 32, "sii_num_units_in_shutter_interval");
   WRITE_CODE(sei.m_siiTimeScale, 32, "sii_time_scale");
-  WRITE_CODE(sei.m_siiMaxSubLayersMinus1, 3, "sii_max_sub_layers_minus1");
-  WRITE_FLAG(sei.m_siiFixedSIwithinCVS, "fixed_shutter_interval_within_clvs_flag");
-  if (!sei.m_siiFixedSIwithinCVS)
+  WRITE_FLAG(sei.m_siiFixedSIwithinCLVS, "fixed_shutter_interval_within_clvs_flag");
+  if (sei.m_siiFixedSIwithinCLVS)
   {
+    WRITE_CODE(sei.m_siiNumUnitsInShutterInterval, 32, "sii_num_units_in_shutter_interval");
+  }
+  else
+  {
+    WRITE_CODE(sei.m_siiMaxSubLayersMinus1, 3, "sii_max_sub_layers_minus1");
     for (UInt i = 0; i <= sei.m_siiMaxSubLayersMinus1; i++)
     {
       WRITE_CODE(sei.m_siiSubLayerNumUnitsInSI[i], 32, "sub_layer_num_units_in_shutter_interval[ i ]");

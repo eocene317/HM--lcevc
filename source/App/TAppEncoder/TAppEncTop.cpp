@@ -445,7 +445,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setSiiSEINumUnitsInShutterInterval                   (m_siiSEINumUnitsInShutterInterval);
   m_cTEncTop.setSiiSEITimeScale                                   (m_siiSEITimeScale);
   m_cTEncTop.setSiiSEIMaxSubLayersMinus1                          (m_siiSEIMaxSubLayersMinus1);
-  m_cTEncTop.setSiiSEIFixedSIwithinCVS                            (m_siiSEIFixedSIwithinCVS);
+  m_cTEncTop.setSiiSEIFixedSIwithinCLVS                           (m_siiSEIFixedSIwithinCLVS);
   m_cTEncTop.setSiiSEISubLayerNumUnitsInSI                        (m_siiSEISubLayerNumUnitsInSI);
 #endif
 #if SEI_ENCODER_CONTROL

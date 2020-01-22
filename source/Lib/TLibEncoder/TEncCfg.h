@@ -466,7 +466,7 @@ protected:
   UInt      m_siiSEINumUnitsInShutterInterval;
   UInt      m_siiSEITimeScale;
   UInt      m_siiSEIMaxSubLayersMinus1;
-  Bool      m_siiSEIFixedSIwithinCVS;
+  Bool      m_siiSEIFixedSIwithinCLVS;
   std::vector<UInt>     m_siiSEISubLayerNumUnitsInSI;
 #endif
 #if SEI_ENCODER_CONTROL
@@ -1049,8 +1049,8 @@ public:
   UInt     getSiiSEITimeScale()                                      { return m_siiSEITimeScale; }
   Void     setSiiSEIMaxSubLayersMinus1(UInt value)                   { m_siiSEIMaxSubLayersMinus1 = value; }
   UInt     getSiiSEIMaxSubLayersMinus1()                             { return m_siiSEIMaxSubLayersMinus1; }
-  Void     setSiiSEIFixedSIwithinCVS(Bool b)                         { m_siiSEIFixedSIwithinCVS = b; }
-  Bool     getSiiSEIFixedSIwithinCVS()                               { return m_siiSEIFixedSIwithinCVS; }
+  Void     setSiiSEIFixedSIwithinCLVS(Bool b)                        { m_siiSEIFixedSIwithinCLVS = b; }
+  Bool     getSiiSEIFixedSIwithinCLVS()                              { return m_siiSEIFixedSIwithinCLVS; }
   Void     setSiiSEISubLayerNumUnitsInSI(const std::vector<UInt>& b) { m_siiSEISubLayerNumUnitsInSI = b; }
   UInt     getSiiSEISubLayerNumUnitsInSI(UInt idx) const { return m_siiSEISubLayerNumUnitsInSI[idx]; }
 #endif

@@ -990,7 +990,7 @@ public:
   UInt                  m_siiNumUnitsInShutterInterval;
   UInt                  m_siiTimeScale;
   UInt                  m_siiMaxSubLayersMinus1;
-  Bool                  m_siiFixedSIwithinCVS;
+  Bool                  m_siiFixedSIwithinCLVS;
   std::vector<UInt>     m_siiSubLayerNumUnitsInSI;
 };
 #endif

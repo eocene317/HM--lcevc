@@ -1223,10 +1223,10 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 #endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   ("SEIShutterIntervalEnabled",                       m_siiSEIEnabled,                           false,                                   "Controls if shutter interval information SEI message is enabled")
-  ("SEISiiNumUnitsInShutterInterval",                 m_siiSEINumUnitsInShutterInterval,         1080000u,                                "Specifies sii_num_units_in_shutter_interval ")
-  ("SEISiiTimeScale",                                 m_siiSEITimeScale,                         27000000u,                               "Specifies sii_time_scale ")
-  ("SEISiiMaxSubLayersMinus1",                        m_siiSEIMaxSubLayersMinus1,                0u,                                      "Specifies sii_max_sub_layers_minus1 ")
-  ("SEISiiFixedShutterIntervalWithinCVSFlag",         m_siiSEIFixedSIwithinCVS,                  false,                                   "Specifies fixed_shutter_interval_within_cvs_flag")
+  ("SEISiiTimeScale",                                 m_siiSEITimeScale,                         27000000u,                               "Specifies sii_time_scale")
+  ("SEISiiFixedShutterIntervalWithinCLVSFlag",        m_siiSEIFixedSIwithinCLVS,                 true,                                    "Specifies fixed_shutter_interval_within_clvs_flag")
+  ("SEISiiNumUnitsInShutterInterval",                 m_siiSEINumUnitsInShutterInterval,         1080000u,                                "Specifies sii_num_units_in_shutter_interval")
+  ("SEISiiMaxSubLayersMinus1",                        m_siiSEIMaxSubLayersMinus1,                0u,                                      "Specifies sii_max_sub_layers_minus1")
   ("SEISiiSubLayerNumUnitsInShutterInterval",         cfg_siiSEISubLayerNumUnitsInSI,            cfg_siiSEISubLayerNumUnitsInSI,          "Specifies sub_layer_num_units_in_shutter_interval")
 #endif
 #if SEI_ENCODER_CONTROL
@@ -2068,7 +2068,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
     assert(m_siiSEINumUnitsInShutterInterval >= 0 && m_siiSEINumUnitsInShutterInterval <= MAX_UINT);
     assert(m_siiSEITimeScale >= 0 && m_siiSEITimeScale <= MAX_UINT);
     assert(m_siiSEIMaxSubLayersMinus1 >=0 && m_siiSEIMaxSubLayersMinus1 <= 6);
-    if (!m_siiSEIFixedSIwithinCVS)
+    if (!m_siiSEIFixedSIwithinCLVS)
     {
       m_siiSEISubLayerNumUnitsInSI.resize(m_siiSEIMaxSubLayersMinus1 + 1);
       for (Int i = 0; i <= m_siiSEIMaxSubLayersMinus1; i++)
