@@ -14,10 +14,10 @@ stages:
          - $CI_PROJECT_URL == 'https://vcgit.hhi.fraunhofer.de/jct-vc/HM'
          - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'master'
 
-#build_macos:
-#   extends: .build_template
-#   tags:
-#      - macos
+build_macos:
+   extends: .build_template
+   tags:
+      - macos
 
 build_ubuntu1604:
    extends: .build_template
