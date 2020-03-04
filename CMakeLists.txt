@@ -117,15 +117,6 @@ if( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
   endif()
 endif()
 
-# modify .lldbinit for lldb custom data formatters
-if( XCODE )
-  set( LLDB_INSTALL_ROOT "$ENV{HOME}/.lldb.d" )
-  set( LLDBINIT_FILE "$ENV{HOME}/.lldbinit" )
-  set( ENABLE_LLDBINIT_UPDATE ON )
-  # add custom target to install LLDB files.
-  add_subdirectory( "lldb" )
-endif()
-
 # add needed subdirectories
 add_subdirectory( "source/Lib/TLibCommon" )
 add_subdirectory( "source/Lib/TLibCommonAnalyser" )

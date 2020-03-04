@@ -50,11 +50,6 @@ if( EXTENSION_360_VIDEO )
   target_link_libraries( ${EXE_NAME} Lib360 AppEncHelper360 )
 endif()
 
-# lldb custom data formatters
-if( XCODE )
-  add_dependencies( ${EXE_NAME} Install${PROJECT_NAME}LldbFiles )
-endif()
-
 if( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
   add_custom_command( TARGET ${EXE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
                                                           $<$<CONFIG:Debug>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}/TAppEncoder>
