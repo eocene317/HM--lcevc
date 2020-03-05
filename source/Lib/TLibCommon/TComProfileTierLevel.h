@@ -127,11 +127,11 @@ class ProfileLevelTierFeatures
   private:
     const ProfileFeatures   *m_pProfile;
     const LevelTierFeatures *m_pLevelTier;
-    UInt                     m_hbrFactor;               // currently not used for checking
+   // UInt                     m_hbrFactor;               // currently not used for checking
     Level::Tier              m_tier;
     UInt                     m_maxRawCtuBits;
   public:
-    ProfileLevelTierFeatures() : m_pProfile(0), m_pLevelTier(0), m_hbrFactor(0), m_tier(Level::MAIN), m_maxRawCtuBits(0) { }
+    ProfileLevelTierFeatures() : m_pProfile(0), m_pLevelTier(0), m_tier(Level::MAIN), m_maxRawCtuBits(0) { }
 
     Void activate(const Profile::Name profileIdc,
                   const UInt          bitDepthConstraint,
