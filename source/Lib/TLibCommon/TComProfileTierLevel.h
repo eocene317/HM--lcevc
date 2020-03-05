@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2017, ITU/ISO/IEC
+ * Copyright (c) 2010-2020, ITU/ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,17 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file     TDecConformance.h
-    \brief    Decoder conformance functions (header)
+/** \file     TComProfileTierLevel.h
+    \brief    Common profile tier level functions (header)
 */
 
-#ifndef __TDECCONFORMANCE__
-#define __TDECCONFORMANCE__
-
-// This can be enabled externally. Note that this is a PARTIAL CONFORMANCE CHECK - not a full check. More checks may be added later
-#ifndef DECODER_PARTIAL_CONFORMANCE_CHECK
-#define DECODER_PARTIAL_CONFORMANCE_CHECK                 0 ///< 0 (default) = do not check conformance. 1 = warn if conformance checks fail. 2 = error and quit if conformance checks fail. Note this is only a partial conformance check - not a full conformance check.
-#endif
+#ifndef __TCOMPROFILETIERLEVEL__
+#define __TCOMPROFILETIERLEVEL__
 
 
 
@@ -50,33 +45,13 @@
 #endif // _MSC_VER > 1000
 
 #include "TLibCommon/CommonDef.h"
-#if DPB_ENCODER_USAGE_CHECK
-#include "TLibCommon/TComProfileTierLevel.h"
-#endif
 #include <stdio.h>
 #include <iostream>
-#if DECODER_PARTIAL_CONFORMANCE_CHECK == 2
-#include <stdlib.h>
-#endif
 
 
 // Forward declarations
-class TComSlice;
-#if !DPB_ENCODER_USAGE_CHECK
 class TComSPS;
-class TComPPS;
-#endif
-class InputNALUnit;
-class TComPTL;
-class TComPic;
-
-#if !DPB_ENCODER_USAGE_CHECK
-typedef enum TRISTATE
-{
-  DISABLED=0,
-  OPTIONAL=1,
-  ENABLED=2
-} TRISTATE;
+class ProfileTierLevel;
 
 
 typedef enum HBRFACTOREQN
@@ -105,6 +80,14 @@ struct LevelTierFeatures
 
 struct ProfileFeatures
 {
+
+  typedef enum TRISTATE
+  {
+    DISABLED=0,
+    OPTIONAL=1,
+    ENABLED=2
+  } TRISTATE;
+
   Profile::Name            profile;
   const TChar            *pNameString;
   UInt                     maxBitDepth;
@@ -150,6 +133,18 @@ class ProfileLevelTierFeatures
   public:
     ProfileLevelTierFeatures() : m_pProfile(0), m_pLevelTier(0), m_hbrFactor(0), m_tier(Level::MAIN), m_maxRawCtuBits(0) { }
 
+    Void activate(const Profile::Name profileIdc,
+                  const UInt          bitDepthConstraint,
+                  const ChromaFormat  chromaFormatConstraint,
+                  const Bool          intraConstraintFlag,
+                  const Bool          onePictureOnlyConstraintFlag,
+                  const Level::Name   level,
+                  const Level::Tier   tier,
+                  const UInt          ctbSizeY,
+                  const UInt          bitDepthY,
+                  const UInt          bitDepthC,
+                  const ChromaFormat  chFormat);
+
     Void activate(const TComSPS &sps);
 
     const ProfileFeatures     *getProfileFeatures()   const { return m_pProfile; }
@@ -157,114 +152,9 @@ class ProfileLevelTierFeatures
     Level::Tier                getTier() const { return m_tier; }
     UInt64 getCpbSizeInBits()            const { return (m_pLevelTier!=0 && m_pProfile!=0) ? UInt64(m_pProfile->cpbVclFactor) * m_pLevelTier->maxCpb[m_tier?1:0] : UInt64(0); }
     Double getMinCr()                    const { return (m_pLevelTier!=0 && m_pProfile!=0) ? (m_pProfile->minCrScaleFactorx10 * m_pLevelTier->minCrBase[m_tier?1:0])/10.0 : 0.0 ; }   // currently not used for checking
-    UInt getMaxRawCtuBits()              const { return m_maxRawCtuBits; }
-};
-#endif
+    UInt   getMaxRawCtuBits()            const { return m_maxRawCtuBits; }
+    Int    getMaxDPBNumFrames(const UInt PicSizeInSamplesY); // returns -1 if no limit, otherwise a limit of DPB pictures is indicated.
 
-
-class TDecConformanceCheck
-{
-private:
-#if MCTS_ENC_CHECK
-  Bool m_tmctsCheckEnabled;
-#endif
-#if DECODER_PARTIAL_CONFORMANCE_CHECK
-  UInt  m_numberOfSlicesInPicture;
-  UInt64 m_bytesInPicture;
-#endif
-  ProfileLevelTierFeatures m_activatedFeatures;
-
-public:
-
-  // Static member functions
-
-  static inline Bool doChecking()
-  {
-    return DECODER_PARTIAL_CONFORMANCE_CHECK != 0;
-  }
-
-  static UInt getMinLog2CtbSize(const TComPTL &ptl, UInt layerPlus1=0);
-  static UInt getMaxLog2CtbSize(const TComPTL &ptl, UInt layerPlus1=0);
-
-
-#if DECODER_PARTIAL_CONFORMANCE_CHECK == 0
-  static inline std::ostream &getStream()  { return std::cout; }
-
-  static inline Void finishWarningReport() { }
-
-  template <class T>
-  static Void checkRange(const T& , const TChar *, const T& , const T& ) { }
-
-#else
-
-
-  static inline std::ostream &getStream()
-  {
-#if DECODER_PARTIAL_CONFORMANCE_CHECK == 1
-    std::cout << "WARNING: Conformance failure - ";
-    return std::cout;
-#else
-    std::cerr << "ERROR: Conformance failure - ";
-    return std::cerr;
-#endif
-  }
-
-  static inline Void finishWarningReport()
-  {
-#if DECODER_PARTIAL_CONFORMANCE_CHECK == 2
-    exit(1);
-#endif
-  }
-
-  template <class T>
-  static Void checkRange(const T& val, const TChar *name, const T& minValInclusive, const T& maxValInclusive)
-  {
-    if (val<minValInclusive || val>maxValInclusive)
-    {
-      getStream() << name << " must be in the range of " << minValInclusive << " to " << maxValInclusive << " (inclusive) - decoded value of " << val << "\n";
-      finishWarningReport();
-    }
-  }
-
-#endif
-
-
-  // Member functions
-
-  TDecConformanceCheck();
-
-#if DECODER_PARTIAL_CONFORMANCE_CHECK == 0
-  Void
-  checkSliceActivation(const TComSlice &/*slice*/,
-                       const InputNALUnit &/*nalu*/,
-                       const TComPic &/*pic*/,
-                       const Bool /*bFirstSliceInStream*/,
-                       const Bool /*bFirstSliceInSequence*/,
-                       const Bool /*bFirstSliceInPicture*/) { }
-
-  Void
-  checkCtuDecoding(const UInt numUsedBits) { }
-#else
-  Void
-  checkSliceActivation(const TComSlice &slice,
-                       const InputNALUnit &nalu,
-                       const TComPic &pic,
-                       const Bool bFirstSliceInStream,
-                       const Bool bFirstSliceInSequence,
-                       const Bool bFirstSliceInPicture);
-
-  Void
-  checkCtuDecoding(const UInt numUsedBits);
-#endif
-
-#if MCTS_ENC_CHECK
-  Void enableTMctsCheck(Bool enabled) { m_tmctsCheckEnabled = enabled; };
-  Bool getTMctsCheck() const { return m_tmctsCheckEnabled;  }
-  Void flagTMctsError(const char *error)
-  {
-    fprintf(stderr, "TMCTS check error: %s\n", error);
-  }
-#endif
 };
 
 

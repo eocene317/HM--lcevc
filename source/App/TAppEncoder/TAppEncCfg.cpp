@@ -45,6 +45,9 @@
 #include <map>
 
 #include "TLibCommon/TComRom.h"
+#if DPB_ENCODER_USAGE_CHECK
+#include "TLibCommon/TComProfileTierLevel.h"
+#endif
 
 template <class T1, class T2>
 static inline std::istream& operator >> (std::istream &in, std::map<T1, T2> &map);
@@ -335,12 +338,14 @@ strToLevel[] =
   {"8.5", Level::LEVEL8_5},
 };
 
+#if !DPB_ENCODER_USAGE_CHECK
 UInt g_uiMaxCpbSize[2][21] =
 {
   //         LEVEL1,        LEVEL2,LEVEL2_1,     LEVEL3, LEVEL3_1,      LEVEL4, LEVEL4_1,       LEVEL5,  LEVEL5_1,  LEVEL5_2,    LEVEL6,  LEVEL6_1,  LEVEL6_2 
   { 0, 0, 0, 350000, 0, 0, 1500000, 3000000, 0, 6000000, 10000000, 0, 12000000, 20000000, 0,  25000000,  40000000,  60000000,  60000000, 120000000, 240000000 },
   { 0, 0, 0,      0, 0, 0,       0,       0, 0,       0,        0, 0, 30000000, 50000000, 0, 100000000, 160000000, 240000000, 240000000, 480000000, 800000000 }
 };
+#endif
 
 static const struct MapStrToCostMode
 {
@@ -2217,6 +2222,13 @@ Void TAppEncCfg::xCheckParameter()
   }
 #endif
 
+#if DPB_ENCODER_USAGE_CHECK
+  ProfileLevelTierFeatures profileLevelTierFeatures;
+  profileLevelTierFeatures.activate(m_profile, m_bitDepthConstraint, m_chromaFormatConstraint, m_intraConstraintFlag, m_onePictureOnlyConstraintFlag,
+                                    m_level, m_levelTier,
+                                    m_uiMaxCUWidth, m_internalBitDepth[CHANNEL_TYPE_LUMA], m_internalBitDepth[CHANNEL_TYPE_CHROMA], m_chromaFormatIDC);
+#endif
+
   xConfirmPara( (m_MSBExtendedBitDepth[CHANNEL_TYPE_LUMA  ] < m_inputBitDepth[CHANNEL_TYPE_LUMA  ]), "MSB-extended bit depth for luma channel (--MSBExtendedBitDepth) must be greater than or equal to input bit depth for luma channel (--InputBitDepth)" );
   xConfirmPara( (m_MSBExtendedBitDepth[CHANNEL_TYPE_CHROMA] < m_inputBitDepth[CHANNEL_TYPE_CHROMA]), "MSB-extended bit depth for chroma channel (--MSBExtendedBitDepthC) must be greater than or equal to input bit depth for chroma channel (--InputBitDepthC)" );
 
@@ -2532,6 +2544,9 @@ Void TAppEncCfg::xCheckParameter()
       else
       {
         //create a new GOPEntry for this frame containing all the reference pictures that were available (POC > 0)
+#if DPB_ENCODER_USAGE_CHECK
+        assert(m_iGOPSize+m_extraRPSs < MAX_GOP);
+#endif
         m_GOPList[m_iGOPSize+m_extraRPSs]=m_GOPList[curGOP];
         Int newRefs=0;
         for(Int i = 0; i< m_GOPList[curGOP].m_numRefPics; i++)
@@ -2728,6 +2743,21 @@ Void TAppEncCfg::xCheckParameter()
     m_maxDecPicBuffering[MAX_TLAYER-1] = m_numReorderPics[MAX_TLAYER-1] + 1;
   }
 
+#if DPB_ENCODER_USAGE_CHECK
+  // Check DPB Usage:
+  Int dpbSize=profileLevelTierFeatures.getMaxDPBNumFrames(m_iSourceWidth*m_iSourceHeight);
+  if (dpbSize!=-1)
+  {
+    Int dpbUsage=xDPBUsage(0);
+
+    if (dpbUsage > dpbSize)
+    {
+      std::cout << "WARNING - DPB SIZE (" << dpbSize << " pictures) IS LIKELY TO HAVE BEEN EXCEEDED:\n";
+      xDPBUsage(&(std::cout));
+    }
+  }
+#endif
+
   if(m_vuiParametersPresentFlag && m_bitstreamRestrictionFlag)
   {
     Int PicSizeInSamplesY =  m_iSourceWidth * m_iSourceHeight;
@@ -2849,10 +2879,16 @@ Void TAppEncCfg::xCheckParameter()
       }
     }
     xConfirmPara( m_uiDeltaQpRD > 0, "Rate control cannot be used together with slice level multiple-QP optimization!\n" );
+#if DPB_ENCODER_USAGE_CHECK
+    if ((m_RCCpbSaturationEnabled) && profileLevelTierFeatures.getCpbSizeInBits()!=0)
+    {
+      xConfirmPara(m_RCCpbSize > profileLevelTierFeatures.getCpbSizeInBits(), "RCCpbSize should be smaller than or equal to Max CPB size according to tier and level");
+#else
     if ((m_RCCpbSaturationEnabled) && (m_level!=Level::NONE) && (m_profile!=Profile::NONE))
     {
       UInt uiLevelIdx = (m_level / 10) + (UInt)((m_level % 10) / 3);    // (m_level / 30)*3 + ((m_level % 10) / 3);
       xConfirmPara(m_RCCpbSize > g_uiMaxCpbSize[m_levelTier][uiLevelIdx], "RCCpbSize should be smaller than or equal to Max CPB size according to tier and level");
+#endif
       xConfirmPara(m_RCInitialCpbFullness > 1, "RCInitialCpbFullness should be smaller than or equal to 1");
     }
   }
@@ -2979,6 +3015,84 @@ const TChar *profileToString(const Profile::Name profile)
   exit(1);
   return "";
 }
+
+#if DPB_ENCODER_USAGE_CHECK
+
+Int TAppEncCfg::xDPBUsage(std::ostream *pOs)
+{
+  Int minimumOffset=0;
+
+  // Calculate minimum delay caused by the gop structure - i.e. the biggest positive difference between the decoding and display order.
+
+  for(Int gopEntry=0; gopEntry<m_iGOPSize; gopEntry++)
+  {
+    Int poc=m_GOPList[gopEntry].m_POC;
+    minimumOffset=std::max<Int>(minimumOffset, gopEntry-poc);
+  }
+
+  if (pOs)
+  {
+    (*pOs) << "POCs marked with 'r' are reference frames. '!' are awaiting output.\n";
+  }
+
+  Int maxNumInDPB=0;
+  for(Int gopEntry=0; gopEntry<m_iGOPSize; gopEntry++)
+  {
+    if (pOs)
+    {
+      (*pOs) << "DPB Usage for GOP#" << std::setw(3) << gopEntry+1 << ": POC="
+             << std::setw(3) << m_GOPList[gopEntry].m_POC << " Decoder output POC=" << std::setw(4) << gopEntry-minimumOffset << " frames= ";
+      for(Int i=0; i<m_GOPList[gopEntry].m_numRefPics; i++)
+      {
+        Int rplPoc=m_GOPList[gopEntry].m_referencePics[i]+m_GOPList[gopEntry].m_POC;
+        (*pOs) << "  r" << std::setw(3) << rplPoc;
+      }
+    }
+    Int numInDPB=m_GOPList[gopEntry].m_numRefPics + 1; // 1 additional one required for the frame currently being decoded.
+    // When decoding gopEntry N, the decoder will be outputing POC N-minimumOffset, and we must make sure all POCs in the range (POC N-minimumOffset to POC N) are allocated space in the DPB.
+    // When decoding gopEntry N+minimumOffset, the decoder will be outputing POC N
+    for(Int n=gopEntry-minimumOffset; n<=gopEntry; n++)
+    {
+      // check if 'n' exists in the reference picture lists:
+      Bool bNeeded=true;
+      for(Int i=0; i<m_GOPList[gopEntry].m_numRefPics && bNeeded; i++)
+      {
+        Int rplPoc=m_GOPList[gopEntry].m_referencePics[i]+m_GOPList[gopEntry].m_POC;
+        bNeeded=(rplPoc!=n);
+      }
+      if (bNeeded && n>=0)
+      {
+        // 'n' is positive, so check that it has already been decoded within this GOP.
+        bNeeded=false;
+        for(Int i=0; i<gopEntry && !bNeeded; i++)
+        {
+          bNeeded=m_GOPList[i].m_POC == n;
+        }
+
+      }
+      if (bNeeded)
+      {
+        numInDPB++;
+        if (pOs)
+        {
+          (*pOs) << "  !" << std::setw(3)<< n;
+        }
+      }
+    }
+    maxNumInDPB=std::max(maxNumInDPB, numInDPB);
+    if (pOs)
+    {
+      (*pOs) << std::endl;
+    }
+  }
+  if (pOs)
+  {
+    (*pOs) << "Maximum number of pictures required in DPB:" << maxNumInDPB << std::endl;
+  }
+
+  return maxNumInDPB;
+}
+#endif
 
 Void TAppEncCfg::xPrintParameter()
 {
