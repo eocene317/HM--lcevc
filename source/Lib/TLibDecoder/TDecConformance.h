@@ -51,7 +51,7 @@
 
 #include "TLibCommon/CommonDef.h"
 #if DPB_ENCODER_USAGE_CHECK
-#include "TLibCommon/TComProfileTierLevel.h"
+#include "TLibCommon/ProfileLevelTierFeatures.h"
 #endif
 #include <stdio.h>
 #include <iostream>

@@ -31,12 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file     TComProfileTierLevel.h
+/** \file     ProfileLevelTierFeatures.h
     \brief    Common profile tier level functions (header)
 */
 
-#ifndef __TCOMPROFILETIERLEVEL__
-#define __TCOMPROFILETIERLEVEL__
+#ifndef __PROFILELEVELTIERFEATURES__
+#define __PROFILELEVELTIERFEATURES__
 
 
 

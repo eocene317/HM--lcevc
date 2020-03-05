@@ -46,7 +46,7 @@
 
 #include "TLibCommon/TComRom.h"
 #if DPB_ENCODER_USAGE_CHECK
-#include "TLibCommon/TComProfileTierLevel.h"
+#include "TLibCommon/ProfileLevelTierFeatures.h"
 #endif
 
 template <class T1, class T2>

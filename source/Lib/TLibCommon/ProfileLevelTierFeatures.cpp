@@ -31,15 +31,15 @@
 * THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/** \file     TComProfileTierLevel.cpp
+/** \file     ProfileLevelTierFeatures.cpp
     \brief    Common profile tier level functions
 */
 
-#include "TComProfileTierLevel.h"
 #include "TLibCommon/TComSlice.h"
 //#include "TLibCommon/TComPic.h"
 //#include "TLibCommon/TComPicSym.h"
 #include <math.h>
+#include "ProfileLevelTierFeatures.h"
 
 UInt
 LevelTierFeatures::getMaxPicWidthInLumaSamples()  const
