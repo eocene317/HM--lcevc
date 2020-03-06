@@ -462,12 +462,10 @@ protected:
   std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
 #endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
-  Bool      m_siiSEIEnabled;
-  UInt      m_siiSEINumUnitsInShutterInterval;
-  UInt      m_siiSEITimeScale;
-  UInt      m_siiSEIMaxSubLayersMinus1;
-  Bool      m_siiSEIFixedSIwithinCLVS;
-  std::vector<UInt>     m_siiSEISubLayerNumUnitsInSI;
+  Bool                    m_siiSEIEnabled;
+  UInt                    m_siiSEINumUnitsInShutterInterval;
+  UInt                    m_siiSEITimeScale;
+  std::vector<UInt>       m_siiSEISubLayerNumUnitsInSI;
 #endif
 #if SEI_ENCODER_CONTROL
   // film grain characterstics sei
@@ -1047,12 +1045,10 @@ public:
   UInt     getSiiSEINumUnitsInShutterInterval()                      { return m_siiSEINumUnitsInShutterInterval; }
   Void     setSiiSEITimeScale(UInt value)                            { m_siiSEITimeScale = value; }
   UInt     getSiiSEITimeScale()                                      { return m_siiSEITimeScale; }
-  Void     setSiiSEIMaxSubLayersMinus1(UInt value)                   { m_siiSEIMaxSubLayersMinus1 = value; }
-  UInt     getSiiSEIMaxSubLayersMinus1()                             { return m_siiSEIMaxSubLayersMinus1; }
-  Void     setSiiSEIFixedSIwithinCLVS(Bool b)                        { m_siiSEIFixedSIwithinCLVS = b; }
-  Bool     getSiiSEIFixedSIwithinCLVS()                              { return m_siiSEIFixedSIwithinCLVS; }
+  UInt     getSiiSEIMaxSubLayersMinus1()                             { return UInt(std::max(1u, UInt(m_siiSEISubLayerNumUnitsInSI.size()))-1 ); }
+  Bool     getSiiSEIFixedSIwithinCLVS()                              { return m_siiSEISubLayerNumUnitsInSI.empty(); }
   Void     setSiiSEISubLayerNumUnitsInSI(const std::vector<UInt>& b) { m_siiSEISubLayerNumUnitsInSI = b; }
-  UInt     getSiiSEISubLayerNumUnitsInSI(UInt idx) const { return m_siiSEISubLayerNumUnitsInSI[idx]; }
+  UInt     getSiiSEISubLayerNumUnitsInSI(UInt idx) const             { return m_siiSEISubLayerNumUnitsInSI[idx]; }
 #endif
 #if SEI_ENCODER_CONTROL
   // film grain SEI

@@ -516,8 +516,6 @@ protected:
   Bool      m_siiSEIEnabled;
   UInt      m_siiSEINumUnitsInShutterInterval;
   UInt      m_siiSEITimeScale;
-  UInt      m_siiSEIMaxSubLayersMinus1;
-  Bool      m_siiSEIFixedSIwithinCLVS;
   std::vector<UInt>     m_siiSEISubLayerNumUnitsInSI;
 #endif
 #if SEI_ENCODER_CONTROL

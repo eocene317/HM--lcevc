@@ -772,7 +772,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   UInt cfg_fviSEIFisheyeNumActiveAreasMinus1=0;
 #endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
-  SMultiValueInput<UInt>   cfg_siiSEISubLayerNumUnitsInSI             (0, MAX_UINT, 0, 7);
+  SMultiValueInput<UInt>   cfg_siiSEIInputNumUnitsInSI                (0, MAX_UINT, 0, 7);
 #endif
   Int warnUnknowParameter = 0;
   po::Options opts;
@@ -1224,10 +1224,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   ("SEIShutterIntervalEnabled",                       m_siiSEIEnabled,                           false,                                   "Controls if shutter interval information SEI message is enabled")
   ("SEISiiTimeScale",                                 m_siiSEITimeScale,                         27000000u,                               "Specifies sii_time_scale")
-  ("SEISiiFixedShutterIntervalWithinCLVSFlag",        m_siiSEIFixedSIwithinCLVS,                 true,                                    "Specifies fixed_shutter_interval_within_clvs_flag")
-  ("SEISiiNumUnitsInShutterInterval",                 m_siiSEINumUnitsInShutterInterval,         1080000u,                                "Specifies sii_num_units_in_shutter_interval")
-  ("SEISiiMaxSubLayersMinus1",                        m_siiSEIMaxSubLayersMinus1,                0u,                                      "Specifies sii_max_sub_layers_minus1")
-  ("SEISiiSubLayerNumUnitsInShutterInterval",         cfg_siiSEISubLayerNumUnitsInSI,            cfg_siiSEISubLayerNumUnitsInSI,          "Specifies sub_layer_num_units_in_shutter_interval")
+  ("SEISiiInputNumUnitsInShutterInterval",            cfg_siiSEIInputNumUnitsInSI,               cfg_siiSEIInputNumUnitsInSI,             "Specifies sub_layer_num_units_in_shutter_interval")
 #endif
 #if SEI_ENCODER_CONTROL
 // film grain characteristics SEI
@@ -2065,17 +2062,22 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   if (m_siiSEIEnabled)
   {
-    assert(m_siiSEINumUnitsInShutterInterval >= 0 && m_siiSEINumUnitsInShutterInterval <= MAX_UINT);
     assert(m_siiSEITimeScale >= 0 && m_siiSEITimeScale <= MAX_UINT);
-    assert(m_siiSEIMaxSubLayersMinus1 >=0 && m_siiSEIMaxSubLayersMinus1 <= 6);
-    if (!m_siiSEIFixedSIwithinCLVS)
+    UInt arraySize = (UInt)cfg_siiSEIInputNumUnitsInSI.values.size();
+    assert(arraySize > 0);
+    if (arraySize > 1)
     {
-      m_siiSEISubLayerNumUnitsInSI.resize(m_siiSEIMaxSubLayersMinus1 + 1);
-      for (Int i = 0; i <= m_siiSEIMaxSubLayersMinus1; i++)
+      m_siiSEISubLayerNumUnitsInSI.resize(arraySize);
+      for (Int i = 0; i < arraySize; i++)
       {
-        m_siiSEISubLayerNumUnitsInSI[i] = cfg_siiSEISubLayerNumUnitsInSI.values[i];
+        m_siiSEISubLayerNumUnitsInSI[i] = cfg_siiSEIInputNumUnitsInSI.values[i];
         assert(m_siiSEISubLayerNumUnitsInSI[i] >= 0 && m_siiSEISubLayerNumUnitsInSI[i] <= MAX_UINT);
       }
+    }
+    else
+    {
+      m_siiSEINumUnitsInShutterInterval = cfg_siiSEIInputNumUnitsInSI.values[0];
+      assert(m_siiSEINumUnitsInShutterInterval >= 0 && m_siiSEINumUnitsInShutterInterval <= MAX_UINT);
     }
   }
 #endif
