@@ -461,6 +461,32 @@ protected:
 #if RNSEI
   std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  Bool                    m_siiSEIEnabled;
+  UInt                    m_siiSEINumUnitsInShutterInterval;
+  UInt                    m_siiSEITimeScale;
+  std::vector<UInt>       m_siiSEISubLayerNumUnitsInSI;
+#endif
+#if SEI_ENCODER_CONTROL
+  // film grain characterstics sei
+  Bool      m_fgcSEIEnabled;
+  Bool      m_fgcSEICancelFlag;
+  Bool      m_fgcSEIPersistenceFlag;
+  UChar     m_fgcSEIModelID;
+  Bool      m_fgcSEISepColourDescPresentFlag;
+  UChar     m_fgcSEIBlendingModeID;
+  UChar     m_fgcSEILog2ScaleFactor;
+  Bool      m_fgcSEICompModelPresent[MAX_NUM_COMPONENT];
+  // content light level SEI
+  Bool      m_cllSEIEnabled;
+  UShort    m_cllSEIMaxContentLevel;
+  UShort    m_cllSEIMaxPicAvgLevel;
+  // ambient viewing environment sei
+  Bool      m_aveSEIEnabled;
+  UInt      m_aveSEIAmbientIlluminance;
+  UShort    m_aveSEIAmbientLightX;
+  UShort    m_aveSEIAmbientLightY;
+  #endif
   //====== Weighted Prediction ========
   Bool      m_useWeightedPred;       //< Use of Weighting Prediction (P_SLICE)
   Bool      m_useWeightedBiPred;    //< Use of Bi-directional Weighting Prediction (B_SLICE)
@@ -1012,6 +1038,53 @@ public:
   Double   getCcvSEIAvgLuminanceValue  ()                            { return m_ccvSEIAvgLuminanceValue;  }
 #endif
 
+  #if SHUTTER_INTERVAL_SEI_MESSAGE
+  Void     setSiiSEIEnabled(Bool b)                                  { m_siiSEIEnabled = b; }
+  Bool     getSiiSEIEnabled()                                        { return m_siiSEIEnabled; }
+  Void     setSiiSEINumUnitsInShutterInterval(UInt value)            { m_siiSEINumUnitsInShutterInterval = value; }
+  UInt     getSiiSEINumUnitsInShutterInterval()                      { return m_siiSEINumUnitsInShutterInterval; }
+  Void     setSiiSEITimeScale(UInt value)                            { m_siiSEITimeScale = value; }
+  UInt     getSiiSEITimeScale()                                      { return m_siiSEITimeScale; }
+  UInt     getSiiSEIMaxSubLayersMinus1()                             { return UInt(std::max(1u, UInt(m_siiSEISubLayerNumUnitsInSI.size()))-1 ); }
+  Bool     getSiiSEIFixedSIwithinCLVS()                              { return m_siiSEISubLayerNumUnitsInSI.empty(); }
+  Void     setSiiSEISubLayerNumUnitsInSI(const std::vector<UInt>& b) { m_siiSEISubLayerNumUnitsInSI = b; }
+  UInt     getSiiSEISubLayerNumUnitsInSI(UInt idx) const             { return m_siiSEISubLayerNumUnitsInSI[idx]; }
+#endif
+#if SEI_ENCODER_CONTROL
+  // film grain SEI
+  Void  setFilmGrainCharactersticsSEIEnabled (Bool b)                { m_fgcSEIEnabled = b; }
+  Bool  getFilmGrainCharactersticsSEIEnabled()                       { return m_fgcSEIEnabled; }
+  Void  setFilmGrainCharactersticsSEICancelFlag(Bool b)              { m_fgcSEICancelFlag = b; }
+  Bool  getFilmGrainCharactersticsSEICancelFlag()                    { return m_fgcSEICancelFlag; }
+  Void  setFilmGrainCharactersticsSEIPersistenceFlag(Bool b)         { m_fgcSEIPersistenceFlag = b; }
+  Bool  getFilmGrainCharactersticsSEIPersistenceFlag()               { return m_fgcSEIPersistenceFlag; }
+  Void  setFilmGrainCharactersticsSEIModelID(UChar v )               { m_fgcSEIModelID = v; }
+  UChar getFilmGrainCharactersticsSEIModelID()                       { return m_fgcSEIModelID; }
+  Void  setFilmGrainCharactersticsSEISepColourDescPresent(Bool b)    { m_fgcSEISepColourDescPresentFlag = b; }
+  Bool  getFilmGrainCharactersticsSEISepColourDescPresent()          { return m_fgcSEISepColourDescPresentFlag; }
+  Void  setFilmGrainCharactersticsSEIBlendingModeID(UChar v )        { m_fgcSEIBlendingModeID = v; }
+  UChar getFilmGrainCharactersticsSEIBlendingModeID()                { return m_fgcSEIBlendingModeID; }
+  Void  setFilmGrainCharactersticsSEILog2ScaleFactor(UChar v )       { m_fgcSEILog2ScaleFactor = v; }
+  UChar getFilmGrainCharactersticsSEILog2ScaleFactor()               { return m_fgcSEILog2ScaleFactor; }
+  Void  setFGCSEICompModelPresent(Bool b, Int index)                 { m_fgcSEICompModelPresent[index] = b; }
+  Bool  getFGCSEICompModelPresent(Int index)                         { return m_fgcSEICompModelPresent[index]; }
+  // cll SEI
+  Void  setCLLSEIEnabled(Bool b)                                     { m_cllSEIEnabled = b; }
+  Bool  getCLLSEIEnabled()                                           { return m_cllSEIEnabled; }
+  Void  setCLLSEIMaxContentLightLevel (UShort v)                     { m_cllSEIMaxContentLevel = v; }
+  UShort  getCLLSEIMaxContentLightLevel()                            { return m_cllSEIMaxContentLevel; }
+  Void  setCLLSEIMaxPicAvgLightLevel(UShort v)                       { m_cllSEIMaxPicAvgLevel = v; }
+  UShort  getCLLSEIMaxPicAvgLightLevel()                             { return m_cllSEIMaxPicAvgLevel; }
+  // ave SEI
+  Void  setAmbientViewingEnvironmentSEIEnabled (Bool b)              { m_aveSEIEnabled = b; }
+  Bool  getAmbientViewingEnvironmentSEIEnabled ()                    { return m_aveSEIEnabled; }
+  Void  setAmbientViewingEnvironmentSEIIlluminance(UInt v )          { m_aveSEIAmbientIlluminance = v; }
+  UInt  getAmbientViewingEnvironmentSEIIlluminance()                 { return m_aveSEIAmbientIlluminance; }
+  Void  setAmbientViewingEnvironmentSEIAmbientLightX(UShort v )      { m_aveSEIAmbientLightX = v; }
+  UShort getAmbientViewingEnvironmentSEIAmbientLightX()              { return m_aveSEIAmbientLightX; }
+  Void  setAmbientViewingEnvironmentSEIAmbientLightY(UShort v )      { m_aveSEIAmbientLightY = v; }
+  UShort getAmbientViewingEnvironmentSEIAmbientLightY()              { return m_aveSEIAmbientLightY; }
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
   Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }

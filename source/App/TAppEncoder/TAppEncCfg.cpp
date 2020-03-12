@@ -771,6 +771,9 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<Int>    cfg_fviSEIFisheyePolynomialCoeff           (std::numeric_limits<Int>::min(), std::numeric_limits<Int>::max(), 0, 4*8);
   UInt cfg_fviSEIFisheyeNumActiveAreasMinus1=0;
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  SMultiValueInput<UInt>   cfg_siiSEIInputNumUnitsInSI                (0, MAX_UINT, 0, 7);
+#endif
   Int warnUnknowParameter = 0;
   po::Options opts;
   opts.addOptions()
@@ -1217,6 +1220,37 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEICCVMaxLuminanceValue",                         m_ccvSEIMaxLuminanceValue,              0.1, "specifies the CCV max luminance value  in the content colour volume SEI message")
   ("SEICCVAvgLuminanceValuePresent",                  m_ccvSEIAvgLuminanceValuePresentFlag,  true,                                    "Specifies whether the CCV avg luminance value is present in the content colour volume SEI message")
   ("SEICCVAvgLuminanceValue",                         m_ccvSEIAvgLuminanceValue,              0.01, "specifies the CCV avg luminance value  in the content colour volume SEI message")
+#endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  ("SEIShutterIntervalEnabled",                       m_siiSEIEnabled,                           false,                                   "Controls if shutter interval information SEI message is enabled")
+  ("SEISiiTimeScale",                                 m_siiSEITimeScale,                         27000000u,                               "Specifies sii_time_scale")
+  ("SEISiiInputNumUnitsInShutterInterval",            cfg_siiSEIInputNumUnitsInSI,               cfg_siiSEIInputNumUnitsInSI,             "Specifies sub_layer_num_units_in_shutter_interval")
+#endif
+#if SEI_ENCODER_CONTROL
+// film grain characteristics SEI
+  ("SEIFGCEnabled",                                   m_fgcSEIEnabled,                                   false, "Control generation of the film grain characteristics SEI message")
+  ("SEIFGCCancelFlag",                                m_fgcSEICancelFlag,                                 true, "Specifies the persistence of any previous film grain characteristics SEI message in output order.")
+  ("SEIFGCPersistenceFlag",                           m_fgcSEIPersistenceFlag,                           false, "Specifies the persistence of the film grain characteristics SEI message for the current layer.")
+  ("SEIFGCModelID",                                   m_fgcSEIModelID,                                      0u, "Specifies the film grain simulation model. 0: frequency filtering; 1: auto-regression.")
+  ("SEIFGCSepColourDescPresentFlag",                  m_fgcSEISepColourDescPresentFlag,                  false, "Specifies the presense of a distinct colour space description for the film grain charactersitics specified in the SEI message.")
+  ("SEIFGCBlendingModeID",                            m_fgcSEIBlendingModeID,                               0u, "Specifies the blending mode used to blend the simulated film grain with the decoded images. 0: additive; 1: multiplicative.")
+  ("SEIFGCLog2ScaleFactor",                           m_fgcSEILog2ScaleFactor,                              0u, "Specifies a scale factor used in the film grain characterization equations.")
+  ("SEIFGCCompModelPresentComp0",                     m_fgcSEICompModelPresent[0],                       false, "Specifies the presense of film grain modelling on colour component 0.")
+  ("SEIFGCCompModelPresentComp1",                     m_fgcSEICompModelPresent[1],                       false, "Specifies the presense of film grain modelling on colour component 1.")
+  ("SEIFGCCompModelPresentComp2",                     m_fgcSEICompModelPresent[2],                       false, "Specifies the presense of film grain modelling on colour component 2.")
+// content light level SEI
+  ("SEICLLEnabled",                                   m_cllSEIEnabled,                                   false, "Control generation of the content light level SEI message")
+  ("SEICLLMaxContentLightLevel",                      m_cllSEIMaxContentLevel,                              0u, "When not equal to 0, specifies an upper bound on the maximum light level among all individual samples in a 4:4:4 representation "
+                                                                                                                "of red, green, and blue colour primary intensities in the linear light domain for the pictures of the CLVS, "
+                                                                                                                "in units of candelas per square metre.When equal to 0, no such upper bound is indicated.")
+  ("SEICLLMaxPicAvgLightLevel",                       m_cllSEIMaxPicAvgLevel,                               0u, "When not equal to 0, specifies an upper bound on the maximum average light level among the samples in a 4:4:4 representation "
+                                                                                                                "of red, green, and blue colour primary intensities in the linear light domain for any individual picture of the CLVS, "
+                                                                                                                "in units of candelas per square metre.When equal to 0, no such upper bound is indicated.")
+// ambient viewing environment SEI
+  ("SEIAVEEnabled",                                   m_aveSEIEnabled,                                   false, "Control generation of the ambient viewing environment SEI message")
+  ("SEIAVEAmbientIlluminance",                        m_aveSEIAmbientIlluminance,                      100000u, "Specifies the environmental illluminance of the ambient viewing environment in units of 1/10000 lux for the ambient viewing enviornment SEI message")
+  ("SEIAVEAmbientLightX",                             m_aveSEIAmbientLightX,                            15635u, "Specifies the normalized x chromaticity coordinate of the environmental ambient light in the nominal viewing enviornment according to the CIE 1931 defination in units of 1/50000 lux for the ambient viewing enviornment SEI message")
+  ("SEIAVEAmbientLightY",                             m_aveSEIAmbientLightY,                            16450u, "Specifies the normalized y chromaticity coordinate of the environmental ambient light in the nominal viewing enviornment according to the CIE 1931 defination in units of 1/50000 lux for the ambient viewing enviornment SEI message")
 #endif
 #if ERP_SR_OV_SEI_MESSAGE
   ("SEIErpEnabled",                                   m_erpSEIEnabled,                                   false, "Control generation of equirectangular projection SEI messages")
@@ -2022,6 +2056,28 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
         assert(cfg_fviSEIFisheyePolynomialCoeff.values.size() > extractPolynomialIdx);
         info.m_fisheyePolynomialCoeff[j] = cfg_fviSEIFisheyePolynomialCoeff.values[extractPolynomialIdx++];
       }
+    }
+  }
+#endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  if (m_siiSEIEnabled)
+  {
+    assert(m_siiSEITimeScale >= 0 && m_siiSEITimeScale <= MAX_UINT);
+    UInt arraySize = (UInt)cfg_siiSEIInputNumUnitsInSI.values.size();
+    assert(arraySize > 0);
+    if (arraySize > 1)
+    {
+      m_siiSEISubLayerNumUnitsInSI.resize(arraySize);
+      for (Int i = 0; i < arraySize; i++)
+      {
+        m_siiSEISubLayerNumUnitsInSI[i] = cfg_siiSEIInputNumUnitsInSI.values[i];
+        assert(m_siiSEISubLayerNumUnitsInSI[i] >= 0 && m_siiSEISubLayerNumUnitsInSI[i] <= MAX_UINT);
+      }
+    }
+    else
+    {
+      m_siiSEINumUnitsInShutterInterval = cfg_siiSEIInputNumUnitsInSI.values[0];
+      assert(m_siiSEINumUnitsInShutterInterval >= 0 && m_siiSEINumUnitsInShutterInterval <= MAX_UINT);
     }
   }
 #endif

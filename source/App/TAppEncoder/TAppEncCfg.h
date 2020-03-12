@@ -512,7 +512,32 @@ protected:
 #if RNSEI
   std::string m_regionalNestingSEIFileRoot;
 #endif
-
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  Bool      m_siiSEIEnabled;
+  UInt      m_siiSEINumUnitsInShutterInterval;
+  UInt      m_siiSEITimeScale;
+  std::vector<UInt>     m_siiSEISubLayerNumUnitsInSI;
+#endif
+#if SEI_ENCODER_CONTROL
+  // film grain characterstics sei
+  Bool      m_fgcSEIEnabled;
+  Bool      m_fgcSEICancelFlag;
+  Bool      m_fgcSEIPersistenceFlag;
+  UInt      m_fgcSEIModelID;
+  Bool      m_fgcSEISepColourDescPresentFlag;
+  UInt      m_fgcSEIBlendingModeID;
+  UInt      m_fgcSEILog2ScaleFactor;
+  Bool      m_fgcSEICompModelPresent[MAX_NUM_COMPONENT];
+  // content light level SEI
+  Bool      m_cllSEIEnabled;
+  UInt      m_cllSEIMaxContentLevel;
+  UInt      m_cllSEIMaxPicAvgLevel;
+  // ambient viewing environment sei
+  Bool      m_aveSEIEnabled;
+  UInt      m_aveSEIAmbientIlluminance;
+  UInt      m_aveSEIAmbientLightX;
+  UInt      m_aveSEIAmbientLightY;
+#endif
   std::string m_summaryOutFilename;                           ///< filename to use for producing summary output file.
   std::string m_summaryPicFilenameBase;                       ///< Base filename to use for producing summary picture output files. The actual filenames used will have I.txt, P.txt and B.txt appended.
   UInt        m_summaryVerboseness;                           ///< Specifies the level of the verboseness of the text output.

@@ -119,6 +119,9 @@ public:
 #if AR_SEI_MESSAGE
     ANNOTATED_REGIONS                    = 202,
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+    SHUTTER_INTERVAL_INFO                = 203,
+#endif
   };
 
   SEI() {}
@@ -972,6 +975,23 @@ public:
   SEIFisheyeVideoInfo() {}
   virtual ~SEIFisheyeVideoInfo() {}
   TComSEIFisheyeVideoInfo values;
+};
+#endif
+
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+class SEIShutterIntervalInfo : public SEI
+{
+public:
+  PayloadType payloadType() const { return SHUTTER_INTERVAL_INFO; }
+  SEIShutterIntervalInfo() {}
+  virtual ~SEIShutterIntervalInfo() {}
+
+  Bool                  m_siiEnabled;
+  UInt                  m_siiNumUnitsInShutterInterval;
+  UInt                  m_siiTimeScale;
+  UInt                  m_siiMaxSubLayersMinus1;
+  Bool                  m_siiFixedSIwithinCLVS;
+  std::vector<UInt>     m_siiSubLayerNumUnitsInSI;
 };
 #endif
 

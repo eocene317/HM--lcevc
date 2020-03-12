@@ -84,6 +84,14 @@ public:
 #if CCV_SEI_MESSAGE
   Void initSEIContentColourVolume(SEIContentColourVolume *sei);
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+  Void initSEIShutterIntervalInfo(SEIShutterIntervalInfo *sei);
+#endif
+#if SEI_ENCODER_CONTROL
+  Void initSEIFilmGrainCharacteristics(SEIFilmGrainCharacteristics *sei);
+  Void initSEIContentLightLevel(SEIContentLightLevelInfo *sei);
+  Void initSEIAmbientViewingEnvironment(SEIAmbientViewingEnvironment *sei);
+#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Void initSEIErp(SEIEquirectangularProjection *sei);
   Void initSEISphereRotation(SEISphereRotation *sei);

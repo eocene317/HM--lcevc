@@ -397,6 +397,12 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       xParseSEIRegionalNesting((SEIRegionalNesting&) *sei, payloadSize, sps, pDecodedMessageOutputStream);
       break;
 #endif
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+    case SEI::SHUTTER_INTERVAL_INFO:
+      sei = new SEIShutterIntervalInfo;
+      xParseSEIShutterInterval((SEIShutterIntervalInfo&)*sei, payloadSize, pDecodedMessageOutputStream);
+      break;
+#endif
     default:
       for (UInt i = 0; i < payloadSize; i++)
       {
@@ -1568,6 +1574,31 @@ Void SEIReader::xParseSEIContentColourVolume(SEIContentColourVolume& sei, UInt p
     if (sei.m_ccvAvgLuminanceValuePresentFlag) 
     {
       sei_read_code( pDecodedMessageOutputStream, 32, val,     "ccv_avg_luminance_value" );   sei.m_ccvAvgLuminanceValue = val;
+    }
+  }
+}
+#endif
+
+#if SHUTTER_INTERVAL_SEI_MESSAGE
+Void SEIReader::xParseSEIShutterInterval(SEIShutterIntervalInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
+{
+  Int i;
+  UInt val;
+  output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
+  sei_read_code(pDecodedMessageOutputStream, 32, val, "sii_time_scale");                      sei.m_siiTimeScale = val;
+  sei_read_flag(pDecodedMessageOutputStream, val, "fixed_shutter_interval_within_clvs_flag"); sei.m_siiFixedSIwithinCLVS = val;
+  if (sei.m_siiFixedSIwithinCLVS)
+  {
+    sei_read_code(pDecodedMessageOutputStream, 32, val, "sii_num_units_in_shutter_interval");   sei.m_siiNumUnitsInShutterInterval = val;
+  }
+  else
+  {
+    sei_read_code(pDecodedMessageOutputStream, 3,  val, "sii_max_sub_layers_minus1 ");          sei.m_siiMaxSubLayersMinus1 = val;
+    sei.m_siiSubLayerNumUnitsInSI.resize(sei.m_siiMaxSubLayersMinus1 + 1);
+    for (i = 0; i <= sei.m_siiMaxSubLayersMinus1; i++)
+    {
+      sei_read_code(pDecodedMessageOutputStream, 32, val, "sub_layer_num_units_in_shutter_interval[ i ]");
+      sei.m_siiSubLayerNumUnitsInSI[i] = val;
     }
   }
 }
