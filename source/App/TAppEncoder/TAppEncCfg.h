@@ -552,6 +552,9 @@ protected:
   Void  xCheckParameter ();                                   ///< check validity of configuration values
   Void  xPrintParameter ();                                   ///< print configuration values
   Void  xPrintUsage     ();                                   ///< print usage
+#if DPB_ENCODER_USAGE_CHECK
+  Int   xDPBUsage(std::ostream *pOs);                         ///> Calculates maximum number of frames stored in DPB. Can optionally output usage to a stream
+#endif
 public:
   TAppEncCfg();
   virtual ~TAppEncCfg();
