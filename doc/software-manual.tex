@@ -22,6 +22,18 @@
 \usepackage{algorithm2e}
 \usepackage{amsmath}
 
+\urlstyle{same}
+
+% code highlighting
+\usepackage{minted,xcolor}
+\definecolor{bggray}{gray}{0.95}
+\setminted{
+bgcolor=bggray,
+xleftmargin=3ex,
+breaklines=true,
+fontsize=\footnotesize}
+
+
 \usepackage[strings]{underscore}
 \usepackage{csquotes}
 \MakeOuterQuote{"}
@@ -72,7 +84,7 @@
 }
 
 \newenvironment{OptionTableNoShorthand}[2]{%
-	\footnotesize
+	\scriptsize
 	\def\arraystretch{1.8}
 	\clearOptions
 	\begin{longtable}{l<{\makecell[tl]{\optOption}}%
@@ -105,7 +117,7 @@
 }
 
 \newenvironment{SEIListTable}[1]{%
-	\footnotesize
+	\scriptsize
 	\def\arraystretch{1.8}
 	\clearOptions
 	\begin{longtable}{c<{\makecell[tl]{\optOption}}%
@@ -138,7 +150,7 @@
 }
 
 \newenvironment{MacroTable}[1]{%
-	\footnotesize
+	\scriptsize
 	\def\arraystretch{1.3}
 	\clearOptions
 	\begin{longtable}{lcp{0.5\textwidth}}
@@ -174,7 +186,7 @@
 	David Flynn
 	\email{dflynn@blackberry.com}
 	\and
-  Karl Sharman
+	Karl Sharman
 	\email{karl.sharman@eu.sony.com}
 	\and
 	Karsten S\"uhring
@@ -217,55 +229,156 @@ This document aims to provide guidance on the usage of the reference
 software. It is widely suspected to be incomplete and suggestions for
 improvements are welcome. Such suggestions and general inquiries may be
 sent to the general JCT-VC email reflector on
-\url{jct-vc@lists.rwth-aachen.de} (registration required).
+\url{https://lists.rwth-aachen.de/postorius/lists/jct-vc.lists.rwth-aachen.de/} 
+(registration required).
 
 \subsection*{Bug reporting}
-Bugs should be reported on the issue tracker set up at
-\url{http://hevc.kw.bbc.co.uk/trac/}
+Bugs should be reported on the issue tracker set up at:
+
+\url{https://hevc.hhi.fraunhofer.de/trac/hevc/}
 
 \section{Installation and compilation}
-The software may be retrieved from one of the following SVN servers
-(mirrored):
-\begin{itemize}
-\item \url{https://hevc.hhi.fraunhofer.de/svn/svn_HEVCSoftware/}
-\item \url{svn://hevc.kw.bbc.co.uk/svn/jctvc-hm/}
-\end{itemize}
+The software may be retrieved from the GitLab server located at:
 
-Table~\ref{tab:project-files} enumerates various project files that are
-provided for development environments.
+\url{https://vcgit.hhi.fraunhofer.de/jct-vc/HM}
+
+Table~\ref{tab:project-files} lists the compiler environments and versions 
+for which building the software is tested.
 
 \begin{table}[ht]
-\footnotesize
-\caption{Available project files}
+\caption{Supported compilers}
 \label{tab:project-files}
 \centering
 \begin{tabular}{ll}
 \hline
- \thead{Environment} &
- \thead{Location of project file} \\
-% Environment          & Location of project file \\
+ \thead{Compiler environment} &
+ \thead{Versions} \\
 \hline
-MS Visual Studio 2008 (VC9)   & build/HM_vc9.sln \\
-MS Visual Studio 2010 (VC10)  & build/HM_vc2010.sln \\
-MS Visual Studio 2012 (VC11)  & build/HM_vc2012.sln \\
-MS Visual Studio 2013 (VC12)  & build/HM_vc2013.sln \\
-Xcode                         & HM.xcodeproj \\
-Eclipse                       & .project .cproject \\
-make/gcc (e.g. Linux)         & build/linux/makefile \\
+MS Visual Studio  & 2017 and 2019 \\
+GCC               & 5.4, 7.3 and 8.3\\
+Xcode/clang       & latest \\
 \hline
 \end{tabular}
 \end{table}
 
-For encoding large picture sizes (like UHDTV) it is strongly advised to build 64-bit
-binaries and to use a 64-bit OS. This will allow the software to use more than 2GB of RAM.
+By default the software is built as 64-bit binaries to be used on a 64-bit OS. 
+This allows the software to use more than 2GB of RAM.
+
+The software uses CMake to create platform-specific build files. 
+
+\subsection {Build instructions for plain CMake (suggested)}
+
+\textbf{Note:} A working CMake installation is required for building the software.
+
+CMake generates configuration files for the compiler environment/development
+environment on each platform. The following is a list of examples for Windows
+(MS Visual Studio), macOS (Xcode) and Linux (make).
+
+Open a command prompt on your system and change into the root directory
+of this project.
+
+Create a build directory in the root directory:
+\begin{minted}{bash}
+mkdir build 
+\end{minted}
+Use one of the following CMake commands, based on your platform. Feel free to change the 
+commands to satisfy your needs.
+
+\textbf{Windows Visual Studio 2015 64 Bit:}
+\begin{minted}{bash}
+cd build
+cmake .. -G "Visual Studio 14 2015 Win64"
+\end{minted}
+Then open the generated solution file in MS Visual Studio.
+
+\textbf{macOS Xcode:}
+\begin{minted}{bash}
+cd build
+cmake .. -G "Xcode"
+\end{minted}
+Then open the generated work space in Xcode.
+
+\textbf{Linux}
+
+For generating Linux Release Makefile:
+\begin{minted}{bash}
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+\end{minted}
+For generating Linux Debug Makefile:
+\begin{minted}{bash}
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+\end{minted}
+Then type
+\begin{minted}{bash}
+make -j
+\end{minted}
+to build the software.
+
+For more details, refer to the CMake documentation: \url{https://cmake.org/cmake/help/latest/}
+
+\subsection {Build instructions for make}
+
+\textbf{Note:}
+The build instructions in this section require the make tool and Python
+to be installed, which are part of usual Linux and macOS environments. 
+See section \ref{windowsinstall} for installation instruction for Python 
+and GnuWin32 on Windows.
+
+Open a command prompt on your system and change into the root directory
+of this project.
+
+To use the default system compiler simply call:
+\begin{minted}{bash}
+make all
+\end{minted}
+For MSYS2 and MinGW:
+Open an MSYS MinGW 64-Bit terminal and change into the root directory
+of this project.
+
+Call:
+\begin{minted}{bash}
+make all toolset=gcc
+\end{minted}
+
+\subsection{Tool Installation on Windows}
+\label{windowsinstall}
+
+Download CMake: \url{http://www.cmake.org/} and install it.
+
+Python and GnuWin32 are not mandatory, but they simplify the build process for the user.
+
+\begin{table}[ht]
+\footnotesize
+\centering
+\begin{tabular}{ll}
+\hline
+Python     &    \url{https://www.python.org/downloads/release/python-371/} \\
+GnuWin32   &    \url{https://sourceforge.net/projects/getgnuwin32/files/getgnuwin32/0.6.30/GetGnuWin32-0.6.3.exe/download} \\
+\hline
+\end{tabular}
+\end{table}
+
+To use MinGW, install MSYS2:
+\url{http://repo.msys2.org/distrib/msys2-x86_64-latest.exe}
+
+Installation instructions:
+\url{https://www.msys2.org/}
+
+Install the needed toolchains:
+\begin{minted}{bash}
+pacman -S --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain git subversion mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+\end{minted}
 
 %%%%
 %%%%
 %%%%
 \section{Using the encoder}
-\begin{verbatim}
-TAppEncoder 	[--help] [-c config.cfg] [--parameter=value]
-\end{verbatim}
+
+\begin{minted}{bash}
+TAppEncoder [--help] [-c config.cfg] [--parameter=value]
+\end{minted}
 
 \begin{table}[ht]
 \footnotesize
@@ -3409,9 +3522,9 @@ Numerous constants that guard individual adoptions are defined within
 \clearpage
 \section{Using the decoder}
 \subsection{General}
-\begin{verbatim}
+\begin{minted}{bash}
 TAppDecoder -b str.bin -o dec.yuv [options]
-\end{verbatim}
+\end{minted}
 
 \begin{OptionTableNoShorthand}{Decoder options}{tab:decoder-options}
 \Option{(--help)} &
@@ -3571,9 +3684,9 @@ The Linux makefile will compile both the analyser and standard version when the 
 \section{Using additional tools}
 \subsection{MCTS extractor application}
 \subsubsection{General}
-\begin{verbatim}
+\begin{minted}{bash}
 TAppMCTSExtractor -i str_in.bin -b str_in.bin [options]
-\end{verbatim}
+\end{minted}
 
 \begin{OptionTableNoShorthand}{MCTS Extractor options}{tab:mcts-extractor-options}
 \Option{(--help)} &
