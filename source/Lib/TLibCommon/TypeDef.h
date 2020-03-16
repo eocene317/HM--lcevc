@@ -98,7 +98,6 @@
 
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
 
-#define FVI_SEI_MESSAGE                                   1 // Fisheye Video Information SEI message	
 
 #define RNSEI                                             1  ///< Support for signalling regional nesting SEI message
 
@@ -915,7 +914,6 @@ struct WCGChromaQPControl
   Double chromaQpOffset;  ///< Chroma QP Offset (0.0:default)
 };
 
-#if FVI_SEI_MESSAGE
 struct TComSEIFisheyeVideoInfo
 {
   struct ActiveAreaInfo
@@ -945,7 +943,6 @@ struct TComSEIFisheyeVideoInfo
   std::vector<ActiveAreaInfo> m_fisheyeActiveAreas;
   TComSEIFisheyeVideoInfo() : m_fisheyeCancelFlag(false), m_fisheyePersistenceFlag(false), m_fisheyeViewDimensionIdc(0), m_fisheyeActiveAreas() { }
 };
-#endif
 
 class Window
 {

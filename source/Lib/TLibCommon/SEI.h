@@ -98,9 +98,7 @@ public:
     SPHERE_ROTATION                      = 154,
     OMNI_VIEWPORT                        = 156,
     CUBEMAP_PROJECTION                   = 151,
-#if FVI_SEI_MESSAGE
     FISHEYE_VIDEO_INFO                   = 152,
-#endif
     REGION_WISE_PACKING                  = 155, 
 #if RNSEI
     REGIONAL_NESTING                     = 157,
@@ -951,7 +949,6 @@ public:
   std::vector<UChar>    m_rwpGuardBandType;
 };
 
-#if FVI_SEI_MESSAGE
 class SEIFisheyeVideoInfo : public SEI
 {
 public:
@@ -960,7 +957,6 @@ public:
   virtual ~SEIFisheyeVideoInfo() {}
   TComSEIFisheyeVideoInfo values;
 };
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 class SEIShutterIntervalInfo : public SEI

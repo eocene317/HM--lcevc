@@ -377,12 +377,10 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       xParseSEIAnnotatedRegions((SEIAnnotatedRegions&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
 #endif
-#if FVI_SEI_MESSAGE
     case SEI::FISHEYE_VIDEO_INFO:
       sei = new SEIFisheyeVideoInfo;
       xParseSEIFisheyeVideoInfo((SEIFisheyeVideoInfo&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
 #if RNSEI
     case SEI::REGIONAL_NESTING:
       sei = new SEIRegionalNesting;
@@ -1861,7 +1859,6 @@ Void SEIReader::xParseSEIRegionWisePacking(SEIRegionWisePacking& sei, UInt paylo
   }
 }
 
-#if FVI_SEI_MESSAGE
 Void SEIReader::xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   UInt val;
@@ -1912,7 +1909,6 @@ Void SEIReader::xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payload
     }
   }
 }
-#endif
 
 Void SEIReader::xParseSEIColourRemappingInfo(SEIColourRemappingInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {

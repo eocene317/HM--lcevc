@@ -555,14 +555,12 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIRegionWisePacking(seiRegionWisePacking);
     seiMessages.push_back(seiRegionWisePacking);
   }
-#if FVI_SEI_MESSAGE
   if (m_pcCfg->getFviSEIEnabled())
   {
     SEIFisheyeVideoInfo *sei = new SEIFisheyeVideoInfo;
     m_seiEncoder.initSEIFisheyeVideoInfo(sei);
     seiMessages.push_back(sei);
   }
-#endif
     
   if(m_pcCfg->getMasteringDisplaySEI().colourVolumeSEIEnabled)
   {

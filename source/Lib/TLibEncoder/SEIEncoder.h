@@ -95,9 +95,7 @@ public:
   Void initSEIOmniViewport(SEIOmniViewport *sei);
   Void initSEICubemapProjection(SEICubemapProjection *sei);
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
-#if FVI_SEI_MESSAGE
   Void initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *sei);
-#endif
   Void initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *sei, Int iHorFilterIndex, Int iVerFilterIndex);
   Void initSEITimeCode(SEITimeCode *sei);
   Bool initSEIColourRemappingInfo(SEIColourRemappingInfo *sei, Int currPOC); // returns true on success, false on failure.

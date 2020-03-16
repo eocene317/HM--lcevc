@@ -735,14 +735,12 @@ Void SEIEncoder::initSEIRegionWisePacking(SEIRegionWisePacking *seiRegionWisePac
   }
 }
 
-#if FVI_SEI_MESSAGE
 Void SEIEncoder::initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *seiFisheyeVideoInfo)
 {
   assert(m_isInitialized);
   assert(seiFisheyeVideoInfo != NULL);
   seiFisheyeVideoInfo->values = m_pcCfg->getFviSEIData();
 }
-#endif
 
 #if AR_SEI_MESSAGE
 template <typename T>

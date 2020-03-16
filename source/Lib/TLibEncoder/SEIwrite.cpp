@@ -194,11 +194,9 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::REGION_WISE_PACKING:
     xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
     break;
-#if FVI_SEI_MESSAGE
   case SEI::FISHEYE_VIDEO_INFO:
     xWriteSEIFisheyeVideoInfo(*static_cast<const SEIFisheyeVideoInfo*>(&sei));
     break;
-#endif
 #if RNSEI
   case SEI::REGIONAL_NESTING:
     xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
@@ -1256,7 +1254,6 @@ Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
   }
 }
 
-#if FVI_SEI_MESSAGE
 Void SEIWriter::xWriteSEIFisheyeVideoInfo(const SEIFisheyeVideoInfo &sei)
 {
   const TComSEIFisheyeVideoInfo &info=sei.values;
@@ -1299,7 +1296,6 @@ Void SEIWriter::xWriteSEIFisheyeVideoInfo(const SEIFisheyeVideoInfo &sei)
     }
   }
 }
-#endif
 
 Void SEIWriter::xWriteSEIColourRemappingInfo(const SEIColourRemappingInfo& sei)
 {

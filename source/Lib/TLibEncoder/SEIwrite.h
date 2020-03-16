@@ -94,9 +94,7 @@ protected:
   Void xWriteSEIOmniViewport                      (const SEIOmniViewport& sei);
   Void xWriteSEICubemapProjection                 (const SEICubemapProjection &sei);
   Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
-#if FVI_SEI_MESSAGE
   Void xWriteSEIFisheyeVideoInfo                  (const SEIFisheyeVideoInfo &sei);
-#endif
   Void xWriteSEIColourRemappingInfo               (const SEIColourRemappingInfo& sei);
   Void xWriteSEIDeinterlaceFieldIdentification    (const SEIDeinterlaceFieldIdentification& sei);
   Void xWriteSEIContentLightLevelInfo             (const SEIContentLightLevelInfo& sei);
