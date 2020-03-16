@@ -91,7 +91,6 @@
                                                             // To use this capability enable config parameter LambdaFromQpEnable
 
 
-#define JCTVC_Y0037_XPSNR                                 1 ///< Enable xPSNR (Cross-Component PSNR) computation
 
 #ifndef EXTENSION_360_VIDEO
 #define EXTENSION_360_VIDEO                               0   ///< extension for 360/spherical video coding support; this macro should be controlled by makefile, as it would be used to control whether the library is built and linked

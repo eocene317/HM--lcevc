@@ -69,18 +69,14 @@ public:
     Bool printSequenceMSE;
     Bool printFrameMSE;
     Bool printMSSSIM;
-#if JCTVC_Y0037_XPSNR
     Bool printXPSNR;
-#endif
     Bool printHexPerPOCPSNRs;
   };
 
   struct ResultData
   {
     ResultData () : bits(0)
-#if JCTVC_Y0037_XPSNR
       , xpsnr(0)
-#endif
     {
       for(Int i=0; i<MAX_NUM_COMPONENT; i++)
       {
@@ -93,9 +89,7 @@ public:
     Double bits;
     Double MSEyuvframe[MAX_NUM_COMPONENT];
     Double MSSSIM[MAX_NUM_COMPONENT];
-#if JCTVC_Y0037_XPSNR
     Double xpsnr;
-#endif
   };
 
 private:
@@ -121,17 +115,13 @@ public:
       m_runningTotal.MSSSIM[i] += result.MSSSIM[i];
     }
 
-#if JCTVC_Y0037_XPSNR
     m_runningTotal.xpsnr += result.xpsnr;
-#endif
     m_uiNumPic++;
   }
 
   Double  getPsnr(ComponentID compID) const { return  m_runningTotal.psnr[compID];  }
   Double  getMsssim(ComponentID compID) const { return  m_runningTotal.MSSSIM[compID];  }
-#if JCTVC_Y0037_XPSNR
   Double  getxPSNR()                  const { return m_runningTotal.xpsnr;}
-#endif
   Double  getBits()                   const { return m_runningTotal.bits;   }
   Void    setBits(Double numBits)           { m_runningTotal.bits=numBits; }
   UInt    getNumPic()                 const { return  m_uiNumPic;   }
@@ -227,12 +217,10 @@ public:
           printf( "  Y-MS-SSIM  ");
         }
 
-#if JCTVC_Y0037_XPSNR
         if (logctrl.printXPSNR)
         {
           printf( "    xPSNR  ");
         }
-#endif
 
         if (logctrl.printSequenceMSE)
         {
@@ -258,13 +246,11 @@ public:
         {
           printf("   %8.6lf  ", getMsssim(COMPONENT_Y) / (Double)getNumPic());
         }
-#if JCTVC_Y0037_XPSNR
         if(logctrl.printXPSNR)
         {
           printf(" %8.4lf  ",
                  getxPSNR() / (Double)getNumPic());
         }
-#endif
 
         if (logctrl.printSequenceMSE)
         {
@@ -304,12 +290,10 @@ public:
           {
             printf("  Y-MS-SSIM    " "U-MS-SSIM    " "V-MS-SSIM  ");
           }
-#if JCTVC_Y0037_XPSNR
           if (logctrl.printXPSNR)
           {
             printf( "    xPSNR  ");
           }
-#endif
 
 #if EXTENSION_360_VIDEO
             m_ext360.printHeader();
@@ -344,13 +328,11 @@ public:
                    getMsssim(COMPONENT_Cr) / (Double)getNumPic());
           }
 
-#if JCTVC_Y0037_XPSNR
           if(logctrl.printXPSNR)
           {
             printf(" %8.4lf  ",
                    getxPSNR() / (Double)getNumPic());
           }
-#endif
 
 #if EXTENSION_360_VIDEO
           m_ext360.printPSNRs(getNumPic());

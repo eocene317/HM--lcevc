@@ -2362,7 +2362,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
   //===== calculate PSNR =====
 
-#if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && pcPicD->getChromaFormat() != CHROMA_400)
   {
     const Pel*   pOrg[MAX_NUM_COMPONENT];
@@ -2444,7 +2443,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
   }
   else
-#endif
   {
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
@@ -2601,12 +2599,10 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   {
     printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }  
-#if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR)
   {
     printf(" [xPSNR %6.4lf dB]", result.xpsnr);
   }
-#endif
   if (outputLogCtrl.printFrameMSE)
   {
     printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", result.MSEyuvframe[COMPONENT_Y], result.MSEyuvframe[COMPONENT_Cb], result.MSEyuvframe[COMPONENT_Cr] );
@@ -2829,7 +2825,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
   const UInt numValidComponents=apcPicRecFields[0]->getNumberValidComponents();
   const Bool   useTrueOrg = conversion != IPCOLOURSPACE_UNCHANGED || m_pcCfg->getGopBasedTemporalFilterEnabled();
 
-#if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && apcPicRecFields[0]->getChromaFormat() != CHROMA_400 && apcPicRecFields[1]->getChromaFormat() != CHROMA_400)
   {
     // For interlace images, we need to scan the two fields independently
@@ -2917,7 +2912,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
     result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
   }
   else
-#endif
   {
     for(Int chan=0; chan<numValidComponents; chan++)
     {

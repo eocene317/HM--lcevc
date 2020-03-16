@@ -106,13 +106,11 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setPrintSequenceMSE                                  ( m_printSequenceMSE);
   m_cTEncTop.setPrintMSSSIM                                       ( m_printMSSSIM );
 
-#if JCTVC_Y0037_XPSNR
   m_cTEncTop.setXPSNREnableFlag                                   ( m_bXPSNREnableFlag);
   for (Int id = 0 ; id < MAX_NUM_COMPONENT; id++)
   {
     m_cTEncTop.setXPSNRWeight                                     ( m_dXPSNRWeight[id], ComponentID(id));
   }
-#endif
 
   m_cTEncTop.setCabacZeroWordPaddingEnabled                       ( m_cabacZeroWordPaddingEnabled );
 

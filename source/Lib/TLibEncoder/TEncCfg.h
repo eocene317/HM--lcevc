@@ -148,10 +148,8 @@ protected:
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
   Bool      m_printMSSSIM;
-#if JCTVC_Y0037_XPSNR
   Bool      m_bXPSNREnableFlag;
   Double    m_dXPSNRWeight[MAX_NUM_COMPONENT];
-#endif
   Bool      m_cabacZeroWordPaddingEnabled;
 
   /* profile & level */
@@ -594,13 +592,11 @@ public:
   Bool      getPrintMSSSIM                  ()         const { return m_printMSSSIM;               }
   Void      setPrintMSSSIM                  (Bool value)     { m_printMSSSIM = value;              }
 
-#if JCTVC_Y0037_XPSNR
   Bool      getXPSNREnableFlag              () const                     { return m_bXPSNREnableFlag;}
   Double    getXPSNRWeight                  (const ComponentID id) const { return m_dXPSNRWeight[id];}
 
   Void      setXPSNREnableFlag              ( Bool  i )      { m_bXPSNREnableFlag = i; }
   Void      setXPSNRWeight                  ( Double dValue, ComponentID id) { m_dXPSNRWeight[id] = dValue;}
-#endif
 
   Bool      getCabacZeroWordPaddingEnabled()           const { return m_cabacZeroWordPaddingEnabled;  }
   Void      setCabacZeroWordPaddingEnabled(Bool value)       { m_cabacZeroWordPaddingEnabled = value; }

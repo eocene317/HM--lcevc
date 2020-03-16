@@ -186,9 +186,7 @@ public:
     outputLogCtrl.printMSEBasedSNR=m_printMSEBasedSequencePSNR;
     outputLogCtrl.printMSSSIM=m_printMSSSIM;
     outputLogCtrl.printSequenceMSE=m_printSequenceMSE;
-#if JCTVC_Y0037_XPSNR
     outputLogCtrl.printXPSNR=m_bXPSNREnableFlag;
-#endif
     outputLogCtrl.printHexPerPOCPSNRs=m_printHexPsnr;
     return outputLogCtrl;
   }
