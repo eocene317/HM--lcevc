@@ -374,7 +374,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setCcvSEIMinLuminanceValue                           (m_ccvSEIMinLuminanceValue);
   m_cTEncTop.setCcvSEIMaxLuminanceValue                           (m_ccvSEIMaxLuminanceValue);
   m_cTEncTop.setCcvSEIAvgLuminanceValue                           (m_ccvSEIAvgLuminanceValue);
-#if ERP_SR_OV_SEI_MESSAGE
   m_cTEncTop.setErpSEIEnabled                                     ( m_erpSEIEnabled );           
   m_cTEncTop.setErpSEICancelFlag                                  ( m_erpSEICancelFlag );        
   m_cTEncTop.setErpSEIPersistenceFlag                             ( m_erpSEIPersistenceFlag );   
@@ -398,7 +397,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setOmniViewportSEITiltCentre                         ( m_omniViewportSEITiltCentre );       
   m_cTEncTop.setOmniViewportSEIHorRange                           ( m_omniViewportSEIHorRange );         
   m_cTEncTop.setOmniViewportSEIVerRange                           ( m_omniViewportSEIVerRange );         
-#endif
   m_cTEncTop.setGopBasedTemporalFilterEnabled                     ( m_gopBasedTemporalFilterEnabled );
   m_cTEncTop.setCmpSEIEnabled                                     (m_cmpSEIEnabled);
   m_cTEncTop.setCmpSEICmpCancelFlag                               (m_cmpSEICmpCancelFlag);

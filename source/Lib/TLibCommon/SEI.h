@@ -94,11 +94,9 @@ public:
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
     CONTENT_COLOUR_VOLUME                = 149, 
-#if ERP_SR_OV_SEI_MESSAGE
     EQUIRECTANGULAR_PROJECTION           = 150,
     SPHERE_ROTATION                      = 154,
     OMNI_VIEWPORT                        = 156,
-#endif
     CUBEMAP_PROJECTION                   = 151,
 #if FVI_SEI_MESSAGE
     FISHEYE_VIDEO_INFO                   = 152,
@@ -790,7 +788,6 @@ public:
   UInt    m_ccvAvgLuminanceValue;
 };
 
-#if ERP_SR_OV_SEI_MESSAGE
 class SEIEquirectangularProjection : public SEI
 {
 public:
@@ -845,7 +842,6 @@ public:
   UChar m_omniViewportCntMinus1;
   std::vector<OmniViewport> m_omniViewportRegions;  
 };
-#endif
 
 #if AR_SEI_MESSAGE
 class SEIAnnotatedRegions : public SEI

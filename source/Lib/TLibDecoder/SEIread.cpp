@@ -350,7 +350,6 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEIContentColourVolume;
       xParseSEIContentColourVolume((SEIContentColourVolume&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:
       sei = new SEIEquirectangularProjection;
       xParseSEIEquirectangularProjection((SEIEquirectangularProjection&) *sei, payloadSize, pDecodedMessageOutputStream);
@@ -363,7 +362,6 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEIOmniViewport;
       xParseSEIOmniViewport((SEIOmniViewport&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
     case SEI::CUBEMAP_PROJECTION:
       sei = new SEICubemapProjection;
       xParseSEICubemapProjection((SEICubemapProjection&)*sei, payloadSize, pDecodedMessageOutputStream);
@@ -1596,7 +1594,6 @@ Void SEIReader::xParseSEIShutterInterval(SEIShutterIntervalInfo& sei, UInt paylo
 }
 #endif
 
-#if ERP_SR_OV_SEI_MESSAGE
 Void SEIReader::xParseSEIEquirectangularProjection(SEIEquirectangularProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   UInt val;
@@ -1662,7 +1659,6 @@ Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, st
     sei.m_omniViewportPersistenceFlag=false;
   }
 }
-#endif
 
 #if AR_SEI_MESSAGE
 Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)

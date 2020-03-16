@@ -90,11 +90,9 @@ public:
   Void initSEIContentLightLevel(SEIContentLightLevelInfo *sei);
   Void initSEIAmbientViewingEnvironment(SEIAmbientViewingEnvironment *sei);
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   Void initSEIErp(SEIEquirectangularProjection *sei);
   Void initSEISphereRotation(SEISphereRotation *sei);
   Void initSEIOmniViewport(SEIOmniViewport *sei);
-#endif
   Void initSEICubemapProjection(SEICubemapProjection *sei);
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
 #if FVI_SEI_MESSAGE

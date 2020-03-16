@@ -729,13 +729,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<Bool> cfg_timeCodeSeiHoursFlag            (0,  1, 0, MAX_TIMECODE_SEI_SETS);
   SMultiValueInput<Int>  cfg_timeCodeSeiTimeOffsetLength     (0, 31, 0, MAX_TIMECODE_SEI_SETS);
   SMultiValueInput<Int>  cfg_timeCodeSeiTimeOffsetValue      (std::numeric_limits<Int>::min(), std::numeric_limits<Int>::max(), 0, MAX_TIMECODE_SEI_SETS);
-#if ERP_SR_OV_SEI_MESSAGE
   SMultiValueInput<Int>  cfg_omniViewportSEIAzimuthCentre    (-11796480, 11796479, 0, 15);
   SMultiValueInput<Int>  cfg_omniViewportSEIElevationCentre  ( -5898240,  5898240, 0, 15);
   SMultiValueInput<Int>  cfg_omniViewportSEITiltCentre       (-11796480, 11796479, 0, 15);
   SMultiValueInput<UInt> cfg_omniViewportSEIHorRange         (        1, 23592960, 0, 15);
   SMultiValueInput<UInt> cfg_omniViewportSEIVerRange         (        1, 11796480, 0, 15);
-#endif
   SMultiValueInput<UInt>   cfg_rwpSEIRwpTransformType                 (0, 7, 0, std::numeric_limits<UChar>::max());
   SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandFlag                 (0, 1, 0, std::numeric_limits<UChar>::max()); 
   SMultiValueInput<UInt>   cfg_rwpSEIProjRegionWidth                  (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
@@ -1241,7 +1239,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIAVEAmbientLightX",                             m_aveSEIAmbientLightX,                            15635u, "Specifies the normalized x chromaticity coordinate of the environmental ambient light in the nominal viewing enviornment according to the CIE 1931 defination in units of 1/50000 lux for the ambient viewing enviornment SEI message")
   ("SEIAVEAmbientLightY",                             m_aveSEIAmbientLightY,                            16450u, "Specifies the normalized y chromaticity coordinate of the environmental ambient light in the nominal viewing enviornment according to the CIE 1931 defination in units of 1/50000 lux for the ambient viewing enviornment SEI message")
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   ("SEIErpEnabled",                                   m_erpSEIEnabled,                                   false, "Control generation of equirectangular projection SEI messages")
   ("SEIErpCancelFlag",                                m_erpSEICancelFlag,                                 true, "Indicate that equirectangular projection SEI message cancels the persistence or follows")
   ("SEIErpPersistenceFlag",                           m_erpSEIPersistenceFlag,                           false, "Specifies the persistence of the equirectangular projection SEI messages")
@@ -1265,7 +1262,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIOmniViewportTiltCentre",                       cfg_omniViewportSEITiltCentre,        cfg_omniViewportSEITiltCentre,        "Indicates the tilt angle of the i-th recommended viewport region")
   ("SEIOmniViewportHorRange",                         cfg_omniViewportSEIHorRange,          cfg_omniViewportSEIHorRange,          "Indicates the azimuth range of the i-th recommended viewport region")
   ("SEIOmniViewportVerRange",                         cfg_omniViewportSEIVerRange,          cfg_omniViewportSEIVerRange,          "Indicates the elevation range of the i-th recommended viewport region")
-#endif
   ("SEICmpEnabled",                                   m_cmpSEIEnabled,                          false,                                    "Controls generation of cubemap projection SEI message")
   ("SEICmpCancelFlag",                                m_cmpSEICmpCancelFlag,                    true,                                     "Specifies the persistence of any previous cubemap projection SEI message in output order.")
   ("SEICmpPersistenceFlag",                           m_cmpSEICmpPersistenceFlag,               false,                                    "Specifies the persistence of the cubemap projection SEI message for the current layer.")
@@ -1892,7 +1888,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
     }
   }
 
-#if ERP_SR_OV_SEI_MESSAGE
   if ( m_omniViewportSEIEnabled && !m_omniViewportSEICancelFlag )
   {
     assert ( m_omniViewportSEICntMinus1 >= 0 && m_omniViewportSEICntMinus1 < 16 );
@@ -1910,7 +1905,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       m_omniViewportSEIVerRange[i]        = cfg_omniViewportSEIVerRange       .values.size() > i ? cfg_omniViewportSEIVerRange       .values[i] : 0;
     }
   }
-#endif
 
   if(!m_rwpSEIRwpCancelFlag && m_rwpSEIEnabled)
   {
@@ -2968,7 +2962,6 @@ Void TAppEncCfg::xCheckParameter()
 
   xConfirmPara(m_preferredTransferCharacteristics > 255, "transfer_characteristics_idc should not be greater than 255.");
 
-#if ERP_SR_OV_SEI_MESSAGE
   if( m_erpSEIEnabled && !m_erpSEICancelFlag )
   {
     xConfirmPara( m_erpSEIGuardBandType < 0 || m_erpSEIGuardBandType > 8, "SEIEquirectangularprojectionGuardBandType must be in the range of 0 to 7");
@@ -2997,7 +2990,6 @@ Void TAppEncCfg::xCheckParameter()
       xConfirmPara( m_omniViewportSEIVerRange[i] < 1 || m_omniViewportSEIVerRange[i] > (180<<16), "SEIOmniViewportVerRange must be in the range of 1 to 180*2^16");
     }
   }
-#endif
 
   if (m_gopBasedTemporalFilterEnabled)
   {

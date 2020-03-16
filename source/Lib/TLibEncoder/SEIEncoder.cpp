@@ -613,7 +613,6 @@ Void SEIEncoder::initSEIAmbientViewingEnvironment(SEIAmbientViewingEnvironment *
 }
 #endif
 
-#if ERP_SR_OV_SEI_MESSAGE
 Void SEIEncoder::initSEIErp(SEIEquirectangularProjection* seiEquirectangularProjection)
 {
   assert (m_isInitialized);
@@ -672,7 +671,6 @@ Void SEIEncoder::initSEIOmniViewport(SEIOmniViewport* seiOmniViewport)
     }
   }
 }
-#endif
 
 Void SEIEncoder::initSEICubemapProjection(SEICubemapProjection *seiCubemapProjection)
 {

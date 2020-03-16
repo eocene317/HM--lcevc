@@ -385,7 +385,6 @@ protected:
   Double    m_ccvSEIMinLuminanceValue;
   Double    m_ccvSEIMaxLuminanceValue;
   Double    m_ccvSEIAvgLuminanceValue;
-#if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;
   Bool      m_erpSEIPersistenceFlag;
@@ -409,7 +408,6 @@ protected:
   std::vector<Int>  m_omniViewportSEITiltCentre;
   std::vector<UInt> m_omniViewportSEIHorRange;
   std::vector<UInt> m_omniViewportSEIVerRange; 
-#endif
   Bool      m_gopBasedTemporalFilterEnabled;
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;
@@ -1063,7 +1061,6 @@ public:
   Void  setAmbientViewingEnvironmentSEIAmbientLightY(UShort v )      { m_aveSEIAmbientLightY = v; }
   UShort getAmbientViewingEnvironmentSEIAmbientLightY()              { return m_aveSEIAmbientLightY; }
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
   Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }
   Void  setErpSEICancelFlag(Bool b)                                  { m_erpSEICancelFlag = b; }                                                         
@@ -1110,7 +1107,6 @@ public:
   UInt  getOmniViewportSEIHorRange(Int idx)                          { return m_omniViewportSEIHorRange[idx]; }
   Void  setOmniViewportSEIVerRange(const std::vector<UInt>& vi)      { m_omniViewportSEIVerRange = vi; } 
   UInt  getOmniViewportSEIVerRange(Int idx)                          { return m_omniViewportSEIVerRange[idx]; }
-#endif
   Void  setGopBasedTemporalFilterEnabled(Bool flag)                  { m_gopBasedTemporalFilterEnabled = flag; }
   Bool  getGopBasedTemporalFilterEnabled() const                     { return m_gopBasedTemporalFilterEnabled; }
   Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }

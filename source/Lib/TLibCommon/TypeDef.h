@@ -97,7 +97,6 @@
 #endif
 
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
-#define ERP_SR_OV_SEI_MESSAGE                             1 // equirectangular projection, sphere rotation, and omni viewport SEI message
 
 #define FVI_SEI_MESSAGE                                   1 // Fisheye Video Information SEI message	
 

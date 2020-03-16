@@ -523,7 +523,6 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     seiMessages.push_back(seiAVE);
   }
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   if (m_pcCfg->getErpSEIEnabled())
   {
     SEIEquirectangularProjection *sei = new SEIEquirectangularProjection;
@@ -544,7 +543,6 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIOmniViewport(sei);
     seiMessages.push_back(sei);
   }
-#endif
   if (m_pcCfg->getCmpSEIEnabled())
   {
     SEICubemapProjection *seiCubemapProjection = new SEICubemapProjection;

@@ -78,11 +78,9 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
   SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS,
   SEI::AMBIENT_VIEWING_ENVIRONMENT
   , SEI::CONTENT_COLOUR_VOLUME
-#if ERP_SR_OV_SEI_MESSAGE
   , SEI::EQUIRECTANGULAR_PROJECTION
   , SEI::SPHERE_ROTATION
   , SEI::OMNI_VIEWPORT
-#endif
   , SEI::CUBEMAP_PROJECTION
   , SEI::REGION_WISE_PACKING
 #if FVI_SEI_MESSAGE
@@ -305,11 +303,9 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS: return "Alternative transfer characteristics";
     case SEI::AMBIENT_VIEWING_ENVIRONMENT:          return "Ambient viewing environment";
     case SEI::CONTENT_COLOUR_VOLUME:                return "Content Colour Volume";
-#if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:           return "Equirectangular projection";
     case SEI::SPHERE_ROTATION:                      return "Sphere rotation";
     case SEI::OMNI_VIEWPORT:                        return "Omni viewport";
-#endif
     case SEI::CUBEMAP_PROJECTION:                  return "Cubemap projection";
     case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
 #if FVI_SEI_MESSAGE

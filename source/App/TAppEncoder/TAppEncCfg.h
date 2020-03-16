@@ -359,7 +359,6 @@ protected:
   Double  m_ccvSEIMinLuminanceValue;             // UInt(32)
   Double  m_ccvSEIMaxLuminanceValue;             // UInt(32)
   Double  m_ccvSEIAvgLuminanceValue;             // UInt(32)
-#if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;
   Bool      m_erpSEIPersistenceFlag;
@@ -385,7 +384,6 @@ protected:
   std::vector<Int>  m_omniViewportSEITiltCentre;
   std::vector<UInt> m_omniViewportSEIHorRange;
   std::vector<UInt> m_omniViewportSEIVerRange;  
-#endif
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;
   Bool                  m_cmpSEICmpPersistenceFlag;

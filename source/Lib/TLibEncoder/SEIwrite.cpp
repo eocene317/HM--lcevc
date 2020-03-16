@@ -179,7 +179,6 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::CONTENT_COLOUR_VOLUME:
     xWriteSEIContentColourVolume(*static_cast<const SEIContentColourVolume*>(&sei));
     break;
-#if ERP_SR_OV_SEI_MESSAGE
   case SEI::EQUIRECTANGULAR_PROJECTION:
     xWriteSEIEquirectangularProjection(*static_cast<const SEIEquirectangularProjection*>(&sei));
     break;
@@ -189,7 +188,6 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::OMNI_VIEWPORT:
     xWriteSEIOmniViewport(*static_cast<const SEIOmniViewport*>(&sei));
     break;
-#endif
   case SEI::CUBEMAP_PROJECTION:
     xWriteSEICubemapProjection(*static_cast<const SEICubemapProjection*>(&sei));
     break;
@@ -1157,7 +1155,6 @@ Void SEIWriter::xWriteSEIShutterInterval(const SEIShutterIntervalInfo &sei)
 }
 #endif
 
-#if ERP_SR_OV_SEI_MESSAGE
 Void SEIWriter::xWriteSEIEquirectangularProjection(const SEIEquirectangularProjection &sei)
 {
   WRITE_FLAG( sei.m_erpCancelFlag, "erp_cancel_flag" );
@@ -1208,7 +1205,6 @@ Void SEIWriter::xWriteSEIOmniViewport(const SEIOmniViewport &sei)
     }
   }
 }
-#endif
 Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
 {
   WRITE_FLAG(sei.m_cmpCancelFlag, "cmp_cancel_flag");
