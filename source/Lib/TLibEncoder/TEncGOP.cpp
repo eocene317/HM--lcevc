@@ -1134,7 +1134,6 @@ Int EfficientFieldIRAPMapping::restoreGOPid(const Int GOPid)
 }
 
 
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
 static UInt calculateCollocatedFromL0Flag(const TComSlice *pSlice)
 {
   const Int refIdx = 0; // Zero always assumed
@@ -1142,56 +1141,6 @@ static UInt calculateCollocatedFromL0Flag(const TComSlice *pSlice)
   const TComPic *refPicL1 = pSlice->getRefPic(REF_PIC_LIST_1, refIdx);
   return refPicL0->getSlice(0)->getSliceQp() > refPicL1->getSlice(0)->getSliceQp();
 }
-#else
-static UInt calculateCollocatedFromL1Flag(TEncCfg *pCfg, const Int GOPid, const Int gopSize)
-{
-  Int iCloseLeft=1, iCloseRight=-1;
-  for(Int i = 0; i<pCfg->getGOPEntry(GOPid).m_numRefPics; i++)
-  {
-    Int iRef = pCfg->getGOPEntry(GOPid).m_referencePics[i];
-    if(iRef>0&&(iRef<iCloseRight||iCloseRight==-1))
-    {
-      iCloseRight=iRef;
-    }
-    else if(iRef<0&&(iRef>iCloseLeft||iCloseLeft==1))
-    {
-      iCloseLeft=iRef;
-    }
-  }
-  if(iCloseRight>-1)
-  {
-    iCloseRight=iCloseRight+pCfg->getGOPEntry(GOPid).m_POC-1;
-  }
-  if(iCloseLeft<1)
-  {
-    iCloseLeft=iCloseLeft+pCfg->getGOPEntry(GOPid).m_POC-1;
-    while(iCloseLeft<0)
-    {
-      iCloseLeft+=gopSize;
-    }
-  }
-  Int iLeftQP=0, iRightQP=0;
-  for(Int i=0; i<gopSize; i++)
-  {
-    if(pCfg->getGOPEntry(i).m_POC==(iCloseLeft%gopSize)+1)
-    {
-      iLeftQP= pCfg->getGOPEntry(i).m_QPOffset;
-    }
-    if (pCfg->getGOPEntry(i).m_POC==(iCloseRight%gopSize)+1)
-    {
-      iRightQP=pCfg->getGOPEntry(i).m_QPOffset;
-    }
-  }
-  if(iCloseRight>-1&&iRightQP<iLeftQP)
-  {
-    return 0;
-  }
-  else
-  {
-    return 1;
-  }
-}
-#endif
 
 
 static Void
@@ -1275,9 +1224,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     //-- For time output for each slice
     clock_t iBeforeTime = clock();
 
-#if !X0038_LAMBDA_FROM_QP_CAPABILITY
-    UInt uiColDir = calculateCollocatedFromL1Flag(m_pcCfg, iGOPid, m_iGopSize);
-#endif
 
     /////////////////////////////////////////////////////////////////////////////////////////////////// Initial to start encoding
     Int iTimeOffset;
@@ -1511,12 +1457,8 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
     if (pcSlice->getSliceType() == B_SLICE)
     {
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
       const UInt uiColFromL0 = calculateCollocatedFromL0Flag(pcSlice);
       pcSlice->setColFromL0Flag(uiColFromL0);
-#else
-      pcSlice->setColFromL0Flag(1-uiColDir);
-#endif
       Bool bLowDelay = true;
       Int  iCurrPOC  = pcSlice->getPOC();
       Int iRefIdx = 0;
@@ -1543,9 +1485,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       pcSlice->setCheckLDC(true);
     }
 
-#if !X0038_LAMBDA_FROM_QP_CAPABILITY
-    uiColDir = 1-uiColDir;
-#endif
 
     //-------------------------------------------------------------
     pcSlice->setRefPOCList();

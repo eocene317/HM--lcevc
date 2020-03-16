@@ -1386,7 +1386,6 @@ Bool TEncTop::SPSNeedsWriting(Int spsId)
   return bChanged;
 }
 
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
 Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
 {
   const Int lumaQpBDOffset = pSlice->getSPS()->getQpBDOffset(CHANNEL_TYPE_LUMA);
@@ -1433,6 +1432,5 @@ Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
   qp = Clip3( -lumaQpBDOffset, MAX_QP, qp );
   return qp;
 }
-#endif
 
 //! \}

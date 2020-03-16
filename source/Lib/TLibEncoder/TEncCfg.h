@@ -50,10 +50,8 @@ struct GOPEntry
 {
   Int m_POC;
   Int m_QPOffset;
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Double m_QPOffsetModelOffset;
   Double m_QPOffsetModelScale;
-#endif
   Int m_CbQPoffset;
   Int m_CrQPoffset;
   Double m_QPFactor;
@@ -74,10 +72,8 @@ struct GOPEntry
   GOPEntry()
   : m_POC(-1)
   , m_QPOffset(0)
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   , m_QPOffsetModelOffset(0)
   , m_QPOffsetModelScale(0)
-#endif
   , m_CbQPoffset(0)
   , m_CrQPoffset(0)
   , m_QPFactor(0)
@@ -177,10 +173,8 @@ protected:
   Int       m_numReorderPics[MAX_TLAYER];
 
   Int       m_iQP;                              //  if (AdaptiveQP == OFF)
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Int       m_intraQPOffset;                    ///< QP offset for intra slice (integer)
   Int       m_lambdaFromQPEnable;               ///< enable lambda derivation from QP
-#endif
   Int       m_aiPad[2];
 
   Bool      m_AccessUnitDelimiter;               ///< add Access Unit Delimiter NAL units
@@ -596,10 +590,8 @@ public:
   Void      setNumReorderPics               ( Int  i, UInt tlayer ) { m_numReorderPics[tlayer] = i;    }
 
   Void      setQP                           ( Int   i )      { m_iQP = i; }
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Void      setIntraQPOffset                ( Int   i )         { m_intraQPOffset = i; }
   Void      setLambdaFromQPEnable           ( Bool  b )         { m_lambdaFromQPEnable = b; }
-#endif
   Void      setPad                          ( Int*  iPad                   )      { for ( Int i = 0; i < 2; i++ ) m_aiPad[i] = iPad[i]; }
 
   Int       getMaxRefPicNum                 ()                              { return m_iMaxRefPicNum;           }
@@ -695,16 +687,12 @@ public:
   Int       getGOPSize                      ()      { return  m_iGOPSize; }
   Int       getMaxDecPicBuffering           (UInt tlayer) { return m_maxDecPicBuffering[tlayer]; }
   Int       getNumReorderPics               (UInt tlayer) { return m_numReorderPics[tlayer]; }
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Int       getIntraQPOffset                () const    { return  m_intraQPOffset; }
   Int       getLambdaFromQPEnable           () const    { return  m_lambdaFromQPEnable; }
 protected:
   Int       getBaseQP                       () const { return  m_iQP; } // public should use getQPForPicture.
 public:
   Int       getQPForPicture                 (const UInt gopIndex, const TComSlice *pSlice) const; // Function actually defined in TEncTop.cpp
-#else
-  Int       getQP                           ()      { return  m_iQP; }
-#endif
   Int       getPad                          ( Int i )      { assert (i < 2 );                      return  m_aiPad[i]; }
 
   Bool      getAccessUnitDelimiter() const  { return m_AccessUnitDelimiter; }
