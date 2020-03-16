@@ -100,9 +100,7 @@ public:
     CUBEMAP_PROJECTION                   = 151,
     FISHEYE_VIDEO_INFO                   = 152,
     REGION_WISE_PACKING                  = 155, 
-#if RNSEI
     REGIONAL_NESTING                     = 157,
-#endif
 #if MCTS_EXTRACTION
     MCTS_EXTRACTION_INFO_SET             = 158,
 #endif
@@ -1119,7 +1117,6 @@ public:
 #endif
 
 #endif
-#if RNSEI
 // Class that associates an SEI with one more regions
 class RegionalSEI
 {
@@ -1208,5 +1205,4 @@ private:
   RNSEIWindowVec m_regions;
   std::vector< SEIListOfIndices > m_rnSeiMessages;
 };
-#endif
 //! \}

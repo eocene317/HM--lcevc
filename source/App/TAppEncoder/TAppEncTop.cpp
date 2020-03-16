@@ -469,9 +469,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setSEIGreenMetadataInfoSEIEnable                     ( m_greenMetadataType > 0 );
   m_cTEncTop.setSEIGreenMetadataType                              ( UChar(m_greenMetadataType) );
   m_cTEncTop.setSEIXSDMetricType                                  ( UChar(m_xsdMetricType) );
-#if RNSEI
   m_cTEncTop.setRegionalNestingSEIFileRoot                        ( m_regionalNestingSEIFileRoot );
-#endif
 #if AR_SEI_MESSAGE
   m_cTEncTop.setAnnotatedRegionSEIFileRoot                        (m_arSEIFileRoot);
 #endif

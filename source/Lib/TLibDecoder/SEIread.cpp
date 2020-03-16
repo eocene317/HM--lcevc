@@ -381,12 +381,10 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEIFisheyeVideoInfo;
       xParseSEIFisheyeVideoInfo((SEIFisheyeVideoInfo&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#if RNSEI
     case SEI::REGIONAL_NESTING:
       sei = new SEIRegionalNesting;
       xParseSEIRegionalNesting((SEIRegionalNesting&) *sei, payloadSize, sps, pDecodedMessageOutputStream);
       break;
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
     case SEI::SHUTTER_INTERVAL_INFO:
       sei = new SEIShutterIntervalInfo;
@@ -2060,7 +2058,6 @@ Void SEIReader::xParseSEIAmbientViewingEnvironment( SEIAmbientViewingEnvironment
   sei_read_code(pDecodedMessageOutputStream, 16, code, "ambient_light_x");     sei.m_ambientLightX     = (UShort)code;
   sei_read_code(pDecodedMessageOutputStream, 16, code, "ambient_light_y");     sei.m_ambientLightY     = (UShort)code;
 }
-#if RNSEI
 Void SEIReader::xParseSEIRegionalNesting( SEIRegionalNesting& sei, UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream )
 {
   UInt uiCode;
@@ -2103,7 +2100,6 @@ Void SEIReader::xParseSEIRegionalNesting( SEIRegionalNesting& sei, UInt payloadS
     sei.addRegionalSEI( seiWithRegionIndices ) ;
   }
 }
-#endif
 
 
 //! \}

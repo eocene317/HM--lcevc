@@ -99,7 +99,6 @@
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
 
 
-#define RNSEI                                             1  ///< Support for signalling regional nesting SEI message
 
 #define AR_SEI_MESSAGE                                    1  ///< Annotated Region SEI message
 
@@ -990,7 +989,6 @@ public:
   }
 };
 
-#if RNSEI
 class RNSEIWindow : public Window
 {
 private:
@@ -1017,7 +1015,6 @@ public:
   friend std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region);
 };
 typedef std::vector<RNSEIWindow> RNSEIWindowVec;
-#endif
 //! \}
 
 #endif

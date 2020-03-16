@@ -102,9 +102,7 @@ protected:
   Void xWriteSEICodedRegionCompletion             (const SEICodedRegionCompletion& sei);
   Void xWriteSEIAlternativeTransferCharacteristics(const SEIAlternativeTransferCharacteristics& sei);
   Void xWriteSEIAmbientViewingEnvironment         (const SEIAmbientViewingEnvironment& sei);
-#if RNSEI
   Void xWriteSEIRegionalNesting                   (TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps);
-#endif
 
 #if AR_SEI_MESSAGE
   Void xWriteSEIAnnotatedRegions                  (const SEIAnnotatedRegions& sei, const TComSPS *sps);

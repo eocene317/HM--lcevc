@@ -487,9 +487,7 @@ protected:
   Int       m_log2MaxMvLengthHorizontal;                      ///< Indicate the maximum absolute value of a decoded horizontal MV component in quarter-pel luma units
   Int       m_log2MaxMvLengthVertical;                        ///< Indicate the maximum absolute value of a decoded vertical MV component in quarter-pel luma units
   std::string m_colourRemapSEIFileRoot;
-#if RNSEI
   std::string m_regionalNestingSEIFileRoot;
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Bool      m_siiSEIEnabled;
   UInt      m_siiSEINumUnitsInShutterInterval;

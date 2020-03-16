@@ -442,9 +442,7 @@ protected:
 #endif
   Bool                    m_fviSEIEnabled;
   TComSEIFisheyeVideoInfo m_fisheyeVideoInfo;
-#if RNSEI
   std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Bool                    m_siiSEIEnabled;
   UInt                    m_siiSEINumUnitsInShutterInterval;
@@ -1180,10 +1178,8 @@ public:
   UChar getSEIGreenMetadataType() const                              { return m_greenMetadataType; }
   Void  setSEIXSDMetricType(UChar v)                                 { m_xsdMetricType = v;    }
   UChar getSEIXSDMetricType() const                                  { return m_xsdMetricType; }
-#if RNSEI
   Void  setRegionalNestingSEIFileRoot( const std::string &s )        { m_regionalNestingSEIFileRoot = s; }
   const std::string &getRegionalNestingSEIFileRoot() const           { return m_regionalNestingSEIFileRoot; }
-#endif
 
 #if AR_SEI_MESSAGE
   Void  setAnnotatedRegionSEIFileRoot(const std::string &s)          { m_arSEIFileRoot = s; }

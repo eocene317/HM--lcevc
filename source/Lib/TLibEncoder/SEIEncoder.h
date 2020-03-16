@@ -100,7 +100,6 @@ public:
   Void initSEITimeCode(SEITimeCode *sei);
   Bool initSEIColourRemappingInfo(SEIColourRemappingInfo *sei, Int currPOC); // returns true on success, false on failure.
   Void initSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics *sei);
-#if RNSEI
   Void readToneMappingInfoSEI(std::istream &fic, SEIToneMappingInfo *seiToneMappingInfo , Bool &failed );
   Void readChromaResamplingFilterHintSEI(std::istream &fic, SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Bool &failed );
   Void readKneeFunctionInfoSEI(std::istream &fic, SEIKneeFunctionInfo *seiKneeFunctionInfo, Bool &failed );
@@ -108,7 +107,6 @@ public:
   Void readContentColourVolumeSEI(std::istream &fic, SEIContentColourVolume *seiContentColourVolume, Bool &failed );
   Bool initSEIRegionalNesting(SEIRegionalNesting *sei, Int currPOC); // returns true on success, false on failure.
   Void readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed );
-#endif
 #if AR_SEI_MESSAGE
   Bool initSEIAnnotatedRegions(SEIAnnotatedRegions *sei, Int currPOC);
   Void readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed);

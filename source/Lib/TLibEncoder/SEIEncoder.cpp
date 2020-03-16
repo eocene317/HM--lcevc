@@ -940,7 +940,6 @@ static Void readTokenValueAndValidate(Bool         &returnedValue, /// value ret
 
 
 
-#if RNSEI
 template <typename T>
 static Void readTokenValue(std::vector<T> &returnedValue, /// value returned
                            Bool         &failed,        /// used and updated
@@ -1016,7 +1015,6 @@ static Void readTokenValueAndValidate(std::vector<T> &returnedValue, /// value r
     }
   }
 }
-#endif
 
 Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRemappingInfo, Int currPOC) // returns true on success, false on failure.
 {
@@ -1044,68 +1042,7 @@ Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRem
     }
 
     // TODO: identify and remove duplication with decoder parsing through abstraction.
-#if RNSEI
     readColourRemapSEI(fic, seiColourRemappingInfo, failed );
-#else
-    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapId,         failed, fic, "colour_remap_id",        UInt(0), UInt(0x7fffffff) );
-    readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapCancelFlag, failed, fic, "colour_remap_cancel_flag" );
-    if( !seiColourRemappingInfo->m_colourRemapCancelFlag )
-    {
-      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapPersistenceFlag,            failed, fic, "colour_remap_persistence_flag" );
-      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapVideoSignalInfoPresentFlag, failed, fic, "colour_remap_video_signal_info_present_flag");
-      if( seiColourRemappingInfo->m_colourRemapVideoSignalInfoPresentFlag )
-      {
-        readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapFullRangeFlag,      failed, fic, "colour_remap_full_range_flag" );
-        readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapPrimaries,          failed, fic, "colour_remap_primaries",           Int(0), Int(255) );
-        readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapTransferFunction,   failed, fic, "colour_remap_transfer_function",   Int(0), Int(255) );
-        readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapMatrixCoefficients, failed, fic, "colour_remap_matrix_coefficients", Int(0), Int(255) );
-      }
-      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapInputBitDepth, failed, fic, "colour_remap_input_bit_depth",            Int(8), Int(16) );
-      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapBitDepth,      failed, fic, "colour_remap_bit_depth",                  Int(8), Int(16) );
-
-      const Int maximumInputValue    = (1 << (((seiColourRemappingInfo->m_colourRemapInputBitDepth + 7) >> 3) << 3)) - 1;
-      const Int maximumRemappedValue = (1 << (((seiColourRemappingInfo->m_colourRemapBitDepth      + 7) >> 3) << 3)) - 1;
-
-      for( Int c=0 ; c<3 ; c++ )
-      {
-        readTokenValueAndValidate(seiColourRemappingInfo->m_preLutNumValMinus1[c],         failed, fic, "pre_lut_num_val_minus1[c]",        Int(0), Int(32) );
-        if( seiColourRemappingInfo->m_preLutNumValMinus1[c]>0 )
-        {
-          seiColourRemappingInfo->m_preLut[c].resize(seiColourRemappingInfo->m_preLutNumValMinus1[c]+1);
-          for( Int i=0 ; i<=seiColourRemappingInfo->m_preLutNumValMinus1[c] ; i++ )
-          {
-            readTokenValueAndValidate(seiColourRemappingInfo->m_preLut[c][i].codedValue,   failed, fic, "pre_lut_coded_value[c][i]",  Int(0), maximumInputValue    );
-            readTokenValueAndValidate(seiColourRemappingInfo->m_preLut[c][i].targetValue,  failed, fic, "pre_lut_target_value[c][i]", Int(0), maximumRemappedValue );
-          }
-        }
-      }
-      readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapMatrixPresentFlag, failed, fic, "colour_remap_matrix_present_flag" );
-      if( seiColourRemappingInfo->m_colourRemapMatrixPresentFlag )
-      {
-        readTokenValueAndValidate(seiColourRemappingInfo->m_log2MatrixDenom, failed, fic, "log2_matrix_denom", Int(0), Int(15) );
-        for( Int c=0 ; c<3 ; c++ )
-        {
-          for( Int i=0 ; i<3 ; i++ )
-          {
-            readTokenValueAndValidate(seiColourRemappingInfo->m_colourRemapCoeffs[c][i], failed, fic, "colour_remap_coeffs[c][i]", -32768, 32767 );
-          }
-        }
-      }
-      for( Int c=0 ; c<3 ; c++ )
-      {
-        readTokenValueAndValidate(seiColourRemappingInfo->m_postLutNumValMinus1[c], failed, fic, "post_lut_num_val_minus1[c]", Int(0), Int(32) );
-        if( seiColourRemappingInfo->m_postLutNumValMinus1[c]>0 )
-        {
-          seiColourRemappingInfo->m_postLut[c].resize(seiColourRemappingInfo->m_postLutNumValMinus1[c]+1);
-          for( Int i=0 ; i<=seiColourRemappingInfo->m_postLutNumValMinus1[c] ; i++ )
-          {
-            readTokenValueAndValidate(seiColourRemappingInfo->m_postLut[c][i].codedValue,  failed, fic, "post_lut_coded_value[c][i]",  Int(0), maximumRemappedValue );
-            readTokenValueAndValidate(seiColourRemappingInfo->m_postLut[c][i].targetValue, failed, fic, "post_lut_target_value[c][i]", Int(0), maximumRemappedValue );
-          }
-        }
-      }
-    }
-#endif
 
     if( failed )
     {
@@ -1116,7 +1053,6 @@ Bool SEIEncoder::initSEIColourRemappingInfo(SEIColourRemappingInfo* seiColourRem
   return true;
 }
 
-#if RNSEI
 Void SEIEncoder::readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed )
 {
   Int regionId;
@@ -1401,7 +1337,6 @@ Bool SEIEncoder::initSEIRegionalNesting(SEIRegionalNesting* seiRegionalNesting, 
   return true;
 }
 
-#endif
 
 #if AR_SEI_MESSAGE
 Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed)

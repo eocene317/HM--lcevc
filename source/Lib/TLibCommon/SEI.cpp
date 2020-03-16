@@ -84,9 +84,7 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
   , SEI::CUBEMAP_PROJECTION
   , SEI::REGION_WISE_PACKING
   , SEI::FISHEYE_VIDEO_INFO
-#if RNSEI
   , SEI::REGIONAL_NESTING
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   , SEI::SHUTTER_INTERVAL_INFO
 #endif
@@ -189,7 +187,6 @@ void SEIPictureTiming::copyTo (SEIPictureTiming& target)
   target.m_duCpbRemovalDelayMinus1 = m_duCpbRemovalDelayMinus1;
 }
 
-#if RNSEI
 std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region)
 {
   os << region.getRegionId() << " " << region.getWindowLeftOffset() <<
@@ -255,7 +252,6 @@ Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
   SEIListOfIndices seiWithListOfIndices(listOfIndices, regSEI->dissociateSEIObject());
   addRegionalSEI(seiWithListOfIndices);
 }
-#endif
 
 // Static member
 const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
@@ -307,9 +303,7 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::CUBEMAP_PROJECTION:                  return "Cubemap projection";
     case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
     case SEI::FISHEYE_VIDEO_INFO:                   return "Fisheye video information";
-#if RNSEI
     case SEI::REGIONAL_NESTING:                     return "Regional nesting";
-#endif
 #if MCTS_EXTRACTION
     case SEI::MCTS_EXTRACTION_INFO_SET:             return "MCTS extraction information";
 #endif

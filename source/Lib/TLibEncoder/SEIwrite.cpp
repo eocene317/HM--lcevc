@@ -197,11 +197,9 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::FISHEYE_VIDEO_INFO:
     xWriteSEIFisheyeVideoInfo(*static_cast<const SEIFisheyeVideoInfo*>(&sei));
     break;
-#if RNSEI
   case SEI::REGIONAL_NESTING:
     xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
     break;
-#endif
 
 #if AR_SEI_MESSAGE
   case SEI::ANNOTATED_REGIONS:
@@ -1397,7 +1395,6 @@ Void SEIWriter::xWriteSEIAmbientViewingEnvironment(const SEIAmbientViewingEnviro
   WRITE_CODE(sei.m_ambientLightY,      16, "ambient_light_y" );
 }
 
-#if RNSEI
 Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps)
 {
   WRITE_CODE(sei.getRNId(),            16, "regional_nesting_id");
@@ -1428,7 +1425,6 @@ Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting
     xWriteSEImessage(bs, nestedSEI, sps);
   }
 }
-#endif
 
 #if AR_SEI_MESSAGE
 Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const TComSPS *sps)

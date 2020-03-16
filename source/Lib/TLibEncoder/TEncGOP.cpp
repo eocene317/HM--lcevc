@@ -671,7 +671,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
     }
   }
 #endif
-#if RNSEI
   // insert one Regional Nesting SEI for the picture (if the file exists)
   if (!m_pcCfg->getRegionalNestingSEIFileRoot().empty())
   {
@@ -687,7 +686,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
       delete seiRegionalNesting;
     }
   }
-#endif
 }
 
 Void TEncGOP::xCreateScalableNestingSEI (SEIMessages& seiMessages, SEIMessages& nestedSeiMessages)
