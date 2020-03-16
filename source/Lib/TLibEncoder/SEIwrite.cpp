@@ -201,11 +201,9 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
     xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
     break;
 
-#if AR_SEI_MESSAGE
   case SEI::ANNOTATED_REGIONS:
     xWriteSEIAnnotatedRegions(*static_cast<const SEIAnnotatedRegions*>(&sei), sps);
     break;
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   case SEI::SHUTTER_INTERVAL_INFO:
@@ -1426,7 +1424,6 @@ Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting
   }
 }
 
-#if AR_SEI_MESSAGE
 Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const TComSPS *sps)
 {
   WRITE_FLAG(sei.m_hdr.m_cancelFlag, "ar_cancel_flag");
@@ -1517,7 +1514,6 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
     }
   }
 }
-#endif
 Void SEIWriter::xWriteByteAlign()
 {
   if( m_pcBitIf->getNumberOfWrittenBits() % 8 != 0)

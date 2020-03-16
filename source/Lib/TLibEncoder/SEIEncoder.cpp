@@ -742,7 +742,6 @@ Void SEIEncoder::initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *seiFisheyeVideoInf
   seiFisheyeVideoInfo->values = m_pcCfg->getFviSEIData();
 }
 
-#if AR_SEI_MESSAGE
 template <typename T>
 static Void readTokenValue(T            &returnedValue, /// value returned
                            Bool         &failed,        /// used and updated
@@ -859,56 +858,6 @@ static Void readTokenValue(T            &returnedValue, /// value returned
 {
   readTokenValue(returnedValue, failed, is, pToken, readTokenValueParsing);
 }
-#else
-template <typename T>
-static Void readTokenValue(T            &returnedValue, /// value returned
-                           Bool         &failed,        /// used and updated
-                           std::istream &is,            /// stream to read token from
-                           const TChar  *pToken)        /// token string
-{
-  returnedValue=T();
-  if (failed)
-  {
-    return;
-  }
-
-  Int c;
-  // Ignore any whitespace
-  while ((c=is.get())!=EOF && isspace(c));
-  // test for comment mark
-  while (c=='#')
-  {
-    // Ignore to the end of the line
-    while ((c=is.get())!=EOF && (c!=10 && c!=13));
-    // Ignore any white space at the start of the next line
-    while ((c=is.get())!=EOF && isspace(c));
-  }
-  // test first character of token
-  failed=(c!=pToken[0]);
-  // test remaining characters of token
-  Int pos;
-  for(pos=1;!failed && pToken[pos]!=0 && is.get()==pToken[pos]; pos++);
-  failed|=(pToken[pos]!=0);
-  // Ignore any whitespace before the ':'
-  while (!failed && (c=is.get())!=EOF && isspace(c));
-  failed|=(c!=':');
-  // Now read the value associated with the token:
-  if (!failed)
-  {
-    is >> returnedValue;
-    failed=!is.good();
-    if (!failed)
-    {
-      c=is.get();
-      failed=(c!=EOF && !isspace(c));
-    }
-  }
-  if (failed)
-  {
-    std::cerr << "Unable to read token '" << pToken << "'\n";
-  }
-}
-#endif
 
 template <typename T>
 static Void readTokenValueAndValidate(T            &returnedValue, /// value returned
@@ -1338,7 +1287,6 @@ Bool SEIEncoder::initSEIRegionalNesting(SEIRegionalNesting* seiRegionalNesting, 
 }
 
 
-#if AR_SEI_MESSAGE
 Void SEIEncoder::readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed)
 {
   readTokenValueAndValidate(seiAnnoRegion->m_hdr.m_cancelFlag, failed, fic, "SEIArCancelFlag");
@@ -1450,7 +1398,6 @@ Bool SEIEncoder::initSEIAnnotatedRegions(SEIAnnotatedRegions* SEIAnnoReg, Int cu
   }
   return true;
 }
-#endif
 Void SEIEncoder::initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Int iHorFilterIndex, Int iVerFilterIndex)
 {
   assert (m_isInitialized);

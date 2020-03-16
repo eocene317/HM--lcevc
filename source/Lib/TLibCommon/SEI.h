@@ -104,9 +104,7 @@ public:
 #if MCTS_EXTRACTION
     MCTS_EXTRACTION_INFO_SET             = 158,
 #endif
-#if AR_SEI_MESSAGE
     ANNOTATED_REGIONS                    = 202,
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
     SHUTTER_INTERVAL_INFO                = 203,
 #endif
@@ -839,7 +837,6 @@ public:
   std::vector<OmniViewport> m_omniViewportRegions;  
 };
 
-#if AR_SEI_MESSAGE
 class SEIAnnotatedRegions : public SEI
 {
 public:
@@ -903,7 +900,6 @@ public:
   std::vector<std::pair<AnnotatedRegionObjectIndex, AnnotatedRegionObject> > m_annotatedRegions;
   std::vector<std::pair<AnnotatedRegionLabelIndex,  AnnotatedRegionLabel>  > m_annotatedLabels;
 };
-#endif
 
 class SEICubemapProjection : public SEI
 {

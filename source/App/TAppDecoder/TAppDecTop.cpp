@@ -123,7 +123,6 @@ Void TAppDecTop::decode()
     }
   }
 
-#if AR_SEI_MESSAGE
   // clear contents of annotated-Regions-SEI output file
   if (!m_annotatedRegionsSEIFileName.empty())
   {
@@ -134,7 +133,6 @@ Void TAppDecTop::decode()
       exit(EXIT_FAILURE);
     }
   }
-#endif
 
   // main decoder loop
   Bool openedReconFile = false; // reconstruction file not yet opened. (must be performed after SPS is seen)
@@ -297,10 +295,8 @@ Void TAppDecTop::xDestroyDecLib()
     delete m_pcSeiColourRemappingInfoPrevious;
     m_pcSeiColourRemappingInfoPrevious = NULL;
   }
-#if AR_SEI_MESSAGE
   m_arObjects.clear();
   m_arLabels.clear();
-#endif
 }
 
 Void TAppDecTop::xInitDecLib()
@@ -324,10 +320,8 @@ Void TAppDecTop::xInitDecLib()
     delete m_pcSeiColourRemappingInfoPrevious;
     m_pcSeiColourRemappingInfoPrevious = NULL;
   }
-#if AR_SEI_MESSAGE
   m_arObjects.clear();
   m_arLabels.clear();
-#endif
 }
 
 /** \param pcListPic list of pictures to be written to file
@@ -483,12 +477,10 @@ Void TAppDecTop::xWriteOutput( TComList<TComPic*>* pcListPic, UInt tId )
                                          NUM_CHROMA_FORMAT, m_bClipOutputVideoToRec709Range  );
         }
 
-#if AR_SEI_MESSAGE
         if (!m_annotatedRegionsSEIFileName.empty())
         {
           xOutputAnnotatedRegions(pcPic);
         }
-#endif
 
         if (!m_colourRemapSEIFileName.empty())
         {
@@ -618,12 +610,10 @@ Void TAppDecTop::xFlushOutput( TComList<TComPic*>* pcListPic )
           xOutputColourRemapPic(pcPic);
         }
 
-#if AR_SEI_MESSAGE
         if (!m_annotatedRegionsSEIFileName.empty())
         {
           xOutputAnnotatedRegions(pcPic);
         }
-#endif
 
         // update POC of display order
         m_iPOCLastDisplay = pcPic->getPOC();
@@ -704,7 +694,6 @@ Void TAppDecTop::xOutputColourRemapPic(TComPic* pcPic)
   }
 }
 
-#if AR_SEI_MESSAGE
 Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
 {
 
@@ -836,7 +825,6 @@ Void TAppDecTop::xOutputAnnotatedRegions(TComPic* pcPic)
     }
   }
 }
-#endif
 
 
 // compute lut from SEI

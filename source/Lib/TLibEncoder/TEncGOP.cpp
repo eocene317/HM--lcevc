@@ -654,7 +654,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
     }
   }
 
-#if AR_SEI_MESSAGE
   // insert one Annotated Region SEI for the picture (if the file exists)
   if (!m_pcCfg->getAnnotatedRegionSEIFileRoot().empty())
   {
@@ -670,7 +669,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
       delete seiAnnotatedRegions;
     }
   }
-#endif
   // insert one Regional Nesting SEI for the picture (if the file exists)
   if (!m_pcCfg->getRegionalNestingSEIFileRoot().empty())
   {

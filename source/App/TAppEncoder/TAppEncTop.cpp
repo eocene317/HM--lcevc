@@ -470,9 +470,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setSEIGreenMetadataType                              ( UChar(m_greenMetadataType) );
   m_cTEncTop.setSEIXSDMetricType                                  ( UChar(m_xsdMetricType) );
   m_cTEncTop.setRegionalNestingSEIFileRoot                        ( m_regionalNestingSEIFileRoot );
-#if AR_SEI_MESSAGE
   m_cTEncTop.setAnnotatedRegionSEIFileRoot                        (m_arSEIFileRoot);
-#endif
   m_cTEncTop.setTileUniformSpacingFlag                            ( m_tileUniformSpacingFlag );
   m_cTEncTop.setNumColumnsMinus1                                  ( m_numTileColumnsMinus1 );
   m_cTEncTop.setNumRowsMinus1                                     ( m_numTileRowsMinus1 );

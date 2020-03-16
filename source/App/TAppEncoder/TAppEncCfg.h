@@ -416,9 +416,7 @@ protected:
   Bool                  m_gopBasedTemporalFilterFutureReference;       ///< Enable/disable future frame references in the GOP-based Temporal Filter
   std::map<Int, Double> m_gopBasedTemporalFilterStrengths;             ///< Filter strength per frame for the GOP-based Temporal Filter
 
-#if AR_SEI_MESSAGE
   std::string           m_arSEIFileRoot;
-#endif
   Bool                    m_fisheyeVIdeoInfoSEIEnabled;
   TComSEIFisheyeVideoInfo m_fisheyeVideoInfoSEI;
   // weighted prediction

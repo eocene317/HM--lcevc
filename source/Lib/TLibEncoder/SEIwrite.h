@@ -104,9 +104,7 @@ protected:
   Void xWriteSEIAmbientViewingEnvironment         (const SEIAmbientViewingEnvironment& sei);
   Void xWriteSEIRegionalNesting                   (TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps);
 
-#if AR_SEI_MESSAGE
   Void xWriteSEIAnnotatedRegions                  (const SEIAnnotatedRegions& sei, const TComSPS *sps);
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void xWriteSEIShutterInterval                   (const SEIShutterIntervalInfo& sei);
 #endif

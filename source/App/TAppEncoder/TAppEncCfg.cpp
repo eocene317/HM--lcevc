@@ -1311,9 +1311,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIFviNumPolynomialCoeffs",                       cfg_fviSEIFisheyeNumPolynomialCoeffs,     cfg_fviSEIFisheyeNumPolynomialCoeffs,    "Specifies the number of polynomial coefficients for the circular region")
   ("SEIFviPolynomialCoeff",                           cfg_fviSEIFisheyePolynomialCoeff,         cfg_fviSEIFisheyePolynomialCoeff,        "Specifies the j-th polynomial coefficient value of the curve function that maps the normalized distance of a luma sample from the centre of the circular region corresponding to the i-th active area to the angular value of a sphere coordinate from the normal vector of a nominal imaging plane that passes through the centre of the sphere coordinate system for the i-th active region.")
   ("SEIRegionalNestingFileRoot,-rns",                 m_regionalNestingSEIFileRoot,                    string(""), "Regional nesting SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-rns rns\" will search for files rns_0.txt, rns_1.txt, ...")
-#if AR_SEI_MESSAGE
   ("SEIAnnotatedRegionsFileRoot,-ar",                 m_arSEIFileRoot,                                 string(""), "Annotated region SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-ar ar\" will search for files ar_0.txt, ar_1.txt, ...")
-#endif
   ;
 
   opts.addOptions()
