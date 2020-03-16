@@ -356,12 +356,6 @@ Void TEncSampleAdaptiveOffset::decidePicParams(Bool* sliceEnabled, const TComPic
 #else
 Void TEncSampleAdaptiveOffset::decidePicParams(Bool* sliceEnabled, const TComPic* pic, const Double saoEncodingRate, const Double saoEncodingRateChroma, const Bool bResetStateAfterIRAP)
 {
-#if !FIXSAORESETAFTERIRAP
-  if (pic->getSlice(0)->isIRAP())
-  {
-    m_lastIRAPPoc = pic->getSlice(0)->getPOC();
-  }
-#endif
   if (bResetStateAfterIRAP && pic->getSlice(0)->getPOC() > m_lastIRAPPoc)
   { // reset
     for (Int compIdx = 0; compIdx < MAX_NUM_COMPONENT; compIdx++)
@@ -373,12 +367,10 @@ Void TEncSampleAdaptiveOffset::decidePicParams(Bool* sliceEnabled, const TComPic
     }
     m_lastIRAPPoc = MAX_INT;
   }
-#if FIXSAORESETAFTERIRAP
   if (pic->getSlice(0)->isIRAP())
   {
     m_lastIRAPPoc = pic->getSlice(0)->getPOC();
   }
-#endif
 #endif
   const Int picTempLayer = pic->getSlice(0)->getDepth();
 

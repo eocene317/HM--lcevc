@@ -2315,12 +2315,6 @@ Void TAppEncCfg::xCheckParameter()
     xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size for periodic IDR pictures");
   }
 #if !ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
-#if !FIXSAORESETAFTERIRAP
-  if (m_saoResetEncoderStateAfterIRAP)
-  {
-    xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size when SAOResetEncoderStateAfterIRAP is enabled");
-  }
-#endif
 #endif
   xConfirmPara( m_uiMaxCUDepth < 1,                                                         "MaxPartitionDepth must be greater than zero");
   xConfirmPara( (m_uiMaxCUWidth  >> m_uiMaxCUDepth) < 4,                                    "Minimum partition width size should be larger than or equal to 8");
