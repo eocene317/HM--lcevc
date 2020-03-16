@@ -1803,7 +1803,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     m_pcEntropyCoder->setEntropyCoder   ( m_pcCavlcCoder );
 
     // write various parameter sets
-#if JCTVC_Y0038_PARAMS
     //bool writePS = m_bSeqFirst || (m_pcCfg->getReWriteParamSetsFlag() && (pcPic->getSlice(0)->getSliceType() == I_SLICE));
     bool writePS = m_bSeqFirst || (m_pcCfg->getReWriteParamSetsFlag() && (pcSlice->isIRAP()));
     if (writePS)
@@ -1813,11 +1812,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     actualTotalBits += xWriteParameterSets(accessUnit, pcSlice, writePS);
 
     if (writePS)
-#else
-    actualTotalBits += xWriteParameterSets(accessUnit, pcSlice, m_bSeqFirst);
-
-    if ( m_bSeqFirst )
-#endif
     {
       // create prefix SEI messages at the beginning of the sequence
       assert(leadingSeiMessages.empty());
