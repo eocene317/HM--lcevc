@@ -553,7 +553,6 @@ istream& SMultiValueInput<T>::readValues(std::istream &in)
   return in;
 }
 
-#if JVET_E0059_FLOATING_POINT_QP_FIX
 template <class T>
 static inline istream& operator >> (std::istream &in, TAppEncCfg::OptionalValue<T> &value)
 {
@@ -569,7 +568,6 @@ static inline istream& operator >> (std::istream &in, TAppEncCfg::OptionalValue<
   }
   return in;
 }
-#endif
 
 template <class T1, class T2>
 static inline istream& operator >> (std::istream &in, std::map<T1, T2> &map)
@@ -912,12 +910,8 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("IQPFactor,-IQF",                                  m_dIntraQpFactor,                                  -1.0, "Intra QP Factor for Lambda Computation. If negative, the default will scale lambda based on GOP size (unless LambdaFromQpEnable then IntraQPOffset is used instead)")
 
   /* Quantization parameters */
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   ("QP,q",                                            m_iQP,                                               30, "Qp value")
   ("QPIncrementFrame,-qpif",                          m_qpIncrementAtSourceFrame,       OptionalValue<UInt>(), "If a source file frame number is specified, the internal QP will be incremented for all POCs associated with source frames >= frame number. If empty, do not increment.")
-#else
-  ("QP,q",                                            m_fQP,                                             30.0, "Qp value, if value is float, QP is switched once during encoding")
-#endif
 #if X0038_LAMBDA_FROM_QP_CAPABILITY
   ("IntraQPOffset",                                   m_intraQPOffset,                                      0, "Qp offset value for intra slice, typically determined based on GOP size")
   ("LambdaFromQpEnable",                              m_lambdaFromQPEnable,                             false, "Enable flag for derivation of lambda from QP")
@@ -1778,7 +1772,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   m_aidQP = new Int[ m_framesToBeEncoded + m_iGOPSize + 1 ];
   ::memset( m_aidQP, 0, sizeof(Int)*( m_framesToBeEncoded + m_iGOPSize + 1 ) );
 
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   if (m_qpIncrementAtSourceFrame.bPresent)
   {
     UInt switchingPOC=0;
@@ -1794,21 +1787,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       m_aidQP[i]=1;
     }
   }
-#else
-  // handling of floating-point QP values
-  // if QP is not integer, sequence is split into two sections having QP and QP+1
-  m_iQP = (Int)( m_fQP );
-  if ( m_iQP < m_fQP )
-  {
-    Int iSwitchPOC = (Int)( m_framesToBeEncoded - (m_fQP - m_iQP)*m_framesToBeEncoded + 0.5 );
-
-    iSwitchPOC = (Int)( (Double)iSwitchPOC / m_iGOPSize + 0.5 )*m_iGOPSize;
-    for ( Int i=iSwitchPOC; i<m_framesToBeEncoded + m_iGOPSize + 1; i++ )
-    {
-      m_aidQP[i] = 1;
-    }
-  }
-#endif
 
   for(UInt ch=0; ch<MAX_NUM_CHANNEL_TYPE; ch++)
   {
@@ -3236,7 +3214,6 @@ Void TAppEncCfg::xPrintParameter()
   printf("Motion search range                    : %d\n", m_iSearchRange );
   printf("Intra period                           : %d\n", m_iIntraPeriod );
   printf("Decoding refresh type                  : %d\n", m_iDecodingRefreshType );
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   if (m_qpIncrementAtSourceFrame.bPresent)
   {
     printf("QP                                     : %d (incrementing internal QP at source frame %d)\n", m_iQP, m_qpIncrementAtSourceFrame.value );
@@ -3245,9 +3222,6 @@ Void TAppEncCfg::xPrintParameter()
   {
     printf("QP                                     : %d\n", m_iQP );
   }
-#else
-  printf("QP                                     : %5.2f\n", m_fQP );
-#endif
   printf("Max dQP signaling depth                : %d\n", m_iMaxCuDQPDepth);
 
   printf("Cb QP Offset                           : %d\n", m_cbQpOffset   );
