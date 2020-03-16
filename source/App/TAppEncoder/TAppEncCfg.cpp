@@ -736,7 +736,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<UInt> cfg_omniViewportSEIHorRange         (        1, 23592960, 0, 15);
   SMultiValueInput<UInt> cfg_omniViewportSEIVerRange         (        1, 11796480, 0, 15);
 #endif
-#if RWP_SEI_MESSAGE
   SMultiValueInput<UInt>   cfg_rwpSEIRwpTransformType                 (0, 7, 0, std::numeric_limits<UChar>::max());
   SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandFlag                 (0, 1, 0, std::numeric_limits<UChar>::max()); 
   SMultiValueInput<UInt>   cfg_rwpSEIProjRegionWidth                  (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
@@ -753,7 +752,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<UInt>   cfg_rwpSEIRwpBottomGuardBandHeight         (0, std::numeric_limits<UChar>::max(), 0, std::numeric_limits<UChar>::max());
   SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandNotUsedForPredFlag   (0, 1,   0, std::numeric_limits<UChar>::max());
   SMultiValueInput<UInt>   cfg_rwpSEIRwpGuardBandType                 (0, 7,   0, 4*std::numeric_limits<UChar>::max());
-#endif
 #if FVI_SEI_MESSAGE
   SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionCentreX     (0, std::numeric_limits<UInt>::max(), 0, 4); // CONFIRM: all the '3's have been changed to '4's since "The value of fisheye_num_active_areas_minus1 shall be in the range of 0 to 3, inclusive", so up to 4 entries.
   SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionCentreY     (0, std::numeric_limits<UInt>::max(), 0, 4);
@@ -1273,7 +1271,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEICmpCancelFlag",                                m_cmpSEICmpCancelFlag,                    true,                                     "Specifies the persistence of any previous cubemap projection SEI message in output order.")
   ("SEICmpPersistenceFlag",                           m_cmpSEICmpPersistenceFlag,               false,                                    "Specifies the persistence of the cubemap projection SEI message for the current layer.")
 #endif
-#if RWP_SEI_MESSAGE
   ("SEIRwpEnabled",                                   m_rwpSEIEnabled,                          false,                                    "Controls if region-wise packing SEI message enabled")
   ("SEIRwpCancelFlag",                                m_rwpSEIRwpCancelFlag,                    true,                                    "Specifies the persistence of any previous region-wise packing SEI message in output order.")
   ("SEIRwpPersistenceFlag",                           m_rwpSEIRwpPersistenceFlag,               false,                                    "Specifies the persistence of the region-wise packing SEI message for the current layer.")
@@ -1299,7 +1296,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIRwpBottomGuardBandHeight",                     cfg_rwpSEIRwpBottomGuardBandHeight,       cfg_rwpSEIRwpBottomGuardBandHeight,       "specifies the height of the guard band below the i-th packed region.")
   ("SEIRwpGuardBandNotUsedForPredFlag",               cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, "Specifies if the guard bands is used in the inter prediction process.")
   ("SEIRwpGuardBandType",                             cfg_rwpSEIRwpGuardBandType,               cfg_rwpSEIRwpGuardBandType,               "Specifies the type of the guard bands for the i-th packed region.")
-#endif
 #if FVI_SEI_MESSAGE
   ("SEIFviEnabled",                                   m_fisheyeVIdeoInfoSEIEnabled,             false,                                   "Controls if fisheye video information SEI message enabled")
   ("SEIFviCancelFlag",                                m_fisheyeVideoInfoSEI.m_fisheyeCancelFlag,                true,                    "Specifies the persistence of any previous fisheye video information SEI message in output order.")
@@ -1918,7 +1914,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   }
 #endif
 
-#if RWP_SEI_MESSAGE
   if(!m_rwpSEIRwpCancelFlag && m_rwpSEIEnabled)
   {
     assert ( m_rwpSEINumPackedRegions > 0 && m_rwpSEINumPackedRegions <= std::numeric_limits<UChar>::max() );
@@ -1971,7 +1966,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       }
     }
   }
-#endif
 #if FVI_SEI_MESSAGE
   if (!m_fisheyeVideoInfoSEI.m_fisheyeCancelFlag && m_fisheyeVIdeoInfoSEIEnabled)
   {

@@ -684,7 +684,6 @@ Void SEIEncoder::initSEICubemapProjection(SEICubemapProjection *seiCubemapProjec
 }
 #endif
 
-#if RWP_SEI_MESSAGE
 Void SEIEncoder::initSEIRegionWisePacking(SEIRegionWisePacking *seiRegionWisePacking)
 {
   assert (m_isInitialized);
@@ -739,7 +738,6 @@ Void SEIEncoder::initSEIRegionWisePacking(SEIRegionWisePacking *seiRegionWisePac
     }
   }
 }
-#endif
 
 #if FVI_SEI_MESSAGE
 Void SEIEncoder::initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *seiFisheyeVideoInfo)

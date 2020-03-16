@@ -98,9 +98,7 @@ public:
 #if CMP_SEI_MESSAGE
   Void initSEICubemapProjection(SEICubemapProjection *sei);
 #endif
-#if RWP_SEI_MESSAGE
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
-#endif
 #if FVI_SEI_MESSAGE
   Void initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *sei);
 #endif

@@ -97,9 +97,7 @@ protected:
 #if CMP_SEI_MESSAGE
   Void xWriteSEICubemapProjection                 (const SEICubemapProjection &sei);
 #endif
-#if RWP_SEI_MESSAGE
   Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
-#endif
 #if FVI_SEI_MESSAGE
   Void xWriteSEIFisheyeVideoInfo                  (const SEIFisheyeVideoInfo &sei);
 #endif

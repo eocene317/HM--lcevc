@@ -106,9 +106,7 @@ protected:
 #if AR_SEI_MESSAGE
   Void xParseSEIAnnotatedRegions              (SEIAnnotatedRegions& sei,              UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
 #endif
-#if RWP_SEI_MESSAGE
   Void xParseSEIRegionWisePacking             (SEIRegionWisePacking& sei,             UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#endif
 #if FVI_SEI_MESSAGE
   Void xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream);
 #endif

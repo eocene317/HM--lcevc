@@ -416,7 +416,6 @@ protected:
   Bool                  m_cmpSEICmpCancelFlag;
   Bool                  m_cmpSEICmpPersistenceFlag;
 #endif
-#if RWP_SEI_MESSAGE
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;
   Bool                  m_rwpSEIRwpPersistenceFlag;
@@ -442,7 +441,6 @@ protected:
   std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
-#endif
 #if AR_SEI_MESSAGE
   std::string           m_arSEIFileRoot;  // Annotated region SEI - initialized from external file
 #endif
@@ -1125,7 +1123,6 @@ public:
   Void     setCmpSEICmpPersistenceFlag(Bool b)                       { m_cmpSEICmpPersistenceFlag = b; }
   Bool     getCmpSEICmpPersistenceFlag()                             { return m_cmpSEICmpPersistenceFlag; }
 #endif
-#if RWP_SEI_MESSAGE
   Void     setRwpSEIEnabled(Bool b)                                                                     { m_rwpSEIEnabled = b; }
   Bool     getRwpSEIEnabled()                                                                           { return m_rwpSEIEnabled; }
   Void     setRwpSEIRwpCancelFlag(Bool b)                                                               { m_rwpSEIRwpCancelFlag = b; }
@@ -1176,7 +1173,6 @@ public:
   Bool    getRwpSEIRwpGuardBandNotUsedForPredFlag(UInt idx) const                                         { return m_rwpSEIRwpGuardBandNotUsedForPredFlag[idx]; }
   Void    setRwpSEIRwpGuardBandType(const std::vector<UChar>& rwpGuardBandType)                           { m_rwpSEIRwpGuardBandType = rwpGuardBandType; }
   UChar   getRwpSEIRwpGuardBandType(UInt idx) const                                                       { return m_rwpSEIRwpGuardBandType[idx]; } 
-#endif
 #if FVI_SEI_MESSAGE
   Void    setFviSEIDisabled()                                        { m_fviSEIEnabled = false; }
   Void    setFviSEIEnabled(const TComSEIFisheyeVideoInfo& fvi)       { m_fisheyeVideoInfo=fvi; m_fviSEIEnabled=true; }

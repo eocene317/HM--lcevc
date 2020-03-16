@@ -86,9 +86,7 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
 #if CMP_SEI_MESSAGE
   , SEI::CUBEMAP_PROJECTION
 #endif
-#if RWP_SEI_MESSAGE
   , SEI::REGION_WISE_PACKING
-#endif
 #if FVI_SEI_MESSAGE
   , SEI::FISHEYE_VIDEO_INFO
 #endif
@@ -317,9 +315,7 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
 #if CMP_SEI_MESSAGE
     case SEI::CUBEMAP_PROJECTION:                  return "Cubemap projection";
 #endif
-#if RWP_SEI_MESSAGE
     case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
-#endif
 #if FVI_SEI_MESSAGE
     case SEI::FISHEYE_VIDEO_INFO:                   return "Fisheye video information";
 #endif

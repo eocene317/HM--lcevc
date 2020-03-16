@@ -391,7 +391,6 @@ protected:
   Bool                  m_cmpSEICmpCancelFlag;
   Bool                  m_cmpSEICmpPersistenceFlag;
 #endif
-#if RWP_SEI_MESSAGE
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;
   Bool                  m_rwpSEIRwpPersistenceFlag;
@@ -417,7 +416,6 @@ protected:
   std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
-#endif
   Bool                  m_gopBasedTemporalFilterEnabled;               ///< GOP-based Temporal Filter enable/disable
   Bool                  m_gopBasedTemporalFilterFutureReference;       ///< Enable/disable future frame references in the GOP-based Temporal Filter
   std::map<Int, Double> m_gopBasedTemporalFilterStrengths;             ///< Filter strength per frame for the GOP-based Temporal Filter

@@ -195,11 +195,9 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
     xWriteSEICubemapProjection(*static_cast<const SEICubemapProjection*>(&sei));
     break;
 #endif
-#if RWP_SEI_MESSAGE
   case SEI::REGION_WISE_PACKING:
     xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
     break;
-#endif
 #if FVI_SEI_MESSAGE
   case SEI::FISHEYE_VIDEO_INFO:
     xWriteSEIFisheyeVideoInfo(*static_cast<const SEIFisheyeVideoInfo*>(&sei));
@@ -1223,7 +1221,6 @@ Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
   }
 }
 #endif
-#if RWP_SEI_MESSAGE
 Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
 {
   WRITE_FLAG( sei.m_rwpCancelFlag,                                           "rwp_cancel_flag" );
@@ -1266,7 +1263,6 @@ Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
     }
   }
 }
-#endif
 
 #if FVI_SEI_MESSAGE
 Void SEIWriter::xWriteSEIFisheyeVideoInfo(const SEIFisheyeVideoInfo &sei)

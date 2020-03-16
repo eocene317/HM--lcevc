@@ -405,7 +405,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setCmpSEICmpCancelFlag                               (m_cmpSEICmpCancelFlag);
   m_cTEncTop.setCmpSEICmpPersistenceFlag                          (m_cmpSEICmpPersistenceFlag);
 #endif
-#if RWP_SEI_MESSAGE
   m_cTEncTop.setRwpSEIEnabled                                     (m_rwpSEIEnabled);
   m_cTEncTop.setRwpSEIRwpCancelFlag                               (m_rwpSEIRwpCancelFlag);
   m_cTEncTop.setRwpSEIRwpPersistenceFlag                          (m_rwpSEIRwpPersistenceFlag);
@@ -431,7 +430,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setRwpSEIRwpBottomGuardBandHeight                    (m_rwpSEIRwpBottomGuardBandHeight);
   m_cTEncTop.setRwpSEIRwpGuardBandNotUsedForPredFlag              (m_rwpSEIRwpGuardBandNotUsedForPredFlag);
   m_cTEncTop.setRwpSEIRwpGuardBandType                            (m_rwpSEIRwpGuardBandType);
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   m_cTEncTop.setSiiSEIEnabled                                     (m_siiSEIEnabled);
   m_cTEncTop.setSiiSEINumUnitsInShutterInterval                   (m_siiSEINumUnitsInShutterInterval);
