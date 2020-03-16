@@ -411,11 +411,9 @@ protected:
   std::vector<UInt> m_omniViewportSEIVerRange; 
 #endif
   Bool      m_gopBasedTemporalFilterEnabled;
-#if CMP_SEI_MESSAGE
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;
   Bool                  m_cmpSEICmpPersistenceFlag;
-#endif
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;
   Bool                  m_rwpSEIRwpPersistenceFlag;
@@ -1115,14 +1113,12 @@ public:
 #endif
   Void  setGopBasedTemporalFilterEnabled(Bool flag)                  { m_gopBasedTemporalFilterEnabled = flag; }
   Bool  getGopBasedTemporalFilterEnabled() const                     { return m_gopBasedTemporalFilterEnabled; }
-#if CMP_SEI_MESSAGE
   Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }
   Bool     getCmpSEIEnabled()                                        { return m_cmpSEIEnabled; }
   Void     setCmpSEICmpCancelFlag(Bool b)                            { m_cmpSEICmpCancelFlag = b; }
   Bool     getCmpSEICmpCancelFlag()                                  { return m_cmpSEICmpCancelFlag; }
   Void     setCmpSEICmpPersistenceFlag(Bool b)                       { m_cmpSEICmpPersistenceFlag = b; }
   Bool     getCmpSEICmpPersistenceFlag()                             { return m_cmpSEICmpPersistenceFlag; }
-#endif
   Void     setRwpSEIEnabled(Bool b)                                                                     { m_rwpSEIEnabled = b; }
   Bool     getRwpSEIEnabled()                                                                           { return m_rwpSEIEnabled; }
   Void     setRwpSEIRwpCancelFlag(Bool b)                                                               { m_rwpSEIRwpCancelFlag = b; }

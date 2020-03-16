@@ -95,9 +95,7 @@ public:
   Void initSEISphereRotation(SEISphereRotation *sei);
   Void initSEIOmniViewport(SEIOmniViewport *sei);
 #endif
-#if CMP_SEI_MESSAGE
   Void initSEICubemapProjection(SEICubemapProjection *sei);
-#endif
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
 #if FVI_SEI_MESSAGE
   Void initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *sei);

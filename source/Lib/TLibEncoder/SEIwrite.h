@@ -94,9 +94,7 @@ protected:
   Void xWriteSEISphereRotation                    (const SEISphereRotation &sei);
   Void xWriteSEIOmniViewport                      (const SEIOmniViewport& sei);
 #endif
-#if CMP_SEI_MESSAGE
   Void xWriteSEICubemapProjection                 (const SEICubemapProjection &sei);
-#endif
   Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
 #if FVI_SEI_MESSAGE
   Void xWriteSEIFisheyeVideoInfo                  (const SEIFisheyeVideoInfo &sei);

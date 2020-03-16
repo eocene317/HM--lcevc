@@ -674,7 +674,6 @@ Void SEIEncoder::initSEIOmniViewport(SEIOmniViewport* seiOmniViewport)
 }
 #endif
 
-#if CMP_SEI_MESSAGE
 Void SEIEncoder::initSEICubemapProjection(SEICubemapProjection *seiCubemapProjection)
 {
   assert(m_isInitialized);
@@ -682,7 +681,6 @@ Void SEIEncoder::initSEICubemapProjection(SEICubemapProjection *seiCubemapProjec
   seiCubemapProjection->m_cmpCancelFlag = m_pcCfg->getCmpSEICmpCancelFlag();
   seiCubemapProjection->m_cmpPersistenceFlag = m_pcCfg->getCmpSEICmpPersistenceFlag();
 }
-#endif
 
 Void SEIEncoder::initSEIRegionWisePacking(SEIRegionWisePacking *seiRegionWisePacking)
 {

@@ -545,14 +545,12 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     seiMessages.push_back(sei);
   }
 #endif
-#if CMP_SEI_MESSAGE
   if (m_pcCfg->getCmpSEIEnabled())
   {
     SEICubemapProjection *seiCubemapProjection = new SEICubemapProjection;
     m_seiEncoder.initSEICubemapProjection(seiCubemapProjection);
     seiMessages.push_back(seiCubemapProjection);
   }
-#endif
   if (m_pcCfg->getRwpSEIEnabled())
   {
     SEIRegionWisePacking *seiRegionWisePacking = new SEIRegionWisePacking;

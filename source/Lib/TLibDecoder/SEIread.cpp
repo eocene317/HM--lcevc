@@ -364,12 +364,10 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       xParseSEIOmniViewport((SEIOmniViewport&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
 #endif
-#if CMP_SEI_MESSAGE
     case SEI::CUBEMAP_PROJECTION:
       sei = new SEICubemapProjection;
       xParseSEICubemapProjection((SEICubemapProjection&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
     case SEI::REGION_WISE_PACKING:
       sei = new SEIRegionWisePacking;
       xParseSEIRegionWisePacking((SEIRegionWisePacking&) *sei, payloadSize, pDecodedMessageOutputStream);
@@ -1789,7 +1787,6 @@ Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payload
 }
 #endif
 
-#if CMP_SEI_MESSAGE
 Void SEIReader::xParseSEICubemapProjection(SEICubemapProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
@@ -1801,7 +1798,6 @@ Void SEIReader::xParseSEICubemapProjection(SEICubemapProjection& sei, UInt paylo
     sei_read_flag(pDecodedMessageOutputStream, val, "cmp_persistence_flag");                 sei.m_cmpPersistenceFlag = val;
   }
 }
-#endif
 
 
 

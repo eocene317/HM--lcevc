@@ -83,9 +83,7 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
   , SEI::SPHERE_ROTATION
   , SEI::OMNI_VIEWPORT
 #endif
-#if CMP_SEI_MESSAGE
   , SEI::CUBEMAP_PROJECTION
-#endif
   , SEI::REGION_WISE_PACKING
 #if FVI_SEI_MESSAGE
   , SEI::FISHEYE_VIDEO_INFO
@@ -312,9 +310,7 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::SPHERE_ROTATION:                      return "Sphere rotation";
     case SEI::OMNI_VIEWPORT:                        return "Omni viewport";
 #endif
-#if CMP_SEI_MESSAGE
     case SEI::CUBEMAP_PROJECTION:                  return "Cubemap projection";
-#endif
     case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
 #if FVI_SEI_MESSAGE
     case SEI::FISHEYE_VIDEO_INFO:                   return "Fisheye video information";

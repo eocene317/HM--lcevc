@@ -99,9 +99,7 @@ public:
     SPHERE_ROTATION                      = 154,
     OMNI_VIEWPORT                        = 156,
 #endif
-#if CMP_SEI_MESSAGE
     CUBEMAP_PROJECTION                   = 151,
-#endif
 #if FVI_SEI_MESSAGE
     FISHEYE_VIDEO_INFO                   = 152,
 #endif
@@ -915,7 +913,6 @@ public:
 };
 #endif
 
-#if CMP_SEI_MESSAGE 
 class SEICubemapProjection : public SEI
 {
 public:
@@ -925,7 +922,6 @@ public:
   Bool                  m_cmpCancelFlag;
   Bool                  m_cmpPersistenceFlag;
 };
-#endif
 
 class SEIRegionWisePacking : public SEI
 {
