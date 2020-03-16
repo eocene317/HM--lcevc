@@ -225,11 +225,7 @@ protected:
   Double    m_saoEncodingRateChroma;                          ///< The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma.
   Int       m_maxNumOffsetsPerPic;                            ///< SAO maximun number of offset per picture
   Bool      m_saoCtuBoundary;                                 ///< SAO parameter estimation using non-deblocked pixels for CTU bottom and right boundary areas
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Bool      m_resetEncoderStateAfterIRAP;                     ///< When true, encoder state will be reset following an IRAP.
-#else
-  Bool      m_saoResetEncoderStateAfterIRAP;                  ///< When true, SAO encoder state will be reset following an IRAP.
-#endif
   // coding tools (loop filter)
   Bool      m_bLoopFilterDisable;                             ///< flag for using deblocking filter
   Bool      m_loopFilterOffsetInPPS;                          ///< offset for deblocking filter in 0 = slice header, 1 = PPS

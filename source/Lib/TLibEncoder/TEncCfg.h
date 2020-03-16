@@ -213,11 +213,7 @@ protected:
   Double    m_saoEncodingRateChroma; // The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma.
   Int       m_maxNumOffsetsPerPic;
   Bool      m_saoCtuBoundary;
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Bool      m_resetEncoderStateAfterIRAP;
-#else
-  Bool      m_saoResetEncoderStateAfterIRAP;
-#endif
 
   //====== Motion search ========
   Bool      m_bDisableIntraPUsInInterSlices;
@@ -845,13 +841,8 @@ public:
   Int   getMaxNumOffsetsPerPic                   ()                  { return m_maxNumOffsetsPerPic; }
   Void  setSaoCtuBoundary              (Bool val)                    { m_saoCtuBoundary = val; }
   Bool  getSaoCtuBoundary              ()                            { return m_saoCtuBoundary; }
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Void  setResetEncoderStateAfterIRAP(Bool b)                        { m_resetEncoderStateAfterIRAP = b; }
   Bool  getResetEncoderStateAfterIRAP() const                        { return m_resetEncoderStateAfterIRAP; }
-#else
-  Void  setSaoResetEncoderStateAfterIRAP(Bool b)                     { m_saoResetEncoderStateAfterIRAP = b; }
-  Bool  getSaoResetEncoderStateAfterIRAP() const                     { return m_saoResetEncoderStateAfterIRAP; }
-#endif
   Void  setLFCrossTileBoundaryFlag               ( Bool   val  )     { m_loopFilterAcrossTilesEnabledFlag = val; }
   Bool  getLFCrossTileBoundaryFlag               ()                  { return m_loopFilterAcrossTilesEnabledFlag;   }
   Void  setTileUniformSpacingFlag      ( Bool b )                    { m_tileUniformSpacingFlag = b; }

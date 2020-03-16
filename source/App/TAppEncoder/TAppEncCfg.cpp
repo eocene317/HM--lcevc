@@ -964,11 +964,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SaoEncodingRateChroma",                           m_saoEncodingRateChroma,                            0.5, "The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma")
   ("MaxNumOffsetsPerPic",                             m_maxNumOffsetsPerPic,                             2048, "Max number of SAO offset per picture (Default: 2048)")
   ("SAOLcuBoundary",                                  m_saoCtuBoundary,                                 false, "0: right/bottom CTU boundary areas skipped from SAO parameter estimation, 1: non-deblocked pixels are used for those areas")
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   ("ResetEncoderStateAfterIRAP",                      m_resetEncoderStateAfterIRAP,                     true, "When true, resets the encoder's decisions after an IRAP (POC order). Enabled by default.")
-#else
-  ("SAOResetEncoderStateAfterIRAP",                   m_saoResetEncoderStateAfterIRAP,                  false, "When true, resets the encoder's SAO state after an IRAP (POC order). Disabled by default.")
-#endif
   ("SliceMode",                                       tmpSliceMode,                            Int(NO_SLICES), "0: Disable all Recon slice limits, 1: Enforce max # of CTUs, 2: Enforce max # of bytes, 3:specify tiles per dependent slice")
   ("SliceArgument",                                   m_sliceArgument,                                      0, "Depending on SliceMode being:"
                                                                                                                "\t1: max number of CTUs per slice"
@@ -2314,8 +2310,6 @@ Void TAppEncCfg::xCheckParameter()
   {
     xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size for periodic IDR pictures");
   }
-#if !ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
-#endif
   xConfirmPara( m_uiMaxCUDepth < 1,                                                         "MaxPartitionDepth must be greater than zero");
   xConfirmPara( (m_uiMaxCUWidth  >> m_uiMaxCUDepth) < 4,                                    "Minimum partition width size should be larger than or equal to 8");
   xConfirmPara( (m_uiMaxCUHeight >> m_uiMaxCUDepth) < 4,                                    "Minimum partition height size should be larger than or equal to 8");

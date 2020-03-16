@@ -107,9 +107,7 @@ private:
   UInt                    m_ltRefPicPocLsbSps[MAX_NUM_LONG_TERM_REF_PICS];
   Bool                    m_ltRefPicUsedByCurrPicFlag[MAX_NUM_LONG_TERM_REF_PICS];
   Int                     m_iLastIDR;
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Int                     m_RASPOCforResetEncoder; // an IDR POC number, after which the next POC (in output order) will be reset. If MAX_INT, then no reset is pending.
-#endif
   Int                     m_iGopSize;
   Int                     m_iNumPicCoded;
   Bool                    m_bFirst;

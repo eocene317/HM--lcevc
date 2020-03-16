@@ -74,9 +74,7 @@ Int getLSB(Int poc, Int maxLSB)
 TEncGOP::TEncGOP()
 {
   m_iLastIDR            = 0;
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   m_RASPOCforResetEncoder = MAX_INT;
-#endif
 
   m_iGopSize            = 0;
   m_iNumPicCoded        = 0; //Niko
@@ -1488,7 +1486,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     }
 
 
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
     if (pcSlice->getPOC() > m_RASPOCforResetEncoder && m_pcCfg->getResetEncoderStateAfterIRAP())
     {
       // need to reset encoder decisions.
@@ -1504,7 +1501,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       m_RASPOCforResetEncoder = pcSlice->getPOC();
     }
-#endif
 
     pcSlice->setEncCABACTableIdx(m_pcSliceEncoder->getEncCABACTableIdx());
 #if MCTS_EXTRACTION
@@ -1835,12 +1831,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
                           m_pcCfg->getTestSAODisableAtPictureLevel(),
                           m_pcCfg->getSaoEncodingRate(),
                           m_pcCfg->getSaoEncodingRateChroma(),
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
                           m_pcCfg->getSaoCtuBoundary());
-#else
-                          m_pcCfg->getSaoCtuBoundary(),
-                          m_pcCfg->getSaoResetEncoderStateAfterIRAP());
-#endif
       m_pcSAO->PCMLFDisableProcess(pcPic);
       m_pcEncTop->getRDGoOnSbacCoder()->setBitstream(NULL);
 
