@@ -1402,14 +1402,12 @@ Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
 
     qp = getBaseQP();
 
-#if JVET_G0101_QP_SWITCHING
     // modify QP if a fractional QP was originally specified, cause dQPs to be 0 or 1.
     const Int* pdQPs = getdQPs();
     if ( pdQPs )
     {
       qp += pdQPs[ pSlice->getPOC() ];
     }
-#endif
 
     if(sliceType==I_SLICE)
     {
@@ -1431,14 +1429,6 @@ Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
       }
     }
 
-#if !JVET_G0101_QP_SWITCHING
-    // modify QP if a fractional QP was originally specified, cause dQPs to be 0 or 1.
-    const Int* pdQPs = getdQPs();
-    if ( pdQPs )
-    {
-      qp += pdQPs[ pSlice->getPOC() ];
-    }
-#endif
   }
   qp = Clip3( -lumaQpBDOffset, MAX_QP, qp );
   return qp;
