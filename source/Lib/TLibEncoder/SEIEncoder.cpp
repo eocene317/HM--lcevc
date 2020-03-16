@@ -515,7 +515,6 @@ Void SEIEncoder::initSEIKneeFunctionInfo(SEIKneeFunctionInfo *seiKneeFunctionInf
     }
   }
 }
-#if CCV_SEI_MESSAGE
 Void SEIEncoder::initSEIContentColourVolume(SEIContentColourVolume *seiContentColourVolume)
 {
   assert(m_isInitialized);
@@ -552,7 +551,6 @@ Void SEIEncoder::initSEIContentColourVolume(SEIContentColourVolume *seiContentCo
     seiContentColourVolume->m_ccvAvgLuminanceValue = (Int) (10000000 * m_pcCfg->getCcvSEIAvgLuminanceValue());
   }
 }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 Void SEIEncoder::initSEIShutterIntervalInfo(SEIShutterIntervalInfo *seiShutterIntervalInfo)

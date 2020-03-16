@@ -81,9 +81,7 @@ public:
   Void initSEIMCTSExtractionInfo(SEIMCTSExtractionInfoSet *sei, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps);
 #endif
   Void initSEIKneeFunctionInfo(SEIKneeFunctionInfo *sei);
-#if CCV_SEI_MESSAGE
   Void initSEIContentColourVolume(SEIContentColourVolume *sei);
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void initSEIShutterIntervalInfo(SEIShutterIntervalInfo *sei);
 #endif

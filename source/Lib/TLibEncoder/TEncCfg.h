@@ -373,7 +373,6 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
-#if CCV_SEI_MESSAGE
   Bool      m_ccvSEIEnabled;
   Bool      m_ccvSEICancelFlag;
   Bool      m_ccvSEIPersistenceFlag;
@@ -386,7 +385,6 @@ protected:
   Double    m_ccvSEIMinLuminanceValue;
   Double    m_ccvSEIMaxLuminanceValue;
   Double    m_ccvSEIAvgLuminanceValue;
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;
@@ -997,7 +995,6 @@ public:
   Void  setKneeFunctionInformationSEI(const TEncSEIKneeFunctionInformation &seiknee) { m_kneeFunctionInformationSEI = seiknee; }
   const TEncSEIKneeFunctionInformation &getKneeFunctionInformationSEI() const        { return m_kneeFunctionInformationSEI; }
 
-#if CCV_SEI_MESSAGE
   Void     setCcvSEIEnabled(Bool b)                                  { m_ccvSEIEnabled = b; }
   Bool     getCcvSEIEnabled()                                        { return m_ccvSEIEnabled; }
   Void     setCcvSEICancelFlag(Bool b)                               { m_ccvSEICancelFlag = b; }
@@ -1022,7 +1019,6 @@ public:
   Double   getCcvSEIMaxLuminanceValue  ()                            { return m_ccvSEIMaxLuminanceValue;  }
   Void     setCcvSEIAvgLuminanceValue  (Double dValue)               { m_ccvSEIAvgLuminanceValue = dValue; }
   Double   getCcvSEIAvgLuminanceValue  ()                            { return m_ccvSEIAvgLuminanceValue;  }
-#endif
 
   #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void     setSiiSEIEnabled(Bool b)                                  { m_siiSEIEnabled = b; }

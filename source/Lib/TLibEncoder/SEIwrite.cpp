@@ -176,11 +176,9 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::AMBIENT_VIEWING_ENVIRONMENT:
     xWriteSEIAmbientViewingEnvironment(*static_cast<const SEIAmbientViewingEnvironment*>(&sei));
     break;
-#if CCV_SEI_MESSAGE
   case SEI::CONTENT_COLOUR_VOLUME:
     xWriteSEIContentColourVolume(*static_cast<const SEIContentColourVolume*>(&sei));
     break;
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
   case SEI::EQUIRECTANGULAR_PROJECTION:
     xWriteSEIEquirectangularProjection(*static_cast<const SEIEquirectangularProjection*>(&sei));
@@ -1108,7 +1106,6 @@ Void SEIWriter::xWriteSEIKneeFunctionInfo(const SEIKneeFunctionInfo &sei)
   }
 }
 
-#if CCV_SEI_MESSAGE
 Void SEIWriter::xWriteSEIContentColourVolume(const SEIContentColourVolume &sei)
 {
   WRITE_FLAG(sei.m_ccvCancelFlag, "ccv_cancel_flag");
@@ -1143,7 +1140,6 @@ Void SEIWriter::xWriteSEIContentColourVolume(const SEIContentColourVolume &sei)
     }
   }
 }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 Void SEIWriter::xWriteSEIShutterInterval(const SEIShutterIntervalInfo &sei)

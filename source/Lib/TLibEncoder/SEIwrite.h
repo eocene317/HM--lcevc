@@ -88,9 +88,7 @@ protected:
 #endif
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
-#if CCV_SEI_MESSAGE
   Void xWriteSEIContentColourVolume               (const SEIContentColourVolume &sei);
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Void xWriteSEIEquirectangularProjection         (const SEIEquirectangularProjection &sei);
   Void xWriteSEISphereRotation                    (const SEISphereRotation &sei);

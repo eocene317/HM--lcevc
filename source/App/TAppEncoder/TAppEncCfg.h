@@ -347,7 +347,6 @@ protected:
   Int       m_preferredTransferCharacteristics;
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;
-#if CCV_SEI_MESSAGE
   Bool    m_ccvSEIEnabled;
   Bool    m_ccvSEICancelFlag;
   Bool    m_ccvSEIPersistenceFlag;
@@ -360,7 +359,6 @@ protected:
   Double  m_ccvSEIMinLuminanceValue;             // UInt(32)
   Double  m_ccvSEIMaxLuminanceValue;             // UInt(32)
   Double  m_ccvSEIAvgLuminanceValue;             // UInt(32)
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;

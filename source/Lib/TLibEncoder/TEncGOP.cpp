@@ -484,14 +484,12 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     seiMessages.push_back(sei);
   }
 
-#if CCV_SEI_MESSAGE
   if (m_pcCfg->getCcvSEIEnabled())
   {
     SEIContentColourVolume *seiContentColourVolume = new SEIContentColourVolume;
     m_seiEncoder.initSEIContentColourVolume(seiContentColourVolume);
     seiMessages.push_back(seiContentColourVolume);
   }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   if (m_pcCfg->getSiiSEIEnabled())

@@ -77,9 +77,7 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
   SEI::CODED_REGION_COMPLETION,
   SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS,
   SEI::AMBIENT_VIEWING_ENVIRONMENT
-#if CCV_SEI_MESSAGE
   , SEI::CONTENT_COLOUR_VOLUME
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
   , SEI::EQUIRECTANGULAR_PROJECTION
   , SEI::SPHERE_ROTATION
@@ -310,9 +308,7 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::CODED_REGION_COMPLETION:              return "Coded region completion";
     case SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS: return "Alternative transfer characteristics";
     case SEI::AMBIENT_VIEWING_ENVIRONMENT:          return "Ambient viewing environment";
-#if CCV_SEI_MESSAGE
     case SEI::CONTENT_COLOUR_VOLUME:                return "Content Colour Volume";
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:           return "Equirectangular projection";
     case SEI::SPHERE_ROTATION:                      return "Sphere rotation";

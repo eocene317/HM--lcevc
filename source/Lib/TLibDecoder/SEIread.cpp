@@ -346,12 +346,10 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEIAmbientViewingEnvironment;
       xParseSEIAmbientViewingEnvironment((SEIAmbientViewingEnvironment&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#if CCV_SEI_MESSAGE
     case SEI::CONTENT_COLOUR_VOLUME:
       sei = new SEIContentColourVolume;
       xParseSEIContentColourVolume((SEIContentColourVolume&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:
       sei = new SEIEquirectangularProjection;
@@ -1538,7 +1536,6 @@ Void SEIReader::xParseSEIKneeFunctionInfo(SEIKneeFunctionInfo& sei, UInt payload
   }
 }
 
-#if CCV_SEI_MESSAGE
 Void SEIReader::xParseSEIContentColourVolume(SEIContentColourVolume& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   Int i;
@@ -1577,7 +1574,6 @@ Void SEIReader::xParseSEIContentColourVolume(SEIContentColourVolume& sei, UInt p
     }
   }
 }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 Void SEIReader::xParseSEIShutterInterval(SEIShutterIntervalInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)

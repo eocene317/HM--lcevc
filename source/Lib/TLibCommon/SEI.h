@@ -93,9 +93,7 @@ public:
     CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
-#if CCV_SEI_MESSAGE
     CONTENT_COLOUR_VOLUME                = 149, 
-#endif
 #if ERP_SR_OV_SEI_MESSAGE
     EQUIRECTANGULAR_PROJECTION           = 150,
     SPHERE_ROTATION                      = 154,
@@ -776,7 +774,6 @@ public:
   std::vector<Int> m_kneeOutputKneePoint;
 };
 
-#if CCV_SEI_MESSAGE
 class SEIContentColourVolume : public SEI
 {
 public:
@@ -796,7 +793,6 @@ public:
   UInt    m_ccvMaxLuminanceValue;
   UInt    m_ccvAvgLuminanceValue;
 };
-#endif
 
 #if ERP_SR_OV_SEI_MESSAGE
 class SEIEquirectangularProjection : public SEI
