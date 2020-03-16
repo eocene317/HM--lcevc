@@ -91,7 +91,6 @@
                                                             // To use this capability enable config parameter LambdaFromQpEnable
 
 
-#define JVET_F0064_MSSSIM                                 1 ///< Calculate MS-SSIM scores
 #define JCTVC_Y0037_XPSNR                                 1 ///< Enable xPSNR (Cross-Component PSNR) computation
 
 #ifndef EXTENSION_360_VIDEO

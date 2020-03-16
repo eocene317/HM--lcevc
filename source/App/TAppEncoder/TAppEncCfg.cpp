@@ -809,9 +809,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("PrintHexPSNR",                                    m_printHexPsnr,                                   false, "0 (default) don't emit hexadecimal PSNR for each frame, 1 = also emit hexadecimal PSNR values")
   ("PrintFrameMSE",                                   m_printFrameMSE,                                  false, "0 (default) emit only bit count and PSNRs for each frame, 1 = also emit MSE values")
   ("PrintSequenceMSE",                                m_printSequenceMSE,                               false, "0 (default) emit only bit rate and PSNRs for the whole sequence, 1 = also emit MSE values")
-#if JVET_F0064_MSSSIM  
   ("PrintMSSSIM",                                     m_printMSSSIM,                                    false, "0 (default) do not print MS-SSIM scores, 1 = print MS-SSIM scores for each frame and for the whole sequence")
-#endif
 #if JCTVC_Y0037_XPSNR
   ("xPSNREnableFlag,-xPS",                            m_bXPSNREnableFlag,                               false, "Cross-Component xPSNR computation")
   ("xPSNRYWeight,-xPS0",                              m_dXPSNRWeight[COMPONENT_Y],             ( Double )1.0, "xPSNR weighting factor for Y (default: 1.0)")
@@ -3137,9 +3135,7 @@ Void TAppEncCfg::xPrintParameter()
   printf("Sequence PSNR output                   : %s\n", (m_printMSEBasedSequencePSNR ? "Linear average, MSE-based" : "Linear average only") );
   printf("Sequence MSE output                    : %s\n", (m_printSequenceMSE ? "Enabled" : "Disabled") );
   printf("Frame MSE output                       : %s\n", (m_printFrameMSE    ? "Enabled" : "Disabled") );
-#if JVET_F0064_MSSSIM  
   printf("MS-SSIM output                         : %s\n", (m_printMSSSIM      ? "Enabled" : "Disabled") );
-#endif
 #if JCTVC_Y0037_XPSNR
   printf("xPSNR calculation                      : %s\n", (m_bXPSNREnableFlag ? "Enabled" : "Disabled"));
   if (m_bXPSNREnableFlag)

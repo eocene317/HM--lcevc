@@ -2479,7 +2479,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   m_ext360.calculatePSNRs(pcPic);
 #endif
 
-#if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
   if (outputLogCtrl.printMSSSIM)
   {
@@ -2497,7 +2496,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
       result.MSSSIM[ch] = xCalculateMSSSIM (pOrg, orgStride, pRec, recStride, width, height, bitDepth);
     }
   }
-#endif
 
   /* calculate the size of the access unit, excluding:
    *  - SEI NAL units
@@ -2599,12 +2597,10 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
   }
 
-#if JVET_F0064_MSSSIM
   if (outputLogCtrl.printMSSSIM)
   {
     printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }  
-#endif
 #if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR)
   {
@@ -2635,7 +2631,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   cscd.destroy();
 }
 
-#if JVET_F0064_MSSSIM
 Double TEncGOP::xCalculateMSSSIM (const Pel *pOrg, const Int orgStride, const Pel* pRec, const Int recStride, const Int width, const Int height, const UInt bitDepth)
 {
   const Int MAX_MSSSIM_SCALE  = 5;
@@ -2805,7 +2800,6 @@ Double TEncGOP::xCalculateMSSSIM (const Pel *pOrg, const Int orgStride, const Pe
 
   return finalMSSSIM;
 }
-#endif
 
 
 Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic* pcPicOrgSecondField,
@@ -2964,7 +2958,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
       result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize*2);
     }
   }
-#if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
   if (outputLogCtrl.printMSSSIM)
   {
@@ -2995,7 +2988,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
       result.MSSSIM[ch] = sumOverFieldsMSSSIM/2;
     }
   }
-#endif
 
   result.bits = 0; // the number of bits for the pair is not calculated here - instead the overall total is used elsewhere.
 
@@ -3018,12 +3010,10 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
     printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
   }
 
-#if JVET_F0064_MSSSIM
   if (outputLogCtrl.printMSSSIM)
   {
     printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }
-#endif
   if (outputLogCtrl.printFrameMSE)
   {
     printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", result.MSEyuvframe[COMPONENT_Y], result.MSEyuvframe[COMPONENT_Cb], result.MSEyuvframe[COMPONENT_Cr] );

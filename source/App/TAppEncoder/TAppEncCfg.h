@@ -113,9 +113,7 @@ protected:
   Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
-#if JVET_F0064_MSSSIM
   Bool      m_printMSSSIM;
-#endif
 
 #if JCTVC_Y0037_XPSNR
   Bool      m_bXPSNREnableFlag;                              ///< xPSNR enable flag

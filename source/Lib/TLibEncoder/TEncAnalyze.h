@@ -68,9 +68,7 @@ public:
     Bool printMSEBasedSNR;
     Bool printSequenceMSE;
     Bool printFrameMSE;
-#if JVET_F0064_MSSSIM
     Bool printMSSSIM;
-#endif
 #if JCTVC_Y0037_XPSNR
     Bool printXPSNR;
 #endif
@@ -88,17 +86,13 @@ public:
       {
         psnr[i]=0;
         MSEyuvframe[i]=0;
-#if JVET_F0064_MSSSIM
         MSSSIM[i]=0;
-#endif
       }
     }
     Double psnr[MAX_NUM_COMPONENT];
     Double bits;
     Double MSEyuvframe[MAX_NUM_COMPONENT];
-#if JVET_F0064_MSSSIM
     Double MSSSIM[MAX_NUM_COMPONENT];
-#endif
 #if JCTVC_Y0037_XPSNR
     Double xpsnr;
 #endif
@@ -124,9 +118,7 @@ public:
     {
       m_runningTotal.psnr[i] += result.psnr[i];
       m_runningTotal.MSEyuvframe[i] += result.MSEyuvframe[i];
-#if JVET_F0064_MSSSIM
       m_runningTotal.MSSSIM[i] += result.MSSSIM[i];
-#endif
     }
 
 #if JCTVC_Y0037_XPSNR
@@ -136,9 +128,7 @@ public:
   }
 
   Double  getPsnr(ComponentID compID) const { return  m_runningTotal.psnr[compID];  }
-#if JVET_F0064_MSSSIM
   Double  getMsssim(ComponentID compID) const { return  m_runningTotal.MSSSIM[compID];  }
-#endif
 #if JCTVC_Y0037_XPSNR
   Double  getxPSNR()                  const { return m_runningTotal.xpsnr;}
 #endif
@@ -232,12 +222,10 @@ public:
 
         printf( "\tTotal Frames |   "   "Bitrate     "  "Y-PSNR    " );
 
-#if JVET_F0064_MSSSIM
         if (logctrl.printMSSSIM)
         {
           printf( "  Y-MS-SSIM  ");
         }
-#endif
 
 #if JCTVC_Y0037_XPSNR
         if (logctrl.printXPSNR)
@@ -266,12 +254,10 @@ public:
                  getBits() * dScale,
                  getPsnr(COMPONENT_Y) / (Double)getNumPic() );
 
-#if JVET_F0064_MSSSIM
         if (logctrl.printMSSSIM)
         {
           printf("   %8.6lf  ", getMsssim(COMPONENT_Y) / (Double)getNumPic());
         }
-#endif
 #if JCTVC_Y0037_XPSNR
         if(logctrl.printXPSNR)
         {
@@ -314,12 +300,10 @@ public:
 
           printf( "\tTotal Frames |   "   "Bitrate     "  "Y-PSNR    "  "U-PSNR    "  "V-PSNR    "  "YUV-PSNR  " );
 
-#if JVET_F0064_MSSSIM
           if (logctrl.printMSSSIM)
           {
             printf("  Y-MS-SSIM    " "U-MS-SSIM    " "V-MS-SSIM  ");
           }
-#endif
 #if JCTVC_Y0037_XPSNR
           if (logctrl.printXPSNR)
           {
@@ -352,7 +336,6 @@ public:
                  getPsnr(COMPONENT_Cr) / (Double)getNumPic(),
                  PSNRyuv );
 
-#if JVET_F0064_MSSSIM
           if (logctrl.printMSSSIM)
           {
             printf("   %8.6lf     " "%8.6lf     " "%8.6lf  ",
@@ -360,7 +343,6 @@ public:
                    getMsssim(COMPONENT_Cb) / (Double)getNumPic(),
                    getMsssim(COMPONENT_Cr) / (Double)getNumPic());
           }
-#endif
 
 #if JCTVC_Y0037_XPSNR
           if(logctrl.printXPSNR)

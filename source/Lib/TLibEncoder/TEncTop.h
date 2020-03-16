@@ -184,9 +184,7 @@ public:
     TEncAnalyze::OutputLogControl outputLogCtrl;
     outputLogCtrl.printFrameMSE=m_printFrameMSE;
     outputLogCtrl.printMSEBasedSNR=m_printMSEBasedSequencePSNR;
-#if JVET_F0064_MSSSIM
     outputLogCtrl.printMSSSIM=m_printMSSSIM;
-#endif
     outputLogCtrl.printSequenceMSE=m_printSequenceMSE;
 #if JCTVC_Y0037_XPSNR
     outputLogCtrl.printXPSNR=m_bXPSNREnableFlag;

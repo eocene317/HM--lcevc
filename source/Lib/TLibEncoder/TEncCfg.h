@@ -147,9 +147,7 @@ protected:
   Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
-#if JVET_F0064_MSSSIM
   Bool      m_printMSSSIM;
-#endif
 #if JCTVC_Y0037_XPSNR
   Bool      m_bXPSNREnableFlag;
   Double    m_dXPSNRWeight[MAX_NUM_COMPONENT];
@@ -593,10 +591,8 @@ public:
   Bool      getPrintSequenceMSE             ()         const { return m_printSequenceMSE;           }
   Void      setPrintSequenceMSE             (Bool value)     { m_printSequenceMSE = value;          }
 
-#if JVET_F0064_MSSSIM
   Bool      getPrintMSSSIM                  ()         const { return m_printMSSSIM;               }
   Void      setPrintMSSSIM                  (Bool value)     { m_printMSSSIM = value;              }
-#endif
 
 #if JCTVC_Y0037_XPSNR
   Bool      getXPSNREnableFlag              () const                     { return m_bXPSNREnableFlag;}

@@ -104,9 +104,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setPrintHexPsnr                                      ( m_printHexPsnr);
   m_cTEncTop.setPrintFrameMSE                                     ( m_printFrameMSE);
   m_cTEncTop.setPrintSequenceMSE                                  ( m_printSequenceMSE);
-#if JVET_F0064_MSSSIM
   m_cTEncTop.setPrintMSSSIM                                       ( m_printMSSSIM );
-#endif
 
 #if JCTVC_Y0037_XPSNR
   m_cTEncTop.setXPSNREnableFlag                                   ( m_bXPSNREnableFlag);
