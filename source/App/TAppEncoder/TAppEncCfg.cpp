@@ -169,10 +169,8 @@ std::istringstream &operator>>(std::istringstream &in, GOPEntry &entry)     //in
   in>>entry.m_sliceType;
   in>>entry.m_POC;
   in>>entry.m_QPOffset;
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   in>>entry.m_QPOffsetModelOffset;
   in>>entry.m_QPOffsetModelScale;
-#endif
   in>>entry.m_CbQPoffset;
   in>>entry.m_CrQPoffset;
   in>>entry.m_QPFactor;
@@ -553,7 +551,6 @@ istream& SMultiValueInput<T>::readValues(std::istream &in)
   return in;
 }
 
-#if JVET_E0059_FLOATING_POINT_QP_FIX
 template <class T>
 static inline istream& operator >> (std::istream &in, TAppEncCfg::OptionalValue<T> &value)
 {
@@ -569,7 +566,6 @@ static inline istream& operator >> (std::istream &in, TAppEncCfg::OptionalValue<
   }
   return in;
 }
-#endif
 
 template <class T1, class T2>
 static inline istream& operator >> (std::istream &in, std::map<T1, T2> &map)
@@ -731,14 +727,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<Bool> cfg_timeCodeSeiHoursFlag            (0,  1, 0, MAX_TIMECODE_SEI_SETS);
   SMultiValueInput<Int>  cfg_timeCodeSeiTimeOffsetLength     (0, 31, 0, MAX_TIMECODE_SEI_SETS);
   SMultiValueInput<Int>  cfg_timeCodeSeiTimeOffsetValue      (std::numeric_limits<Int>::min(), std::numeric_limits<Int>::max(), 0, MAX_TIMECODE_SEI_SETS);
-#if ERP_SR_OV_SEI_MESSAGE
   SMultiValueInput<Int>  cfg_omniViewportSEIAzimuthCentre    (-11796480, 11796479, 0, 15);
   SMultiValueInput<Int>  cfg_omniViewportSEIElevationCentre  ( -5898240,  5898240, 0, 15);
   SMultiValueInput<Int>  cfg_omniViewportSEITiltCentre       (-11796480, 11796479, 0, 15);
   SMultiValueInput<UInt> cfg_omniViewportSEIHorRange         (        1, 23592960, 0, 15);
   SMultiValueInput<UInt> cfg_omniViewportSEIVerRange         (        1, 11796480, 0, 15);
-#endif
-#if RWP_SEI_MESSAGE
   SMultiValueInput<UInt>   cfg_rwpSEIRwpTransformType                 (0, 7, 0, std::numeric_limits<UChar>::max());
   SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandFlag                 (0, 1, 0, std::numeric_limits<UChar>::max()); 
   SMultiValueInput<UInt>   cfg_rwpSEIProjRegionWidth                  (0, std::numeric_limits<UInt>::max(), 0, std::numeric_limits<UChar>::max());
@@ -755,8 +748,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<UInt>   cfg_rwpSEIRwpBottomGuardBandHeight         (0, std::numeric_limits<UChar>::max(), 0, std::numeric_limits<UChar>::max());
   SMultiValueInput<Bool>   cfg_rwpSEIRwpGuardBandNotUsedForPredFlag   (0, 1,   0, std::numeric_limits<UChar>::max());
   SMultiValueInput<UInt>   cfg_rwpSEIRwpGuardBandType                 (0, 7,   0, 4*std::numeric_limits<UChar>::max());
-#endif
-#if FVI_SEI_MESSAGE
   SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionCentreX     (0, std::numeric_limits<UInt>::max(), 0, 4); // CONFIRM: all the '3's have been changed to '4's since "The value of fisheye_num_active_areas_minus1 shall be in the range of 0 to 3, inclusive", so up to 4 entries.
   SMultiValueInput<UInt>   cfg_fviSEIFisheyeCircularRegionCentreY     (0, std::numeric_limits<UInt>::max(), 0, 4);
   SMultiValueInput<UInt>   cfg_fviSEIFisheyeRectRegionTop             (0, std::numeric_limits<UInt>::max(), 0, 4); // do not know the height of the picture at this point, so cannot limit region top.
@@ -775,7 +766,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   SMultiValueInput<UInt>   cfg_fviSEIFisheyeNumPolynomialCoeffs       (0, 8, 0, 4);
   SMultiValueInput<Int>    cfg_fviSEIFisheyePolynomialCoeff           (std::numeric_limits<Int>::min(), std::numeric_limits<Int>::max(), 0, 4*8);
   UInt cfg_fviSEIFisheyeNumActiveAreasMinus1=0;
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   SMultiValueInput<UInt>   cfg_siiSEIInputNumUnitsInSI                (0, MAX_UINT, 0, 7);
 #endif
@@ -811,15 +801,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("PrintHexPSNR",                                    m_printHexPsnr,                                   false, "0 (default) don't emit hexadecimal PSNR for each frame, 1 = also emit hexadecimal PSNR values")
   ("PrintFrameMSE",                                   m_printFrameMSE,                                  false, "0 (default) emit only bit count and PSNRs for each frame, 1 = also emit MSE values")
   ("PrintSequenceMSE",                                m_printSequenceMSE,                               false, "0 (default) emit only bit rate and PSNRs for the whole sequence, 1 = also emit MSE values")
-#if JVET_F0064_MSSSIM  
   ("PrintMSSSIM",                                     m_printMSSSIM,                                    false, "0 (default) do not print MS-SSIM scores, 1 = print MS-SSIM scores for each frame and for the whole sequence")
-#endif
-#if JCTVC_Y0037_XPSNR
   ("xPSNREnableFlag,-xPS",                            m_bXPSNREnableFlag,                               false, "Cross-Component xPSNR computation")
   ("xPSNRYWeight,-xPS0",                              m_dXPSNRWeight[COMPONENT_Y],             ( Double )1.0, "xPSNR weighting factor for Y (default: 1.0)")
   ("xPSNRCbWeight,-xPS1",                             m_dXPSNRWeight[COMPONENT_Cb],            ( Double )1.0, "xPSNR weighting factor for Cb (default: 1.0)")
   ("xPSNRCrWeight,-xPS2",                             m_dXPSNRWeight[COMPONENT_Cr],            ( Double )1.0, "xPSNR weighting factor for Cr (default: 1.0)")
-#endif
   ("CabacZeroWordPaddingEnabled",                     m_cabacZeroWordPaddingEnabled,                     true, "0 do not add conforming cabac-zero-words to bit streams, 1 (default) = add cabac-zero-words as required")
   ("ChromaFormatIDC,-cf",                             tmpChromaFormat,                                      0, "ChromaFormatIDC (400|420|422|444 or set 0 (default) for same as InputChromaFormat)")
   ("ConformanceMode",                                 m_conformanceWindowMode,                              0, "Deprecated alias of ConformanceWindowMode")
@@ -884,9 +870,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("IntraPeriod,-ip",                                 m_iIntraPeriod,                                      -1, "Intra period in frames, (-1: only first frame)")
   ("DecodingRefreshType,-dr",                         m_iDecodingRefreshType,                               0, "Intra refresh type (0:none 1:CRA 2:IDR 3:RecPointSEI)")
   ("GOPSize,g",                                       m_iGOPSize,                                           1, "GOP size of temporal structure")
-#if JCTVC_Y0038_PARAMS
   ("ReWriteParamSetsFlag",                            m_bReWriteParamSetsFlag,                           true, "Enable rewriting of Parameter sets before every (intra) random access point")
-#endif 
 
   // motion search options
   ("DisableIntraInInter",                             m_bDisableIntraPUsInInterSlices,                  false, "Flag to disable intra PUs in inter slices")
@@ -914,16 +898,10 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("IQPFactor,-IQF",                                  m_dIntraQpFactor,                                  -1.0, "Intra QP Factor for Lambda Computation. If negative, the default will scale lambda based on GOP size (unless LambdaFromQpEnable then IntraQPOffset is used instead)")
 
   /* Quantization parameters */
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   ("QP,q",                                            m_iQP,                                               30, "Qp value")
   ("QPIncrementFrame,-qpif",                          m_qpIncrementAtSourceFrame,       OptionalValue<UInt>(), "If a source file frame number is specified, the internal QP will be incremented for all POCs associated with source frames >= frame number. If empty, do not increment.")
-#else
-  ("QP,q",                                            m_fQP,                                             30.0, "Qp value, if value is float, QP is switched once during encoding")
-#endif
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   ("IntraQPOffset",                                   m_intraQPOffset,                                      0, "Qp offset value for intra slice, typically determined based on GOP size")
   ("LambdaFromQpEnable",                              m_lambdaFromQPEnable,                             false, "Enable flag for derivation of lambda from QP")
-#endif
   ("DeltaQpRD,-dqr",                                  m_uiDeltaQpRD,                                       0u, "max dQp offset for slice")
   ("MaxDeltaQP,d",                                    m_iMaxDeltaQP,                                        0, "max dQp offset for block")
   ("MaxCuDQPDepth,-dqd",                              m_iMaxCuDQPDepth,                                     0, "max depth for a minimum CuDQP")
@@ -982,11 +960,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SaoEncodingRateChroma",                           m_saoEncodingRateChroma,                            0.5, "The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma")
   ("MaxNumOffsetsPerPic",                             m_maxNumOffsetsPerPic,                             2048, "Max number of SAO offset per picture (Default: 2048)")
   ("SAOLcuBoundary",                                  m_saoCtuBoundary,                                 false, "0: right/bottom CTU boundary areas skipped from SAO parameter estimation, 1: non-deblocked pixels are used for those areas")
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   ("ResetEncoderStateAfterIRAP",                      m_resetEncoderStateAfterIRAP,                     true, "When true, resets the encoder's decisions after an IRAP (POC order). Enabled by default.")
-#else
-  ("SAOResetEncoderStateAfterIRAP",                   m_saoResetEncoderStateAfterIRAP,                  false, "When true, resets the encoder's SAO state after an IRAP (POC order). Disabled by default.")
-#endif
   ("SliceMode",                                       tmpSliceMode,                            Int(NO_SLICES), "0: Disable all Recon slice limits, 1: Enforce max # of CTUs, 2: Enforce max # of bytes, 3:specify tiles per dependent slice")
   ("SliceArgument",                                   m_sliceArgument,                                      0, "Depending on SliceMode being:"
                                                                                                                "\t1: max number of CTUs per slice"
@@ -1208,7 +1182,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIPreferredTransferCharacterisics",              m_preferredTransferCharacteristics,                   -1, "Value for the preferred_transfer_characteristics field of the Alternative transfer characteristics SEI which will override the corresponding entry in the VUI. If negative, do not produce the respective SEI message")
   ("SEIGreenMetadataType",                            m_greenMetadataType,                   0u, "Value for the green_metadata_type specifies the type of metadata that is present in the SEI message. If green_metadata_type is 1, then metadata enabling quality recovery after low-power encoding is present")
   ("SEIXSDMetricType",                                m_xsdMetricType,                      0u, "Value for the xsd_metric_type indicates the type of the objective quality metric. PSNR is the only type currently supported")
-#if CCV_SEI_MESSAGE
   ("SEICCVEnabled",                                   m_ccvSEIEnabled,                       false,                                    "Enables the Content Colour Volume SEI message")
   ("SEICCVCancelFlag",                                m_ccvSEICancelFlag,                    true,                                     "Specifies the persistence of any previous content colour volume SEI message in output order.")
   ("SEICCVPersistenceFlag",                           m_ccvSEIPersistenceFlag,               false,                                    "Specifies the persistence of the content colour volume SEI message for the current layer.")
@@ -1225,7 +1198,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEICCVMaxLuminanceValue",                         m_ccvSEIMaxLuminanceValue,              0.1, "specifies the CCV max luminance value  in the content colour volume SEI message")
   ("SEICCVAvgLuminanceValuePresent",                  m_ccvSEIAvgLuminanceValuePresentFlag,  true,                                    "Specifies whether the CCV avg luminance value is present in the content colour volume SEI message")
   ("SEICCVAvgLuminanceValue",                         m_ccvSEIAvgLuminanceValue,              0.01, "specifies the CCV avg luminance value  in the content colour volume SEI message")
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   ("SEIShutterIntervalEnabled",                       m_siiSEIEnabled,                           false,                                   "Controls if shutter interval information SEI message is enabled")
   ("SEISiiTimeScale",                                 m_siiSEITimeScale,                         27000000u,                               "Specifies sii_time_scale")
@@ -1257,7 +1229,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIAVEAmbientLightX",                             m_aveSEIAmbientLightX,                            15635u, "Specifies the normalized x chromaticity coordinate of the environmental ambient light in the nominal viewing enviornment according to the CIE 1931 defination in units of 1/50000 lux for the ambient viewing enviornment SEI message")
   ("SEIAVEAmbientLightY",                             m_aveSEIAmbientLightY,                            16450u, "Specifies the normalized y chromaticity coordinate of the environmental ambient light in the nominal viewing enviornment according to the CIE 1931 defination in units of 1/50000 lux for the ambient viewing enviornment SEI message")
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   ("SEIErpEnabled",                                   m_erpSEIEnabled,                                   false, "Control generation of equirectangular projection SEI messages")
   ("SEIErpCancelFlag",                                m_erpSEICancelFlag,                                 true, "Indicate that equirectangular projection SEI message cancels the persistence or follows")
   ("SEIErpPersistenceFlag",                           m_erpSEIPersistenceFlag,                           false, "Specifies the persistence of the equirectangular projection SEI messages")
@@ -1281,13 +1252,9 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIOmniViewportTiltCentre",                       cfg_omniViewportSEITiltCentre,        cfg_omniViewportSEITiltCentre,        "Indicates the tilt angle of the i-th recommended viewport region")
   ("SEIOmniViewportHorRange",                         cfg_omniViewportSEIHorRange,          cfg_omniViewportSEIHorRange,          "Indicates the azimuth range of the i-th recommended viewport region")
   ("SEIOmniViewportVerRange",                         cfg_omniViewportSEIVerRange,          cfg_omniViewportSEIVerRange,          "Indicates the elevation range of the i-th recommended viewport region")
-#endif
-#if CMP_SEI_MESSAGE
   ("SEICmpEnabled",                                   m_cmpSEIEnabled,                          false,                                    "Controls generation of cubemap projection SEI message")
   ("SEICmpCancelFlag",                                m_cmpSEICmpCancelFlag,                    true,                                     "Specifies the persistence of any previous cubemap projection SEI message in output order.")
   ("SEICmpPersistenceFlag",                           m_cmpSEICmpPersistenceFlag,               false,                                    "Specifies the persistence of the cubemap projection SEI message for the current layer.")
-#endif
-#if RWP_SEI_MESSAGE
   ("SEIRwpEnabled",                                   m_rwpSEIEnabled,                          false,                                    "Controls if region-wise packing SEI message enabled")
   ("SEIRwpCancelFlag",                                m_rwpSEIRwpCancelFlag,                    true,                                    "Specifies the persistence of any previous region-wise packing SEI message in output order.")
   ("SEIRwpPersistenceFlag",                           m_rwpSEIRwpPersistenceFlag,               false,                                    "Specifies the persistence of the region-wise packing SEI message for the current layer.")
@@ -1313,8 +1280,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIRwpBottomGuardBandHeight",                     cfg_rwpSEIRwpBottomGuardBandHeight,       cfg_rwpSEIRwpBottomGuardBandHeight,       "specifies the height of the guard band below the i-th packed region.")
   ("SEIRwpGuardBandNotUsedForPredFlag",               cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, cfg_rwpSEIRwpGuardBandNotUsedForPredFlag, "Specifies if the guard bands is used in the inter prediction process.")
   ("SEIRwpGuardBandType",                             cfg_rwpSEIRwpGuardBandType,               cfg_rwpSEIRwpGuardBandType,               "Specifies the type of the guard bands for the i-th packed region.")
-#endif
-#if FVI_SEI_MESSAGE
   ("SEIFviEnabled",                                   m_fisheyeVIdeoInfoSEIEnabled,             false,                                   "Controls if fisheye video information SEI message enabled")
   ("SEIFviCancelFlag",                                m_fisheyeVideoInfoSEI.m_fisheyeCancelFlag,                true,                    "Specifies the persistence of any previous fisheye video information SEI message in output order.")
   ("SEIFviPersistenceFlag",                           m_fisheyeVideoInfoSEI.m_fisheyePersistenceFlag,           false,                   "Specifies the persistence of the fisheye video information SEI message for the current layer.")
@@ -1337,13 +1302,8 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("SEIFviFieldOfView",                               cfg_fviSEIFisheyeFieldOfView,             cfg_fviSEIFisheyeFieldOfView,            "Specifies the field of view of the lens that corresponds to the i-th active area")
   ("SEIFviNumPolynomialCoeffs",                       cfg_fviSEIFisheyeNumPolynomialCoeffs,     cfg_fviSEIFisheyeNumPolynomialCoeffs,    "Specifies the number of polynomial coefficients for the circular region")
   ("SEIFviPolynomialCoeff",                           cfg_fviSEIFisheyePolynomialCoeff,         cfg_fviSEIFisheyePolynomialCoeff,        "Specifies the j-th polynomial coefficient value of the curve function that maps the normalized distance of a luma sample from the centre of the circular region corresponding to the i-th active area to the angular value of a sphere coordinate from the normal vector of a nominal imaging plane that passes through the centre of the sphere coordinate system for the i-th active region.")
-#endif
-#if RNSEI
   ("SEIRegionalNestingFileRoot,-rns",                 m_regionalNestingSEIFileRoot,                    string(""), "Regional nesting SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-rns rns\" will search for files rns_0.txt, rns_1.txt, ...")
-#endif
-#if AR_SEI_MESSAGE
   ("SEIAnnotatedRegionsFileRoot,-ar",                 m_arSEIFileRoot,                                 string(""), "Annotated region SEI parameters root file name (wo num ext); only the file name base is to be added. Underscore and POC would be automatically addded to . E.g. \"-ar ar\" will search for files ar_0.txt, ar_1.txt, ...")
-#endif
   ;
 
   opts.addOptions()
@@ -1780,7 +1740,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   m_aidQP = new Int[ m_framesToBeEncoded + m_iGOPSize + 1 ];
   ::memset( m_aidQP, 0, sizeof(Int)*( m_framesToBeEncoded + m_iGOPSize + 1 ) );
 
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   if (m_qpIncrementAtSourceFrame.bPresent)
   {
     UInt switchingPOC=0;
@@ -1796,21 +1755,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       m_aidQP[i]=1;
     }
   }
-#else
-  // handling of floating-point QP values
-  // if QP is not integer, sequence is split into two sections having QP and QP+1
-  m_iQP = (Int)( m_fQP );
-  if ( m_iQP < m_fQP )
-  {
-    Int iSwitchPOC = (Int)( m_framesToBeEncoded - (m_fQP - m_iQP)*m_framesToBeEncoded + 0.5 );
-
-    iSwitchPOC = (Int)( (Double)iSwitchPOC / m_iGOPSize + 0.5 )*m_iGOPSize;
-    for ( Int i=iSwitchPOC; i<m_framesToBeEncoded + m_iGOPSize + 1; i++ )
-    {
-      m_aidQP[i] = 1;
-    }
-  }
-#endif
 
   for(UInt ch=0; ch<MAX_NUM_CHANNEL_TYPE; ch++)
   {
@@ -1928,7 +1872,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
     }
   }
 
-#if ERP_SR_OV_SEI_MESSAGE
   if ( m_omniViewportSEIEnabled && !m_omniViewportSEICancelFlag )
   {
     assert ( m_omniViewportSEICntMinus1 >= 0 && m_omniViewportSEICntMinus1 < 16 );
@@ -1946,9 +1889,7 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       m_omniViewportSEIVerRange[i]        = cfg_omniViewportSEIVerRange       .values.size() > i ? cfg_omniViewportSEIVerRange       .values[i] : 0;
     }
   }
-#endif
 
-#if RWP_SEI_MESSAGE
   if(!m_rwpSEIRwpCancelFlag && m_rwpSEIEnabled)
   {
     assert ( m_rwpSEINumPackedRegions > 0 && m_rwpSEINumPackedRegions <= std::numeric_limits<UChar>::max() );
@@ -2001,8 +1942,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       }
     }
   }
-#endif
-#if FVI_SEI_MESSAGE
   if (!m_fisheyeVideoInfoSEI.m_fisheyeCancelFlag && m_fisheyeVIdeoInfoSEIEnabled)
   {
     if (cfg_fviSEIFisheyeNumActiveAreasMinus1 < 0 || cfg_fviSEIFisheyeNumActiveAreasMinus1 > 3)             { fprintf(stderr, "Bad number of FVI active areas\n"); exit(EXIT_FAILURE); }
@@ -2063,7 +2002,6 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
       }
     }
   }
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   if (m_siiSEIEnabled)
   {
@@ -2368,14 +2306,6 @@ Void TAppEncCfg::xCheckParameter()
   {
     xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size for periodic IDR pictures");
   }
-#if !ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
-#if !FIXSAORESETAFTERIRAP
-  if (m_saoResetEncoderStateAfterIRAP)
-  {
-    xConfirmPara( m_iIntraPeriod > 0 && m_iIntraPeriod <= m_iGOPSize ,                      "Intra period must be larger than GOP size when SAOResetEncoderStateAfterIRAP is enabled");
-  }
-#endif
-#endif
   xConfirmPara( m_uiMaxCUDepth < 1,                                                         "MaxPartitionDepth must be greater than zero");
   xConfirmPara( (m_uiMaxCUWidth  >> m_uiMaxCUDepth) < 4,                                    "Minimum partition width size should be larger than or equal to 8");
   xConfirmPara( (m_uiMaxCUHeight >> m_uiMaxCUDepth) < 4,                                    "Minimum partition height size should be larger than or equal to 8");
@@ -3006,7 +2936,6 @@ Void TAppEncCfg::xCheckParameter()
 
   xConfirmPara(m_preferredTransferCharacteristics > 255, "transfer_characteristics_idc should not be greater than 255.");
 
-#if ERP_SR_OV_SEI_MESSAGE
   if( m_erpSEIEnabled && !m_erpSEICancelFlag )
   {
     xConfirmPara( m_erpSEIGuardBandType < 0 || m_erpSEIGuardBandType > 8, "SEIEquirectangularprojectionGuardBandType must be in the range of 0 to 7");
@@ -3035,7 +2964,6 @@ Void TAppEncCfg::xCheckParameter()
       xConfirmPara( m_omniViewportSEIVerRange[i] < 1 || m_omniViewportSEIVerRange[i] > (180<<16), "SEIOmniViewportVerRange must be in the range of 1 to 180*2^16");
     }
   }
-#endif
 
   if (m_gopBasedTemporalFilterEnabled)
   {
@@ -3161,16 +3089,12 @@ Void TAppEncCfg::xPrintParameter()
   printf("Sequence PSNR output                   : %s\n", (m_printMSEBasedSequencePSNR ? "Linear average, MSE-based" : "Linear average only") );
   printf("Sequence MSE output                    : %s\n", (m_printSequenceMSE ? "Enabled" : "Disabled") );
   printf("Frame MSE output                       : %s\n", (m_printFrameMSE    ? "Enabled" : "Disabled") );
-#if JVET_F0064_MSSSIM  
   printf("MS-SSIM output                         : %s\n", (m_printMSSSIM      ? "Enabled" : "Disabled") );
-#endif
-#if JCTVC_Y0037_XPSNR
   printf("xPSNR calculation                      : %s\n", (m_bXPSNREnableFlag ? "Enabled" : "Disabled"));
   if (m_bXPSNREnableFlag)
   {
     printf("xPSNR Weights                          : (%8.3f, %8.3f, %8.3f)\n", m_dXPSNRWeight[COMPONENT_Y], m_dXPSNRWeight[COMPONENT_Cb], m_dXPSNRWeight[COMPONENT_Cr]);
   }
-#endif
   printf("Cabac-zero-word-padding                : %s\n", (m_cabacZeroWordPaddingEnabled? "Enabled" : "Disabled") );
   if (m_isField)
   {
@@ -3238,7 +3162,6 @@ Void TAppEncCfg::xPrintParameter()
   printf("Motion search range                    : %d\n", m_iSearchRange );
   printf("Intra period                           : %d\n", m_iIntraPeriod );
   printf("Decoding refresh type                  : %d\n", m_iDecodingRefreshType );
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   if (m_qpIncrementAtSourceFrame.bPresent)
   {
     printf("QP                                     : %d (incrementing internal QP at source frame %d)\n", m_iQP, m_qpIncrementAtSourceFrame.value );
@@ -3247,9 +3170,6 @@ Void TAppEncCfg::xPrintParameter()
   {
     printf("QP                                     : %d\n", m_iQP );
   }
-#else
-  printf("QP                                     : %5.2f\n", m_fQP );
-#endif
   printf("Max dQP signaling depth                : %d\n", m_iMaxCuDQPDepth);
 
   printf("Cb QP Offset                           : %d\n", m_cbQpOffset   );

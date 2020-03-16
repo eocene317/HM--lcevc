@@ -81,9 +81,7 @@ public:
   Void initSEIMCTSExtractionInfo(SEIMCTSExtractionInfoSet *sei, const TComVPS *vps, const TComSPS *sps, const TComPPS *pps);
 #endif
   Void initSEIKneeFunctionInfo(SEIKneeFunctionInfo *sei);
-#if CCV_SEI_MESSAGE
   Void initSEIContentColourVolume(SEIContentColourVolume *sei);
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void initSEIShutterIntervalInfo(SEIShutterIntervalInfo *sei);
 #endif
@@ -92,25 +90,16 @@ public:
   Void initSEIContentLightLevel(SEIContentLightLevelInfo *sei);
   Void initSEIAmbientViewingEnvironment(SEIAmbientViewingEnvironment *sei);
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   Void initSEIErp(SEIEquirectangularProjection *sei);
   Void initSEISphereRotation(SEISphereRotation *sei);
   Void initSEIOmniViewport(SEIOmniViewport *sei);
-#endif
-#if CMP_SEI_MESSAGE
   Void initSEICubemapProjection(SEICubemapProjection *sei);
-#endif
-#if RWP_SEI_MESSAGE
   Void initSEIRegionWisePacking(SEIRegionWisePacking *sei);
-#endif
-#if FVI_SEI_MESSAGE
   Void initSEIFisheyeVideoInfo(SEIFisheyeVideoInfo *sei);
-#endif
   Void initSEIChromaResamplingFilterHint(SEIChromaResamplingFilterHint *sei, Int iHorFilterIndex, Int iVerFilterIndex);
   Void initSEITimeCode(SEITimeCode *sei);
   Bool initSEIColourRemappingInfo(SEIColourRemappingInfo *sei, Int currPOC); // returns true on success, false on failure.
   Void initSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics *sei);
-#if RNSEI
   Void readToneMappingInfoSEI(std::istream &fic, SEIToneMappingInfo *seiToneMappingInfo , Bool &failed );
   Void readChromaResamplingFilterHintSEI(std::istream &fic, SEIChromaResamplingFilterHint *seiChromaResamplingFilterHint, Bool &failed );
   Void readKneeFunctionInfoSEI(std::istream &fic, SEIKneeFunctionInfo *seiKneeFunctionInfo, Bool &failed );
@@ -118,11 +107,8 @@ public:
   Void readContentColourVolumeSEI(std::istream &fic, SEIContentColourVolume *seiContentColourVolume, Bool &failed );
   Bool initSEIRegionalNesting(SEIRegionalNesting *sei, Int currPOC); // returns true on success, false on failure.
   Void readRNSEIWindow(std::istream &fic, RNSEIWindowVec::iterator regionIter, Bool &failed );
-#endif
-#if AR_SEI_MESSAGE
   Bool initSEIAnnotatedRegions(SEIAnnotatedRegions *sei, Int currPOC);
   Void readAnnotatedRegionSEI(std::istream &fic, SEIAnnotatedRegions *seiAnnoRegion, Bool &failed);
-#endif
   // trailing SEIs
   Void initDecodedPictureHashSEI(SEIDecodedPictureHash *sei, TComPic *pcPic, std::string &rHashString, const BitDepths &bitDepths);
   Void initTemporalLevel0IndexSEI(SEITemporalLevel0Index *sei, TComSlice *slice);

@@ -1366,13 +1366,11 @@ Void  TEncCfg::xCheckGSParameters()
   }
 }
 
-#if JCTVC_Y0038_PARAMS
 Void TEncTop::setParamSetChanged(Int spsId, Int ppsId)
 {
   m_ppsMap.setChangedFlag(ppsId);
   m_spsMap.setChangedFlag(spsId);
 }
-#endif
 
 Bool TEncTop::PPSNeedsWriting(Int ppsId)
 {
@@ -1388,7 +1386,6 @@ Bool TEncTop::SPSNeedsWriting(Int spsId)
   return bChanged;
 }
 
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
 Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
 {
   const Int lumaQpBDOffset = pSlice->getSPS()->getQpBDOffset(CHANNEL_TYPE_LUMA);
@@ -1404,14 +1401,12 @@ Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
 
     qp = getBaseQP();
 
-#if JVET_G0101_QP_SWITCHING
     // modify QP if a fractional QP was originally specified, cause dQPs to be 0 or 1.
     const Int* pdQPs = getdQPs();
     if ( pdQPs )
     {
       qp += pdQPs[ pSlice->getPOC() ];
     }
-#endif
 
     if(sliceType==I_SLICE)
     {
@@ -1433,18 +1428,9 @@ Int TEncCfg::getQPForPicture(const UInt gopIndex, const TComSlice *pSlice) const
       }
     }
 
-#if !JVET_G0101_QP_SWITCHING
-    // modify QP if a fractional QP was originally specified, cause dQPs to be 0 or 1.
-    const Int* pdQPs = getdQPs();
-    if ( pdQPs )
-    {
-      qp += pdQPs[ pSlice->getPOC() ];
-    }
-#endif
   }
   qp = Clip3( -lumaQpBDOffset, MAX_QP, qp );
   return qp;
 }
-#endif
 
 //! \}

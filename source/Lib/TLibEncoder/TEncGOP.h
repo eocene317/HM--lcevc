@@ -107,9 +107,7 @@ private:
   UInt                    m_ltRefPicPocLsbSps[MAX_NUM_LONG_TERM_REF_PICS];
   Bool                    m_ltRefPicUsedByCurrPicFlag[MAX_NUM_LONG_TERM_REF_PICS];
   Int                     m_iLastIDR;
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Int                     m_RASPOCforResetEncoder; // an IDR POC number, after which the next POC (in output order) will be reset. If MAX_INT, then no reset is pending.
-#endif
   Int                     m_iGopSize;
   Int                     m_iNumPicCoded;
   Bool                    m_bFirst;
@@ -198,9 +196,7 @@ protected:
   Void  xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic* pcPicOrgSecondField,
                                     TComPicYuv* pcPicRecFirstField, TComPicYuv* pcPicRecSecondField,
                                     const InputColourSpaceConversion snr_conversion, const TEncAnalyze::OutputLogControl &outputLogCtrl, Double* PSNR_Y );
-#if JVET_F0064_MSSSIM
   Double xCalculateMSSSIM (const Pel *pOrg, const Int orgStride, const Pel* pRec, const Int recStride, const Int width, const Int height, const UInt bitDepth);
-#endif
 
   UInt64 xFindDistortionFrame (TComPicYuv* pcPic0, TComPicYuv* pcPic1, const BitDepths &bitDepths);
 

@@ -94,26 +94,14 @@ protected:
 #endif
   Void xParseSEIChromaResamplingFilterHint    (SEIChromaResamplingFilterHint& sei,    UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIKneeFunctionInfo              (SEIKneeFunctionInfo& sei,              UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#if CCV_SEI_MESSAGE
   Void xParseSEIContentColourVolume           (SEIContentColourVolume& sei,             UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   Void xParseSEIEquirectangularProjection     (SEIEquirectangularProjection &sei,     UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEISphereRotation                (SEISphereRotation &sei,                UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIOmniViewport                  (SEIOmniViewport& sei,                  UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#endif
-#if CMP_SEI_MESSAGE
   Void xParseSEICubemapProjection             (SEICubemapProjection& sei,             UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#endif
-#if AR_SEI_MESSAGE
   Void xParseSEIAnnotatedRegions              (SEIAnnotatedRegions& sei,              UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#endif
-#if RWP_SEI_MESSAGE
   Void xParseSEIRegionWisePacking             (SEIRegionWisePacking& sei,             UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
-#endif
-#if FVI_SEI_MESSAGE
   Void xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream);
-#endif
   Void xParseSEIColourRemappingInfo           (SEIColourRemappingInfo& sei,           UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIDeinterlaceFieldIdentification(SEIDeinterlaceFieldIdentification& sei,UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIContentLightLevelInfo         (SEIContentLightLevelInfo& sei,         UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
@@ -121,9 +109,7 @@ protected:
   Void xParseSEICodedRegionCompletion         (SEICodedRegionCompletion& sei,         UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIAlternativeTransferCharacteristics(SEIAlternativeTransferCharacteristics& sei, UInt payLoadSize,            std::ostream *pDecodedMessageOutputStream);
   Void xParseSEIAmbientViewingEnvironment     (SEIAmbientViewingEnvironment& sei,     UInt payLoadSize,                     std::ostream *pDecodedMessageOutputStream);
-#if RNSEI
   Void xParseSEIRegionalNesting               ( SEIRegionalNesting& sei,              UInt payloadSize, const TComSPS* sps, std::ostream *pDecodedMessageOutputStream );
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void xParseSEIShutterInterval               (SEIShutterIntervalInfo& sei,           UInt payloadSize,                     std::ostream *pDecodedMessageOutputStream);
 #endif

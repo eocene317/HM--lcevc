@@ -176,12 +176,9 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::AMBIENT_VIEWING_ENVIRONMENT:
     xWriteSEIAmbientViewingEnvironment(*static_cast<const SEIAmbientViewingEnvironment*>(&sei));
     break;
-#if CCV_SEI_MESSAGE
   case SEI::CONTENT_COLOUR_VOLUME:
     xWriteSEIContentColourVolume(*static_cast<const SEIContentColourVolume*>(&sei));
     break;
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   case SEI::EQUIRECTANGULAR_PROJECTION:
     xWriteSEIEquirectangularProjection(*static_cast<const SEIEquirectangularProjection*>(&sei));
     break;
@@ -191,33 +188,22 @@ Void SEIWriter::xWriteSEIpayloadData(TComBitIf& bs, const SEI& sei, const TComSP
   case SEI::OMNI_VIEWPORT:
     xWriteSEIOmniViewport(*static_cast<const SEIOmniViewport*>(&sei));
     break;
-#endif
-#if CMP_SEI_MESSAGE
   case SEI::CUBEMAP_PROJECTION:
     xWriteSEICubemapProjection(*static_cast<const SEICubemapProjection*>(&sei));
     break;
-#endif
-#if RWP_SEI_MESSAGE
   case SEI::REGION_WISE_PACKING:
     xWriteSEIRegionWisePacking(*static_cast<const SEIRegionWisePacking*>(&sei));
     break;
-#endif
-#if FVI_SEI_MESSAGE
   case SEI::FISHEYE_VIDEO_INFO:
     xWriteSEIFisheyeVideoInfo(*static_cast<const SEIFisheyeVideoInfo*>(&sei));
     break;
-#endif
-#if RNSEI
   case SEI::REGIONAL_NESTING:
     xWriteSEIRegionalNesting(bs, *static_cast<const SEIRegionalNesting*>(&sei), sps);
     break;
-#endif
 
-#if AR_SEI_MESSAGE
   case SEI::ANNOTATED_REGIONS:
     xWriteSEIAnnotatedRegions(*static_cast<const SEIAnnotatedRegions*>(&sei), sps);
     break;
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   case SEI::SHUTTER_INTERVAL_INFO:
@@ -1108,7 +1094,6 @@ Void SEIWriter::xWriteSEIKneeFunctionInfo(const SEIKneeFunctionInfo &sei)
   }
 }
 
-#if CCV_SEI_MESSAGE
 Void SEIWriter::xWriteSEIContentColourVolume(const SEIContentColourVolume &sei)
 {
   WRITE_FLAG(sei.m_ccvCancelFlag, "ccv_cancel_flag");
@@ -1143,7 +1128,6 @@ Void SEIWriter::xWriteSEIContentColourVolume(const SEIContentColourVolume &sei)
     }
   }
 }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 Void SEIWriter::xWriteSEIShutterInterval(const SEIShutterIntervalInfo &sei)
@@ -1165,7 +1149,6 @@ Void SEIWriter::xWriteSEIShutterInterval(const SEIShutterIntervalInfo &sei)
 }
 #endif
 
-#if ERP_SR_OV_SEI_MESSAGE
 Void SEIWriter::xWriteSEIEquirectangularProjection(const SEIEquirectangularProjection &sei)
 {
   WRITE_FLAG( sei.m_erpCancelFlag, "erp_cancel_flag" );
@@ -1216,8 +1199,6 @@ Void SEIWriter::xWriteSEIOmniViewport(const SEIOmniViewport &sei)
     }
   }
 }
-#endif
-#if CMP_SEI_MESSAGE
 Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
 {
   WRITE_FLAG(sei.m_cmpCancelFlag, "cmp_cancel_flag");
@@ -1226,8 +1207,6 @@ Void SEIWriter::xWriteSEICubemapProjection(const SEICubemapProjection &sei)
     WRITE_FLAG(sei.m_cmpPersistenceFlag, "cmp_persistence_flag");
   }
 }
-#endif
-#if RWP_SEI_MESSAGE
 Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
 {
   WRITE_FLAG( sei.m_rwpCancelFlag,                                           "rwp_cancel_flag" );
@@ -1270,9 +1249,7 @@ Void SEIWriter::xWriteSEIRegionWisePacking(const SEIRegionWisePacking &sei)
     }
   }
 }
-#endif
 
-#if FVI_SEI_MESSAGE
 Void SEIWriter::xWriteSEIFisheyeVideoInfo(const SEIFisheyeVideoInfo &sei)
 {
   const TComSEIFisheyeVideoInfo &info=sei.values;
@@ -1315,7 +1292,6 @@ Void SEIWriter::xWriteSEIFisheyeVideoInfo(const SEIFisheyeVideoInfo &sei)
     }
   }
 }
-#endif
 
 Void SEIWriter::xWriteSEIColourRemappingInfo(const SEIColourRemappingInfo& sei)
 {
@@ -1417,7 +1393,6 @@ Void SEIWriter::xWriteSEIAmbientViewingEnvironment(const SEIAmbientViewingEnviro
   WRITE_CODE(sei.m_ambientLightY,      16, "ambient_light_y" );
 }
 
-#if RNSEI
 Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps)
 {
   WRITE_CODE(sei.getRNId(),            16, "regional_nesting_id");
@@ -1448,9 +1423,7 @@ Void SEIWriter::xWriteSEIRegionalNesting(TComBitIf& bs, const SEIRegionalNesting
     xWriteSEImessage(bs, nestedSEI, sps);
   }
 }
-#endif
 
-#if AR_SEI_MESSAGE
 Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const TComSPS *sps)
 {
   WRITE_FLAG(sei.m_hdr.m_cancelFlag, "ar_cancel_flag");
@@ -1541,7 +1514,6 @@ Void SEIWriter::xWriteSEIAnnotatedRegions(const SEIAnnotatedRegions &sei, const 
     }
   }
 }
-#endif
 Void SEIWriter::xWriteByteAlign()
 {
   if( m_pcBitIf->getNumberOfWrittenBits() % 8 != 0)

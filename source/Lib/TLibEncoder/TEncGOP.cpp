@@ -74,9 +74,7 @@ Int getLSB(Int poc, Int maxLSB)
 TEncGOP::TEncGOP()
 {
   m_iLastIDR            = 0;
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   m_RASPOCforResetEncoder = MAX_INT;
-#endif
 
   m_iGopSize            = 0;
   m_iNumPicCoded        = 0; //Niko
@@ -484,14 +482,12 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     seiMessages.push_back(sei);
   }
 
-#if CCV_SEI_MESSAGE
   if (m_pcCfg->getCcvSEIEnabled())
   {
     SEIContentColourVolume *seiContentColourVolume = new SEIContentColourVolume;
     m_seiEncoder.initSEIContentColourVolume(seiContentColourVolume);
     seiMessages.push_back(seiContentColourVolume);
   }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   if (m_pcCfg->getSiiSEIEnabled())
@@ -525,7 +521,6 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     seiMessages.push_back(seiAVE);
   }
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   if (m_pcCfg->getErpSEIEnabled())
   {
     SEIEquirectangularProjection *sei = new SEIEquirectangularProjection;
@@ -546,31 +541,24 @@ Void TEncGOP::xCreateIRAPLeadingSEIMessages (SEIMessages& seiMessages, const TCo
     m_seiEncoder.initSEIOmniViewport(sei);
     seiMessages.push_back(sei);
   }
-#endif
-#if CMP_SEI_MESSAGE
   if (m_pcCfg->getCmpSEIEnabled())
   {
     SEICubemapProjection *seiCubemapProjection = new SEICubemapProjection;
     m_seiEncoder.initSEICubemapProjection(seiCubemapProjection);
     seiMessages.push_back(seiCubemapProjection);
   }
-#endif
-#if RWP_SEI_MESSAGE
   if (m_pcCfg->getRwpSEIEnabled())
   {
     SEIRegionWisePacking *seiRegionWisePacking = new SEIRegionWisePacking;
     m_seiEncoder.initSEIRegionWisePacking(seiRegionWisePacking);
     seiMessages.push_back(seiRegionWisePacking);
   }
-#endif
-#if FVI_SEI_MESSAGE
   if (m_pcCfg->getFviSEIEnabled())
   {
     SEIFisheyeVideoInfo *sei = new SEIFisheyeVideoInfo;
     m_seiEncoder.initSEIFisheyeVideoInfo(sei);
     seiMessages.push_back(sei);
   }
-#endif
     
   if(m_pcCfg->getMasteringDisplaySEI().colourVolumeSEIEnabled)
   {
@@ -664,7 +652,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
     }
   }
 
-#if AR_SEI_MESSAGE
   // insert one Annotated Region SEI for the picture (if the file exists)
   if (!m_pcCfg->getAnnotatedRegionSEIFileRoot().empty())
   {
@@ -680,8 +667,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
       delete seiAnnotatedRegions;
     }
   }
-#endif
-#if RNSEI
   // insert one Regional Nesting SEI for the picture (if the file exists)
   if (!m_pcCfg->getRegionalNestingSEIFileRoot().empty())
   {
@@ -697,7 +682,6 @@ Void TEncGOP::xCreatePerPictureSEIMessages (Int picInGOP, SEIMessages& seiMessag
       delete seiRegionalNesting;
     }
   }
-#endif
 }
 
 Void TEncGOP::xCreateScalableNestingSEI (SEIMessages& seiMessages, SEIMessages& nestedSeiMessages)
@@ -1150,7 +1134,6 @@ Int EfficientFieldIRAPMapping::restoreGOPid(const Int GOPid)
 }
 
 
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
 static UInt calculateCollocatedFromL0Flag(const TComSlice *pSlice)
 {
   const Int refIdx = 0; // Zero always assumed
@@ -1158,56 +1141,6 @@ static UInt calculateCollocatedFromL0Flag(const TComSlice *pSlice)
   const TComPic *refPicL1 = pSlice->getRefPic(REF_PIC_LIST_1, refIdx);
   return refPicL0->getSlice(0)->getSliceQp() > refPicL1->getSlice(0)->getSliceQp();
 }
-#else
-static UInt calculateCollocatedFromL1Flag(TEncCfg *pCfg, const Int GOPid, const Int gopSize)
-{
-  Int iCloseLeft=1, iCloseRight=-1;
-  for(Int i = 0; i<pCfg->getGOPEntry(GOPid).m_numRefPics; i++)
-  {
-    Int iRef = pCfg->getGOPEntry(GOPid).m_referencePics[i];
-    if(iRef>0&&(iRef<iCloseRight||iCloseRight==-1))
-    {
-      iCloseRight=iRef;
-    }
-    else if(iRef<0&&(iRef>iCloseLeft||iCloseLeft==1))
-    {
-      iCloseLeft=iRef;
-    }
-  }
-  if(iCloseRight>-1)
-  {
-    iCloseRight=iCloseRight+pCfg->getGOPEntry(GOPid).m_POC-1;
-  }
-  if(iCloseLeft<1)
-  {
-    iCloseLeft=iCloseLeft+pCfg->getGOPEntry(GOPid).m_POC-1;
-    while(iCloseLeft<0)
-    {
-      iCloseLeft+=gopSize;
-    }
-  }
-  Int iLeftQP=0, iRightQP=0;
-  for(Int i=0; i<gopSize; i++)
-  {
-    if(pCfg->getGOPEntry(i).m_POC==(iCloseLeft%gopSize)+1)
-    {
-      iLeftQP= pCfg->getGOPEntry(i).m_QPOffset;
-    }
-    if (pCfg->getGOPEntry(i).m_POC==(iCloseRight%gopSize)+1)
-    {
-      iRightQP=pCfg->getGOPEntry(i).m_QPOffset;
-    }
-  }
-  if(iCloseRight>-1&&iRightQP<iLeftQP)
-  {
-    return 0;
-  }
-  else
-  {
-    return 1;
-  }
-}
-#endif
 
 
 static Void
@@ -1291,9 +1224,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     //-- For time output for each slice
     clock_t iBeforeTime = clock();
 
-#if !X0038_LAMBDA_FROM_QP_CAPABILITY
-    UInt uiColDir = calculateCollocatedFromL1Flag(m_pcCfg, iGOPid, m_iGopSize);
-#endif
 
     /////////////////////////////////////////////////////////////////////////////////////////////////// Initial to start encoding
     Int iTimeOffset;
@@ -1502,7 +1432,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     }
 
 
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
     if (pcSlice->getPOC() > m_RASPOCforResetEncoder && m_pcCfg->getResetEncoderStateAfterIRAP())
     {
       // need to reset encoder decisions.
@@ -1518,7 +1447,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       m_RASPOCforResetEncoder = pcSlice->getPOC();
     }
-#endif
 
     pcSlice->setEncCABACTableIdx(m_pcSliceEncoder->getEncCABACTableIdx());
 #if MCTS_EXTRACTION
@@ -1529,12 +1457,8 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
     if (pcSlice->getSliceType() == B_SLICE)
     {
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
       const UInt uiColFromL0 = calculateCollocatedFromL0Flag(pcSlice);
       pcSlice->setColFromL0Flag(uiColFromL0);
-#else
-      pcSlice->setColFromL0Flag(1-uiColDir);
-#endif
       Bool bLowDelay = true;
       Int  iCurrPOC  = pcSlice->getPOC();
       Int iRefIdx = 0;
@@ -1561,9 +1485,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       pcSlice->setCheckLDC(true);
     }
 
-#if !X0038_LAMBDA_FROM_QP_CAPABILITY
-    uiColDir = 1-uiColDir;
-#endif
 
     //-------------------------------------------------------------
     pcSlice->setRefPOCList();
@@ -1803,7 +1724,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     m_pcEntropyCoder->setEntropyCoder   ( m_pcCavlcCoder );
 
     // write various parameter sets
-#if JCTVC_Y0038_PARAMS
     //bool writePS = m_bSeqFirst || (m_pcCfg->getReWriteParamSetsFlag() && (pcPic->getSlice(0)->getSliceType() == I_SLICE));
     bool writePS = m_bSeqFirst || (m_pcCfg->getReWriteParamSetsFlag() && (pcSlice->isIRAP()));
     if (writePS)
@@ -1813,11 +1733,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     actualTotalBits += xWriteParameterSets(accessUnit, pcSlice, writePS);
 
     if (writePS)
-#else
-    actualTotalBits += xWriteParameterSets(accessUnit, pcSlice, m_bSeqFirst);
-
-    if ( m_bSeqFirst )
-#endif
     {
       // create prefix SEI messages at the beginning of the sequence
       assert(leadingSeiMessages.empty());
@@ -1855,12 +1770,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
                           m_pcCfg->getTestSAODisableAtPictureLevel(),
                           m_pcCfg->getSaoEncodingRate(),
                           m_pcCfg->getSaoEncodingRateChroma(),
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
                           m_pcCfg->getSaoCtuBoundary());
-#else
-                          m_pcCfg->getSaoCtuBoundary(),
-                          m_pcCfg->getSaoResetEncoderStateAfterIRAP());
-#endif
       m_pcSAO->PCMLFDisableProcess(pcPic);
       m_pcEncTop->getRDGoOnSbacCoder()->setBitstream(NULL);
 
@@ -2368,7 +2278,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
 
   //===== calculate PSNR =====
 
-#if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && pcPicD->getChromaFormat() != CHROMA_400)
   {
     const Pel*   pOrg[MAX_NUM_COMPONENT];
@@ -2450,7 +2359,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
   }
   else
-#endif
   {
     for(Int chan=0; chan<pcPicD->getNumberValidComponents(); chan++)
     {
@@ -2485,7 +2393,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   m_ext360.calculatePSNRs(pcPic);
 #endif
 
-#if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
   if (outputLogCtrl.printMSSSIM)
   {
@@ -2503,7 +2410,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
       result.MSSSIM[ch] = xCalculateMSSSIM (pOrg, orgStride, pRec, recStride, width, height, bitDepth);
     }
   }
-#endif
 
   /* calculate the size of the access unit, excluding:
    *  - SEI NAL units
@@ -2605,18 +2511,14 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
     printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
   }
 
-#if JVET_F0064_MSSSIM
   if (outputLogCtrl.printMSSSIM)
   {
     printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }  
-#endif
-#if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR)
   {
     printf(" [xPSNR %6.4lf dB]", result.xpsnr);
   }
-#endif
   if (outputLogCtrl.printFrameMSE)
   {
     printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", result.MSEyuvframe[COMPONENT_Y], result.MSEyuvframe[COMPONENT_Cb], result.MSEyuvframe[COMPONENT_Cr] );
@@ -2641,7 +2543,6 @@ Void TEncGOP::xCalculateAddPSNR( TComPic* pcPic, TComPicYuv* pcPicD, const Acces
   cscd.destroy();
 }
 
-#if JVET_F0064_MSSSIM
 Double TEncGOP::xCalculateMSSSIM (const Pel *pOrg, const Int orgStride, const Pel* pRec, const Int recStride, const Int width, const Int height, const UInt bitDepth)
 {
   const Int MAX_MSSSIM_SCALE  = 5;
@@ -2811,7 +2712,6 @@ Double TEncGOP::xCalculateMSSSIM (const Pel *pOrg, const Int orgStride, const Pe
 
   return finalMSSSIM;
 }
-#endif
 
 
 Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic* pcPicOrgSecondField,
@@ -2841,7 +2741,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
   const UInt numValidComponents=apcPicRecFields[0]->getNumberValidComponents();
   const Bool   useTrueOrg = conversion != IPCOLOURSPACE_UNCHANGED || m_pcCfg->getGopBasedTemporalFilterEnabled();
 
-#if JCTVC_Y0037_XPSNR
   if (outputLogCtrl.printXPSNR && apcPicRecFields[0]->getChromaFormat() != CHROMA_400 && apcPicRecFields[1]->getChromaFormat() != CHROMA_400)
   {
     // For interlace images, we need to scan the two fields independently
@@ -2929,7 +2828,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
     result.xpsnr = dSSDtemp ? 20.0 * log10( fWValue / dSSDtemp) : 999.99;
   }
   else
-#endif
   {
     for(Int chan=0; chan<numValidComponents; chan++)
     {
@@ -2970,7 +2868,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
       result.MSEyuvframe[ch]   = (Double)uiSSDtemp/(iSize*2);
     }
   }
-#if JVET_F0064_MSSSIM
   //===== calculate MS-SSIM =====
   if (outputLogCtrl.printMSSSIM)
   {
@@ -3001,7 +2898,6 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
       result.MSSSIM[ch] = sumOverFieldsMSSSIM/2;
     }
   }
-#endif
 
   result.bits = 0; // the number of bits for the pair is not calculated here - instead the overall total is used elsewhere.
 
@@ -3024,12 +2920,10 @@ Void TEncGOP::xCalculateInterlacedAddPSNR( TComPic* pcPicOrgFirstField, TComPic*
     printf(" [xY %16" PRIx64 " xU %16" PRIx64 " xv %16" PRIx64 "]", xPsnr[COMPONENT_Y], xPsnr[COMPONENT_Cb], xPsnr[COMPONENT_Cr]);
   }
 
-#if JVET_F0064_MSSSIM
   if (outputLogCtrl.printMSSSIM)
   {
     printf(" [MS-SSIM Y %1.6lf    U %1.6lf    V %1.6lf]", result.MSSSIM[COMPONENT_Y], result.MSSSIM[COMPONENT_Cb], result.MSSSIM[COMPONENT_Cr] );
   }
-#endif
   if (outputLogCtrl.printFrameMSE)
   {
     printf(" [Y MSE %6.4lf  U MSE %6.4lf  V MSE %6.4lf]", result.MSEyuvframe[COMPONENT_Y], result.MSEyuvframe[COMPONENT_Cb], result.MSEyuvframe[COMPONENT_Cr] );

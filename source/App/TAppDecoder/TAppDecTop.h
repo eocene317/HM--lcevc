@@ -69,11 +69,9 @@ private:
 
   SEIColourRemappingInfo*         m_pcSeiColourRemappingInfoPrevious;
 
-#if AR_SEI_MESSAGE
   SEIAnnotatedRegions::AnnotatedRegionHeader                 m_arHeader;
   std::map<UInt, SEIAnnotatedRegions::AnnotatedRegionObject> m_arObjects;
   std::map<UInt, std::string>                                m_arLabels;
-#endif
 
 public:
   TAppDecTop();
@@ -96,9 +94,7 @@ protected:
 private:
   Void applyColourRemapping(const TComPicYuv& pic, SEIColourRemappingInfo& pCriSEI, const TComSPS &activeSPS);
   Void xOutputColourRemapPic(TComPic* pcPic);
-#if AR_SEI_MESSAGE
   Void xOutputAnnotatedRegions(TComPic* pcPic);
-#endif
 };
 
 //! \}

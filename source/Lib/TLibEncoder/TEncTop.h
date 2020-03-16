@@ -156,9 +156,7 @@ public:
   Void selectReferencePictureSet(TComSlice* slice, Int POCCurr, Int GOPid );
   Int getReferencePictureSetIdxForSOP(Int POCCurr, Int GOPid );
 
-#if JCTVC_Y0038_PARAMS
   Void                   setParamSetChanged(Int spsId, Int ppsId);
-#endif
   Bool                   PPSNeedsWriting(Int ppsId);
   Bool                   SPSNeedsWriting(Int spsId);
 
@@ -186,13 +184,9 @@ public:
     TEncAnalyze::OutputLogControl outputLogCtrl;
     outputLogCtrl.printFrameMSE=m_printFrameMSE;
     outputLogCtrl.printMSEBasedSNR=m_printMSEBasedSequencePSNR;
-#if JVET_F0064_MSSSIM
     outputLogCtrl.printMSSSIM=m_printMSSSIM;
-#endif
     outputLogCtrl.printSequenceMSE=m_printSequenceMSE;
-#if JCTVC_Y0037_XPSNR
     outputLogCtrl.printXPSNR=m_bXPSNREnableFlag;
-#endif
     outputLogCtrl.printHexPerPOCPSNRs=m_printHexPsnr;
     return outputLogCtrl;
   }

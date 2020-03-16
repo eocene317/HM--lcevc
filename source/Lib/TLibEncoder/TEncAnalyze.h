@@ -68,40 +68,28 @@ public:
     Bool printMSEBasedSNR;
     Bool printSequenceMSE;
     Bool printFrameMSE;
-#if JVET_F0064_MSSSIM
     Bool printMSSSIM;
-#endif
-#if JCTVC_Y0037_XPSNR
     Bool printXPSNR;
-#endif
     Bool printHexPerPOCPSNRs;
   };
 
   struct ResultData
   {
     ResultData () : bits(0)
-#if JCTVC_Y0037_XPSNR
       , xpsnr(0)
-#endif
     {
       for(Int i=0; i<MAX_NUM_COMPONENT; i++)
       {
         psnr[i]=0;
         MSEyuvframe[i]=0;
-#if JVET_F0064_MSSSIM
         MSSSIM[i]=0;
-#endif
       }
     }
     Double psnr[MAX_NUM_COMPONENT];
     Double bits;
     Double MSEyuvframe[MAX_NUM_COMPONENT];
-#if JVET_F0064_MSSSIM
     Double MSSSIM[MAX_NUM_COMPONENT];
-#endif
-#if JCTVC_Y0037_XPSNR
     Double xpsnr;
-#endif
   };
 
 private:
@@ -124,24 +112,16 @@ public:
     {
       m_runningTotal.psnr[i] += result.psnr[i];
       m_runningTotal.MSEyuvframe[i] += result.MSEyuvframe[i];
-#if JVET_F0064_MSSSIM
       m_runningTotal.MSSSIM[i] += result.MSSSIM[i];
-#endif
     }
 
-#if JCTVC_Y0037_XPSNR
     m_runningTotal.xpsnr += result.xpsnr;
-#endif
     m_uiNumPic++;
   }
 
   Double  getPsnr(ComponentID compID) const { return  m_runningTotal.psnr[compID];  }
-#if JVET_F0064_MSSSIM
   Double  getMsssim(ComponentID compID) const { return  m_runningTotal.MSSSIM[compID];  }
-#endif
-#if JCTVC_Y0037_XPSNR
   Double  getxPSNR()                  const { return m_runningTotal.xpsnr;}
-#endif
   Double  getBits()                   const { return m_runningTotal.bits;   }
   Void    setBits(Double numBits)           { m_runningTotal.bits=numBits; }
   UInt    getNumPic()                 const { return  m_uiNumPic;   }
@@ -232,19 +212,15 @@ public:
 
         printf( "\tTotal Frames |   "   "Bitrate     "  "Y-PSNR    " );
 
-#if JVET_F0064_MSSSIM
         if (logctrl.printMSSSIM)
         {
           printf( "  Y-MS-SSIM  ");
         }
-#endif
 
-#if JCTVC_Y0037_XPSNR
         if (logctrl.printXPSNR)
         {
           printf( "    xPSNR  ");
         }
-#endif
 
         if (logctrl.printSequenceMSE)
         {
@@ -266,19 +242,15 @@ public:
                  getBits() * dScale,
                  getPsnr(COMPONENT_Y) / (Double)getNumPic() );
 
-#if JVET_F0064_MSSSIM
         if (logctrl.printMSSSIM)
         {
           printf("   %8.6lf  ", getMsssim(COMPONENT_Y) / (Double)getNumPic());
         }
-#endif
-#if JCTVC_Y0037_XPSNR
         if(logctrl.printXPSNR)
         {
           printf(" %8.4lf  ",
                  getxPSNR() / (Double)getNumPic());
         }
-#endif
 
         if (logctrl.printSequenceMSE)
         {
@@ -314,18 +286,14 @@ public:
 
           printf( "\tTotal Frames |   "   "Bitrate     "  "Y-PSNR    "  "U-PSNR    "  "V-PSNR    "  "YUV-PSNR  " );
 
-#if JVET_F0064_MSSSIM
           if (logctrl.printMSSSIM)
           {
             printf("  Y-MS-SSIM    " "U-MS-SSIM    " "V-MS-SSIM  ");
           }
-#endif
-#if JCTVC_Y0037_XPSNR
           if (logctrl.printXPSNR)
           {
             printf( "    xPSNR  ");
           }
-#endif
 
 #if EXTENSION_360_VIDEO
             m_ext360.printHeader();
@@ -352,7 +320,6 @@ public:
                  getPsnr(COMPONENT_Cr) / (Double)getNumPic(),
                  PSNRyuv );
 
-#if JVET_F0064_MSSSIM
           if (logctrl.printMSSSIM)
           {
             printf("   %8.6lf     " "%8.6lf     " "%8.6lf  ",
@@ -360,15 +327,12 @@ public:
                    getMsssim(COMPONENT_Cb) / (Double)getNumPic(),
                    getMsssim(COMPONENT_Cr) / (Double)getNumPic());
           }
-#endif
 
-#if JCTVC_Y0037_XPSNR
           if(logctrl.printXPSNR)
           {
             printf(" %8.4lf  ",
                    getxPSNR() / (Double)getNumPic());
           }
-#endif
 
 #if EXTENSION_360_VIDEO
           m_ext360.printPSNRs(getNumPic());

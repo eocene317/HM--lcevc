@@ -88,23 +88,13 @@ protected:
 #endif
   Void xWriteSEIChromaResamplingFilterHint        (const SEIChromaResamplingFilterHint& sei);
   Void xWriteSEIKneeFunctionInfo                  (const SEIKneeFunctionInfo &sei);
-#if CCV_SEI_MESSAGE
   Void xWriteSEIContentColourVolume               (const SEIContentColourVolume &sei);
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   Void xWriteSEIEquirectangularProjection         (const SEIEquirectangularProjection &sei);
   Void xWriteSEISphereRotation                    (const SEISphereRotation &sei);
   Void xWriteSEIOmniViewport                      (const SEIOmniViewport& sei);
-#endif
-#if CMP_SEI_MESSAGE
   Void xWriteSEICubemapProjection                 (const SEICubemapProjection &sei);
-#endif
-#if RWP_SEI_MESSAGE
   Void xWriteSEIRegionWisePacking                 (const SEIRegionWisePacking &sei);
-#endif
-#if FVI_SEI_MESSAGE
   Void xWriteSEIFisheyeVideoInfo                  (const SEIFisheyeVideoInfo &sei);
-#endif
   Void xWriteSEIColourRemappingInfo               (const SEIColourRemappingInfo& sei);
   Void xWriteSEIDeinterlaceFieldIdentification    (const SEIDeinterlaceFieldIdentification& sei);
   Void xWriteSEIContentLightLevelInfo             (const SEIContentLightLevelInfo& sei);
@@ -112,13 +102,9 @@ protected:
   Void xWriteSEICodedRegionCompletion             (const SEICodedRegionCompletion& sei);
   Void xWriteSEIAlternativeTransferCharacteristics(const SEIAlternativeTransferCharacteristics& sei);
   Void xWriteSEIAmbientViewingEnvironment         (const SEIAmbientViewingEnvironment& sei);
-#if RNSEI
   Void xWriteSEIRegionalNesting                   (TComBitIf& bs, const SEIRegionalNesting& sei, const TComSPS *sps);
-#endif
 
-#if AR_SEI_MESSAGE
   Void xWriteSEIAnnotatedRegions                  (const SEIAnnotatedRegions& sei, const TComSPS *sps);
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void xWriteSEIShutterInterval                   (const SEIShutterIntervalInfo& sei);
 #endif

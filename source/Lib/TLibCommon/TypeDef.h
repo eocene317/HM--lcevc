@@ -77,6 +77,7 @@
 #define PRINT_RPS_INFO                                    0 ///< Enable/disable the printing of bits used to send the RPS.
 
 #define MCTS_EXTRACTION                                   1 ///< Additional project for MCTS Extraction as in JCTVC-AC1005
+
 // ====================================================================================================================
 // Tool Switches - transitory (these macros are likely to be removed in future revisions)
 // ====================================================================================================================
@@ -85,40 +86,10 @@
 #if JVET_K0390_RATE_CTRL
 #define JVET_M0600_RATE_CTRL                              1
 #endif
-
 #define DECODER_CHECK_SUBSTREAM_AND_SLICE_TRAILING_BYTES  1 ///< TODO: integrate this macro into a broader conformance checking system.
-#define X0038_LAMBDA_FROM_QP_CAPABILITY                   1 ///< This approach derives lambda from QP+QPoffset+QPoffset2. QPoffset2 is derived from QP+QPoffset using a linear model that is clipped between 0 and 3.
-                                                            // To use this capability enable config parameter LambdaFromQpEnable
-#define JCTVC_Y0038_PARAMS                                1
-
-#define JVET_E0059_FLOATING_POINT_QP_FIX                  1 ///< Replace floating point QP with a source-file frame number.
-#define JVET_G0101_QP_SWITCHING                           1 ///< After switching POC, increase base QP instead of frame level QP.
-
-#define JVET_F0064_MSSSIM                                 1 ///< Calculate MS-SSIM scores
-#define JCTVC_Y0037_XPSNR                                 1 ///< Enable xPSNR (Cross-Component PSNR) computation
-
-#ifndef EXTENSION_360_VIDEO
-#define EXTENSION_360_VIDEO                               0   ///< extension for 360/spherical video coding support; this macro should be controlled by makefile, as it would be used to control whether the library is built and linked
-#endif
-
 #define MCTS_ENC_CHECK                                    1  ///< Temporal MCTS encoder constraint and decoder checks. Also requires SEITMCTSTileConstraint to be enabled to enforce constraint
-#define CCV_SEI_MESSAGE                                   1 // Content Colour Volume SEI message
-#define RWP_SEI_MESSAGE                                   1 // region-wise SEI message 
-#define CMP_SEI_MESSAGE                                   1 // cubemap projection SEI message
-#define ERP_SR_OV_SEI_MESSAGE                             1 // equirectangular projection, sphere rotation, and omni viewport SEI message
-
-#define FVI_SEI_MESSAGE                                   1 // Fisheye Video Information SEI message	
-
-#define RNSEI                                             1  ///< Support for signalling regional nesting SEI message
-
-#define AR_SEI_MESSAGE                                    1  ///< Annotated Region SEI message
-
 #define SHUTTER_INTERVAL_SEI_MESSAGE                      1  ///< support for shutter interval SEI message 
 #define SEI_ENCODER_CONTROL                               1  ///< add encoder control for the following SEI: film grain characteristics, content light level, ambient viewing environment
-
-#define FIXSAORESETAFTERIRAP                              1 // Fix the reset mechanism for SAO after an IRAP for the case of IRAP period equal to gop size.
-#define ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP            1 // Add support to reseting encoder decisions after IRAP, to enable independent/parallel coding of randomaccess configuration intra-periods.
-
 #define DPB_ENCODER_USAGE_CHECK                           1 ///< Adds DPB encoder usage check.
 
 // ====================================================================================================================
@@ -126,6 +97,10 @@
 // ====================================================================================================================
 
 // Please also refer to "TDecConformance.h" for DECODER_PARTIAL_CONFORMANCE_CHECK
+
+#ifndef EXTENSION_360_VIDEO
+#define EXTENSION_360_VIDEO                               0   ///< extension for 360/spherical video coding support; this macro should be controlled by makefile, as it would be used to control whether the library is built and linked
+#endif
 
 #define REDUCED_ENCODER_MEMORY                            1 ///< When 1, the encoder will allocate TComPic memory when required and release it when no longer required.
 
@@ -924,7 +899,6 @@ struct WCGChromaQPControl
   Double chromaQpOffset;  ///< Chroma QP Offset (0.0:default)
 };
 
-#if FVI_SEI_MESSAGE
 struct TComSEIFisheyeVideoInfo
 {
   struct ActiveAreaInfo
@@ -954,7 +928,6 @@ struct TComSEIFisheyeVideoInfo
   std::vector<ActiveAreaInfo> m_fisheyeActiveAreas;
   TComSEIFisheyeVideoInfo() : m_fisheyeCancelFlag(false), m_fisheyePersistenceFlag(false), m_fisheyeViewDimensionIdc(0), m_fisheyeActiveAreas() { }
 };
-#endif
 
 class Window
 {
@@ -1002,7 +975,6 @@ public:
   }
 };
 
-#if RNSEI
 class RNSEIWindow : public Window
 {
 private:
@@ -1029,7 +1001,6 @@ public:
   friend std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region);
 };
 typedef std::vector<RNSEIWindow> RNSEIWindowVec;
-#endif
 //! \}
 
 #endif

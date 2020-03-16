@@ -60,7 +60,6 @@ namespace po = df::program_options_lite;
 /// encoder configuration class
 class TAppEncCfg
 {
-#if JVET_E0059_FLOATING_POINT_QP_FIX
 public:
   template <class T>
   struct OptionalValue
@@ -69,7 +68,6 @@ public:
     T    value;
     OptionalValue() : bPresent(false), value() { }
   };
-#endif
 
 protected:
   // file I/O
@@ -115,14 +113,10 @@ protected:
   Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
-#if JVET_F0064_MSSSIM
   Bool      m_printMSSSIM;
-#endif
 
-#if JCTVC_Y0037_XPSNR
   Bool      m_bXPSNREnableFlag;                              ///< xPSNR enable flag
   Double    m_dXPSNRWeight[MAX_NUM_COMPONENT];               ///< xPSNR per component weights
-#endif
 
   Bool      m_cabacZeroWordPaddingEnabled;
   Bool      m_bClipInputVideoToRec709Range;
@@ -146,9 +140,7 @@ protected:
   Int       m_iIntraPeriod;                                   ///< period of I-slice (random access period)
   Int       m_iDecodingRefreshType;                           ///< random access type
   Int       m_iGOPSize;                                       ///< GOP size of hierarchical structure
-#if JCTVC_Y0038_PARAMS
   Bool      m_bReWriteParamSetsFlag;                          ///< Flag to enable rewriting of parameter sets at random access points
-#endif  
   Int       m_extraRPSs;                                      ///< extra RPSs added to handle CRA
   GOPEntry  m_GOPList[MAX_GOP];                               ///< the coding structure entries from the config file
   Int       m_numReorderPics[MAX_TLAYER];                     ///< total number of reorder pictures
@@ -167,16 +159,10 @@ protected:
   Bool      m_cabacBypassAlignmentEnabledFlag;
 
   // coding quality
-#if JVET_E0059_FLOATING_POINT_QP_FIX
   OptionalValue<UInt> m_qpIncrementAtSourceFrame;             ///< Optional source frame number at which all subsequent frames are to use an increased internal QP.
-#else
-  Double    m_fQP;                                            ///< QP value of key-picture (floating point)
-#endif
   Int       m_iQP;                                            ///< QP value of key-picture (integer)
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Int       m_intraQPOffset;                                  ///< QP offset for intra slice (integer)
   Bool      m_lambdaFromQPEnable;                             ///< enable flag for QP:lambda fix
-#endif
   std::string m_dQPFileName;                                  ///< QP offset for each slice (initialized from external file)
   Int*      m_aidQP;                                          ///< array of slice QP values
   Int       m_iMaxDeltaQP;                                    ///< max. |delta QP|
@@ -237,11 +223,7 @@ protected:
   Double    m_saoEncodingRateChroma;                          ///< The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma.
   Int       m_maxNumOffsetsPerPic;                            ///< SAO maximun number of offset per picture
   Bool      m_saoCtuBoundary;                                 ///< SAO parameter estimation using non-deblocked pixels for CTU bottom and right boundary areas
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Bool      m_resetEncoderStateAfterIRAP;                     ///< When true, encoder state will be reset following an IRAP.
-#else
-  Bool      m_saoResetEncoderStateAfterIRAP;                  ///< When true, SAO encoder state will be reset following an IRAP.
-#endif
   // coding tools (loop filter)
   Bool      m_bLoopFilterDisable;                             ///< flag for using deblocking filter
   Bool      m_loopFilterOffsetInPPS;                          ///< offset for deblocking filter in 0 = slice header, 1 = PPS
@@ -359,7 +341,6 @@ protected:
   Int       m_preferredTransferCharacteristics;
   UInt      m_greenMetadataType;
   UInt      m_xsdMetricType;
-#if CCV_SEI_MESSAGE
   Bool    m_ccvSEIEnabled;
   Bool    m_ccvSEICancelFlag;
   Bool    m_ccvSEIPersistenceFlag;
@@ -372,8 +353,6 @@ protected:
   Double  m_ccvSEIMinLuminanceValue;             // UInt(32)
   Double  m_ccvSEIMaxLuminanceValue;             // UInt(32)
   Double  m_ccvSEIAvgLuminanceValue;             // UInt(32)
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;
   Bool      m_erpSEIPersistenceFlag;
@@ -399,13 +378,9 @@ protected:
   std::vector<Int>  m_omniViewportSEITiltCentre;
   std::vector<UInt> m_omniViewportSEIHorRange;
   std::vector<UInt> m_omniViewportSEIVerRange;  
-#endif
-#if CMP_SEI_MESSAGE
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;
   Bool                  m_cmpSEICmpPersistenceFlag;
-#endif
-#if RWP_SEI_MESSAGE
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;
   Bool                  m_rwpSEIRwpPersistenceFlag;
@@ -431,18 +406,13 @@ protected:
   std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
-#endif
   Bool                  m_gopBasedTemporalFilterEnabled;               ///< GOP-based Temporal Filter enable/disable
   Bool                  m_gopBasedTemporalFilterFutureReference;       ///< Enable/disable future frame references in the GOP-based Temporal Filter
   std::map<Int, Double> m_gopBasedTemporalFilterStrengths;             ///< Filter strength per frame for the GOP-based Temporal Filter
 
-#if AR_SEI_MESSAGE
   std::string           m_arSEIFileRoot;
-#endif
-#if FVI_SEI_MESSAGE
   Bool                    m_fisheyeVIdeoInfoSEIEnabled;
   TComSEIFisheyeVideoInfo m_fisheyeVideoInfoSEI;
-#endif
   // weighted prediction
   Bool      m_useWeightedPred;                    ///< Use of weighted prediction in P slices
   Bool      m_useWeightedBiPred;                  ///< Use of bi-directional weighted prediction in B slices
@@ -509,9 +479,7 @@ protected:
   Int       m_log2MaxMvLengthHorizontal;                      ///< Indicate the maximum absolute value of a decoded horizontal MV component in quarter-pel luma units
   Int       m_log2MaxMvLengthVertical;                        ///< Indicate the maximum absolute value of a decoded vertical MV component in quarter-pel luma units
   std::string m_colourRemapSEIFileRoot;
-#if RNSEI
   std::string m_regionalNestingSEIFileRoot;
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Bool      m_siiSEIEnabled;
   UInt      m_siiSEINumUnitsInShutterInterval;

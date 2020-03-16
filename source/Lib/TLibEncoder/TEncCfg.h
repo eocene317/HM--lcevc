@@ -50,10 +50,8 @@ struct GOPEntry
 {
   Int m_POC;
   Int m_QPOffset;
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Double m_QPOffsetModelOffset;
   Double m_QPOffsetModelScale;
-#endif
   Int m_CbQPoffset;
   Int m_CrQPoffset;
   Double m_QPFactor;
@@ -74,10 +72,8 @@ struct GOPEntry
   GOPEntry()
   : m_POC(-1)
   , m_QPOffset(0)
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   , m_QPOffsetModelOffset(0)
   , m_QPOffsetModelScale(0)
-#endif
   , m_CbQPoffset(0)
   , m_CrQPoffset(0)
   , m_QPFactor(0)
@@ -147,13 +143,9 @@ protected:
   Bool      m_printHexPsnr;
   Bool      m_printFrameMSE;
   Bool      m_printSequenceMSE;
-#if JVET_F0064_MSSSIM
   Bool      m_printMSSSIM;
-#endif
-#if JCTVC_Y0037_XPSNR
   Bool      m_bXPSNREnableFlag;
   Double    m_dXPSNRWeight[MAX_NUM_COMPONENT];
-#endif
   Bool      m_cabacZeroWordPaddingEnabled;
 
   /* profile & level */
@@ -173,9 +165,7 @@ protected:
   //====== Coding Structure ========
   UInt      m_uiIntraPeriod;                    // TODO: make this an Int - it can be -1!
   UInt      m_uiDecodingRefreshType;            ///< the type of decoding refresh employed for the random access.
-#if JCTVC_Y0038_PARAMS
   Bool      m_bReWriteParamSetsFlag;
-#endif
   Int       m_iGOPSize;
   GOPEntry  m_GOPList[MAX_GOP];
   Int       m_extraRPSs;
@@ -183,10 +173,8 @@ protected:
   Int       m_numReorderPics[MAX_TLAYER];
 
   Int       m_iQP;                              //  if (AdaptiveQP == OFF)
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Int       m_intraQPOffset;                    ///< QP offset for intra slice (integer)
   Int       m_lambdaFromQPEnable;               ///< enable lambda derivation from QP
-#endif
   Int       m_aiPad[2];
 
   Bool      m_AccessUnitDelimiter;               ///< add Access Unit Delimiter NAL units
@@ -219,11 +207,7 @@ protected:
   Double    m_saoEncodingRateChroma; // The SAO early picture termination rate to use for chroma (when m_SaoEncodingRate is >0). If <=0, use results for luma.
   Int       m_maxNumOffsetsPerPic;
   Bool      m_saoCtuBoundary;
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Bool      m_resetEncoderStateAfterIRAP;
-#else
-  Bool      m_saoResetEncoderStateAfterIRAP;
-#endif
 
   //====== Motion search ========
   Bool      m_bDisableIntraPUsInInterSlices;
@@ -379,7 +363,6 @@ protected:
   Bool      m_greenMetadataInfoSEIEnabled;
   UChar     m_greenMetadataType;
   UChar     m_xsdMetricType;
-#if CCV_SEI_MESSAGE
   Bool      m_ccvSEIEnabled;
   Bool      m_ccvSEICancelFlag;
   Bool      m_ccvSEIPersistenceFlag;
@@ -392,8 +375,6 @@ protected:
   Double    m_ccvSEIMinLuminanceValue;
   Double    m_ccvSEIMaxLuminanceValue;
   Double    m_ccvSEIAvgLuminanceValue;
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   Bool      m_erpSEIEnabled;          
   Bool      m_erpSEICancelFlag;
   Bool      m_erpSEIPersistenceFlag;
@@ -417,14 +398,10 @@ protected:
   std::vector<Int>  m_omniViewportSEITiltCentre;
   std::vector<UInt> m_omniViewportSEIHorRange;
   std::vector<UInt> m_omniViewportSEIVerRange; 
-#endif
   Bool      m_gopBasedTemporalFilterEnabled;
-#if CMP_SEI_MESSAGE
   Bool                  m_cmpSEIEnabled;
   Bool                  m_cmpSEICmpCancelFlag;
   Bool                  m_cmpSEICmpPersistenceFlag;
-#endif
-#if RWP_SEI_MESSAGE
   Bool                  m_rwpSEIEnabled;
   Bool                  m_rwpSEIRwpCancelFlag;
   Bool                  m_rwpSEIRwpPersistenceFlag;
@@ -450,17 +427,10 @@ protected:
   std::vector<UChar>    m_rwpSEIRwpBottomGuardBandHeight;
   std::vector<Bool>     m_rwpSEIRwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpSEIRwpGuardBandType;
-#endif
-#if AR_SEI_MESSAGE
   std::string           m_arSEIFileRoot;  // Annotated region SEI - initialized from external file
-#endif
-#if FVI_SEI_MESSAGE
   Bool                    m_fviSEIEnabled;
   TComSEIFisheyeVideoInfo m_fisheyeVideoInfo;
-#endif
-#if RNSEI
   std::string m_regionalNestingSEIFileRoot;  // Regional nesting SEI - initialized from external file
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   Bool                    m_siiSEIEnabled;
   UInt                    m_siiSEINumUnitsInShutterInterval;
@@ -595,18 +565,14 @@ public:
   Bool      getPrintSequenceMSE             ()         const { return m_printSequenceMSE;           }
   Void      setPrintSequenceMSE             (Bool value)     { m_printSequenceMSE = value;          }
 
-#if JVET_F0064_MSSSIM
   Bool      getPrintMSSSIM                  ()         const { return m_printMSSSIM;               }
   Void      setPrintMSSSIM                  (Bool value)     { m_printMSSSIM = value;              }
-#endif
 
-#if JCTVC_Y0037_XPSNR
   Bool      getXPSNREnableFlag              () const                     { return m_bXPSNREnableFlag;}
   Double    getXPSNRWeight                  (const ComponentID id) const { return m_dXPSNRWeight[id];}
 
   Void      setXPSNREnableFlag              ( Bool  i )      { m_bXPSNREnableFlag = i; }
   Void      setXPSNRWeight                  ( Double dValue, ComponentID id) { m_dXPSNRWeight[id] = dValue;}
-#endif
 
   Bool      getCabacZeroWordPaddingEnabled()           const { return m_cabacZeroWordPaddingEnabled;  }
   Void      setCabacZeroWordPaddingEnabled(Bool value)       { m_cabacZeroWordPaddingEnabled = value; }
@@ -614,9 +580,7 @@ public:
   //====== Coding Structure ========
   Void      setIntraPeriod                  ( Int   i )      { m_uiIntraPeriod = (UInt)i; }
   Void      setDecodingRefreshType          ( Int   i )      { m_uiDecodingRefreshType = (UInt)i; }
-#if JCTVC_Y0038_PARAMS
   Void      setReWriteParamSetsFlag         ( Bool  b )      { m_bReWriteParamSetsFlag = b; }
-#endif
   Void      setGOPSize                      ( Int   i )      { m_iGOPSize = i; }
   Void      setGopList                      ( const GOPEntry GOPList[MAX_GOP] ) {  for ( Int i = 0; i < MAX_GOP; i++ ) m_GOPList[i] = GOPList[i]; }
   Void      setExtraRPSs                    ( Int   i )      { m_extraRPSs = i; }
@@ -626,10 +590,8 @@ public:
   Void      setNumReorderPics               ( Int  i, UInt tlayer ) { m_numReorderPics[tlayer] = i;    }
 
   Void      setQP                           ( Int   i )      { m_iQP = i; }
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Void      setIntraQPOffset                ( Int   i )         { m_intraQPOffset = i; }
   Void      setLambdaFromQPEnable           ( Bool  b )         { m_lambdaFromQPEnable = b; }
-#endif
   Void      setPad                          ( Int*  iPad                   )      { for ( Int i = 0; i < 2; i++ ) m_aiPad[i] = iPad[i]; }
 
   Int       getMaxRefPicNum                 ()                              { return m_iMaxRefPicNum;           }
@@ -721,22 +683,16 @@ public:
   //==== Coding Structure ========
   UInt      getIntraPeriod                  ()      { return  m_uiIntraPeriod; }
   UInt      getDecodingRefreshType          ()      { return  m_uiDecodingRefreshType; }
-#if JCTVC_Y0038_PARAMS
   Bool      getReWriteParamSetsFlag         ()      { return m_bReWriteParamSetsFlag; }
-#endif
   Int       getGOPSize                      ()      { return  m_iGOPSize; }
   Int       getMaxDecPicBuffering           (UInt tlayer) { return m_maxDecPicBuffering[tlayer]; }
   Int       getNumReorderPics               (UInt tlayer) { return m_numReorderPics[tlayer]; }
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   Int       getIntraQPOffset                () const    { return  m_intraQPOffset; }
   Int       getLambdaFromQPEnable           () const    { return  m_lambdaFromQPEnable; }
 protected:
   Int       getBaseQP                       () const { return  m_iQP; } // public should use getQPForPicture.
 public:
   Int       getQPForPicture                 (const UInt gopIndex, const TComSlice *pSlice) const; // Function actually defined in TEncTop.cpp
-#else
-  Int       getQP                           ()      { return  m_iQP; }
-#endif
   Int       getPad                          ( Int i )      { assert (i < 2 );                      return  m_aiPad[i]; }
 
   Bool      getAccessUnitDelimiter() const  { return m_AccessUnitDelimiter; }
@@ -873,13 +829,8 @@ public:
   Int   getMaxNumOffsetsPerPic                   ()                  { return m_maxNumOffsetsPerPic; }
   Void  setSaoCtuBoundary              (Bool val)                    { m_saoCtuBoundary = val; }
   Bool  getSaoCtuBoundary              ()                            { return m_saoCtuBoundary; }
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   Void  setResetEncoderStateAfterIRAP(Bool b)                        { m_resetEncoderStateAfterIRAP = b; }
   Bool  getResetEncoderStateAfterIRAP() const                        { return m_resetEncoderStateAfterIRAP; }
-#else
-  Void  setSaoResetEncoderStateAfterIRAP(Bool b)                     { m_saoResetEncoderStateAfterIRAP = b; }
-  Bool  getSaoResetEncoderStateAfterIRAP() const                     { return m_saoResetEncoderStateAfterIRAP; }
-#endif
   Void  setLFCrossTileBoundaryFlag               ( Bool   val  )     { m_loopFilterAcrossTilesEnabledFlag = val; }
   Bool  getLFCrossTileBoundaryFlag               ()                  { return m_loopFilterAcrossTilesEnabledFlag;   }
   Void  setTileUniformSpacingFlag      ( Bool b )                    { m_tileUniformSpacingFlag = b; }
@@ -1011,7 +962,6 @@ public:
   Void  setKneeFunctionInformationSEI(const TEncSEIKneeFunctionInformation &seiknee) { m_kneeFunctionInformationSEI = seiknee; }
   const TEncSEIKneeFunctionInformation &getKneeFunctionInformationSEI() const        { return m_kneeFunctionInformationSEI; }
 
-#if CCV_SEI_MESSAGE
   Void     setCcvSEIEnabled(Bool b)                                  { m_ccvSEIEnabled = b; }
   Bool     getCcvSEIEnabled()                                        { return m_ccvSEIEnabled; }
   Void     setCcvSEICancelFlag(Bool b)                               { m_ccvSEICancelFlag = b; }
@@ -1036,7 +986,6 @@ public:
   Double   getCcvSEIMaxLuminanceValue  ()                            { return m_ccvSEIMaxLuminanceValue;  }
   Void     setCcvSEIAvgLuminanceValue  (Double dValue)               { m_ccvSEIAvgLuminanceValue = dValue; }
   Double   getCcvSEIAvgLuminanceValue  ()                            { return m_ccvSEIAvgLuminanceValue;  }
-#endif
 
   #if SHUTTER_INTERVAL_SEI_MESSAGE
   Void     setSiiSEIEnabled(Bool b)                                  { m_siiSEIEnabled = b; }
@@ -1085,7 +1034,6 @@ public:
   Void  setAmbientViewingEnvironmentSEIAmbientLightY(UShort v )      { m_aveSEIAmbientLightY = v; }
   UShort getAmbientViewingEnvironmentSEIAmbientLightY()              { return m_aveSEIAmbientLightY; }
 #endif
-#if ERP_SR_OV_SEI_MESSAGE
   Void  setErpSEIEnabled(Bool b)                                     { m_erpSEIEnabled = b; }                                                         
   Bool  getErpSEIEnabled()                                           { return m_erpSEIEnabled; }
   Void  setErpSEICancelFlag(Bool b)                                  { m_erpSEICancelFlag = b; }                                                         
@@ -1132,18 +1080,14 @@ public:
   UInt  getOmniViewportSEIHorRange(Int idx)                          { return m_omniViewportSEIHorRange[idx]; }
   Void  setOmniViewportSEIVerRange(const std::vector<UInt>& vi)      { m_omniViewportSEIVerRange = vi; } 
   UInt  getOmniViewportSEIVerRange(Int idx)                          { return m_omniViewportSEIVerRange[idx]; }
-#endif
   Void  setGopBasedTemporalFilterEnabled(Bool flag)                  { m_gopBasedTemporalFilterEnabled = flag; }
   Bool  getGopBasedTemporalFilterEnabled() const                     { return m_gopBasedTemporalFilterEnabled; }
-#if CMP_SEI_MESSAGE
   Void     setCmpSEIEnabled(Bool b)                                  { m_cmpSEIEnabled = b; }
   Bool     getCmpSEIEnabled()                                        { return m_cmpSEIEnabled; }
   Void     setCmpSEICmpCancelFlag(Bool b)                            { m_cmpSEICmpCancelFlag = b; }
   Bool     getCmpSEICmpCancelFlag()                                  { return m_cmpSEICmpCancelFlag; }
   Void     setCmpSEICmpPersistenceFlag(Bool b)                       { m_cmpSEICmpPersistenceFlag = b; }
   Bool     getCmpSEICmpPersistenceFlag()                             { return m_cmpSEICmpPersistenceFlag; }
-#endif
-#if RWP_SEI_MESSAGE
   Void     setRwpSEIEnabled(Bool b)                                                                     { m_rwpSEIEnabled = b; }
   Bool     getRwpSEIEnabled()                                                                           { return m_rwpSEIEnabled; }
   Void     setRwpSEIRwpCancelFlag(Bool b)                                                               { m_rwpSEIRwpCancelFlag = b; }
@@ -1194,13 +1138,10 @@ public:
   Bool    getRwpSEIRwpGuardBandNotUsedForPredFlag(UInt idx) const                                         { return m_rwpSEIRwpGuardBandNotUsedForPredFlag[idx]; }
   Void    setRwpSEIRwpGuardBandType(const std::vector<UChar>& rwpGuardBandType)                           { m_rwpSEIRwpGuardBandType = rwpGuardBandType; }
   UChar   getRwpSEIRwpGuardBandType(UInt idx) const                                                       { return m_rwpSEIRwpGuardBandType[idx]; } 
-#endif
-#if FVI_SEI_MESSAGE
   Void    setFviSEIDisabled()                                        { m_fviSEIEnabled = false; }
   Void    setFviSEIEnabled(const TComSEIFisheyeVideoInfo& fvi)       { m_fisheyeVideoInfo=fvi; m_fviSEIEnabled=true; }
   Bool    getFviSEIEnabled() const                                   { return m_fviSEIEnabled; }
   const TComSEIFisheyeVideoInfo& getFviSEIData() const               { return m_fisheyeVideoInfo; }
-#endif
   Void  setColourRemapInfoSEIFileRoot( const std::string &s )        { m_colourRemapSEIFileRoot = s; }
   const std::string &getColourRemapInfoSEIFileRoot() const           { return m_colourRemapSEIFileRoot; }
   Void  setMasteringDisplaySEI(const TComSEIMasteringDisplay &src)   { m_masteringDisplay = src; }
@@ -1214,15 +1155,11 @@ public:
   UChar getSEIGreenMetadataType() const                              { return m_greenMetadataType; }
   Void  setSEIXSDMetricType(UChar v)                                 { m_xsdMetricType = v;    }
   UChar getSEIXSDMetricType() const                                  { return m_xsdMetricType; }
-#if RNSEI
   Void  setRegionalNestingSEIFileRoot( const std::string &s )        { m_regionalNestingSEIFileRoot = s; }
   const std::string &getRegionalNestingSEIFileRoot() const           { return m_regionalNestingSEIFileRoot; }
-#endif
 
-#if AR_SEI_MESSAGE
   Void  setAnnotatedRegionSEIFileRoot(const std::string &s)          { m_arSEIFileRoot = s; }
   const std::string &getAnnotatedRegionSEIFileRoot() const           { return m_arSEIFileRoot; }
-#endif
 
   const TComSEIMasteringDisplay &getMasteringDisplaySEI() const      { return m_masteringDisplay; }
   Void         setUseWP               ( Bool b )                     { m_useWeightedPred   = b;    }

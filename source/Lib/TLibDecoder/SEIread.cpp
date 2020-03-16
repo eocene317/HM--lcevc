@@ -346,13 +346,10 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEIAmbientViewingEnvironment;
       xParseSEIAmbientViewingEnvironment((SEIAmbientViewingEnvironment&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#if CCV_SEI_MESSAGE
     case SEI::CONTENT_COLOUR_VOLUME:
       sei = new SEIContentColourVolume;
       xParseSEIContentColourVolume((SEIContentColourVolume&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:
       sei = new SEIEquirectangularProjection;
       xParseSEIEquirectangularProjection((SEIEquirectangularProjection&) *sei, payloadSize, pDecodedMessageOutputStream);
@@ -365,38 +362,27 @@ Void SEIReader::xReadSEIPayloadData(Int const payloadType, Int const payloadSize
       sei = new SEIOmniViewport;
       xParseSEIOmniViewport((SEIOmniViewport&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
-#if CMP_SEI_MESSAGE
     case SEI::CUBEMAP_PROJECTION:
       sei = new SEICubemapProjection;
       xParseSEICubemapProjection((SEICubemapProjection&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
-#if RWP_SEI_MESSAGE
     case SEI::REGION_WISE_PACKING:
       sei = new SEIRegionWisePacking;
       xParseSEIRegionWisePacking((SEIRegionWisePacking&) *sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
 
-#if AR_SEI_MESSAGE
     case SEI::ANNOTATED_REGIONS:
       sei = new SEIAnnotatedRegions;
       xParseSEIAnnotatedRegions((SEIAnnotatedRegions&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
-#if FVI_SEI_MESSAGE
     case SEI::FISHEYE_VIDEO_INFO:
       sei = new SEIFisheyeVideoInfo;
       xParseSEIFisheyeVideoInfo((SEIFisheyeVideoInfo&)*sei, payloadSize, pDecodedMessageOutputStream);
       break;
-#endif
-#if RNSEI
     case SEI::REGIONAL_NESTING:
       sei = new SEIRegionalNesting;
       xParseSEIRegionalNesting((SEIRegionalNesting&) *sei, payloadSize, sps, pDecodedMessageOutputStream);
       break;
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
     case SEI::SHUTTER_INTERVAL_INFO:
       sei = new SEIShutterIntervalInfo;
@@ -1538,7 +1524,6 @@ Void SEIReader::xParseSEIKneeFunctionInfo(SEIKneeFunctionInfo& sei, UInt payload
   }
 }
 
-#if CCV_SEI_MESSAGE
 Void SEIReader::xParseSEIContentColourVolume(SEIContentColourVolume& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   Int i;
@@ -1577,7 +1562,6 @@ Void SEIReader::xParseSEIContentColourVolume(SEIContentColourVolume& sei, UInt p
     }
   }
 }
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 Void SEIReader::xParseSEIShutterInterval(SEIShutterIntervalInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
@@ -1604,7 +1588,6 @@ Void SEIReader::xParseSEIShutterInterval(SEIShutterIntervalInfo& sei, UInt paylo
 }
 #endif
 
-#if ERP_SR_OV_SEI_MESSAGE
 Void SEIReader::xParseSEIEquirectangularProjection(SEIEquirectangularProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   UInt val;
@@ -1670,9 +1653,7 @@ Void SEIReader::xParseSEIOmniViewport(SEIOmniViewport& sei, UInt payloadSize, st
     sei.m_omniViewportPersistenceFlag=false;
   }
 }
-#endif
 
-#if AR_SEI_MESSAGE
 Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
@@ -1793,9 +1774,7 @@ Void SEIReader::xParseSEIAnnotatedRegions(SEIAnnotatedRegions& sei, UInt payload
     }
   }
 }
-#endif
 
-#if CMP_SEI_MESSAGE
 Void SEIReader::xParseSEICubemapProjection(SEICubemapProjection& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
@@ -1807,11 +1786,9 @@ Void SEIReader::xParseSEICubemapProjection(SEICubemapProjection& sei, UInt paylo
     sei_read_flag(pDecodedMessageOutputStream, val, "cmp_persistence_flag");                 sei.m_cmpPersistenceFlag = val;
   }
 }
-#endif
 
 
 
-#if RWP_SEI_MESSAGE
 Void SEIReader::xParseSEIRegionWisePacking(SEIRegionWisePacking& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   output_sei_message_header(sei, pDecodedMessageOutputStream, payloadSize);
@@ -1875,9 +1852,7 @@ Void SEIReader::xParseSEIRegionWisePacking(SEIRegionWisePacking& sei, UInt paylo
     }
   }
 }
-#endif
 
-#if FVI_SEI_MESSAGE
 Void SEIReader::xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
   UInt val;
@@ -1928,7 +1903,6 @@ Void SEIReader::xParseSEIFisheyeVideoInfo(SEIFisheyeVideoInfo& sei, UInt payload
     }
   }
 }
-#endif
 
 Void SEIReader::xParseSEIColourRemappingInfo(SEIColourRemappingInfo& sei, UInt payloadSize, std::ostream *pDecodedMessageOutputStream)
 {
@@ -2080,7 +2054,6 @@ Void SEIReader::xParseSEIAmbientViewingEnvironment( SEIAmbientViewingEnvironment
   sei_read_code(pDecodedMessageOutputStream, 16, code, "ambient_light_x");     sei.m_ambientLightX     = (UShort)code;
   sei_read_code(pDecodedMessageOutputStream, 16, code, "ambient_light_y");     sei.m_ambientLightY     = (UShort)code;
 }
-#if RNSEI
 Void SEIReader::xParseSEIRegionalNesting( SEIRegionalNesting& sei, UInt payloadSize, const TComSPS *sps, std::ostream *pDecodedMessageOutputStream )
 {
   UInt uiCode;
@@ -2123,7 +2096,6 @@ Void SEIReader::xParseSEIRegionalNesting( SEIRegionalNesting& sei, UInt payloadS
     sei.addRegionalSEI( seiWithRegionIndices ) ;
   }
 }
-#endif
 
 
 //! \}

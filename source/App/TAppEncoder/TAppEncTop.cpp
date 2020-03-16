@@ -104,17 +104,13 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setPrintHexPsnr                                      ( m_printHexPsnr);
   m_cTEncTop.setPrintFrameMSE                                     ( m_printFrameMSE);
   m_cTEncTop.setPrintSequenceMSE                                  ( m_printSequenceMSE);
-#if JVET_F0064_MSSSIM
   m_cTEncTop.setPrintMSSSIM                                       ( m_printMSSSIM );
-#endif
 
-#if JCTVC_Y0037_XPSNR
   m_cTEncTop.setXPSNREnableFlag                                   ( m_bXPSNREnableFlag);
   for (Int id = 0 ; id < MAX_NUM_COMPONENT; id++)
   {
     m_cTEncTop.setXPSNRWeight                                     ( m_dXPSNRWeight[id], ComponentID(id));
   }
-#endif
 
   m_cTEncTop.setCabacZeroWordPaddingEnabled                       ( m_cabacZeroWordPaddingEnabled );
 
@@ -130,9 +126,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setIntraPeriod                                       ( m_iIntraPeriod );
   m_cTEncTop.setDecodingRefreshType                               ( m_iDecodingRefreshType );
   m_cTEncTop.setGOPSize                                           ( m_iGOPSize );
-#if JCTVC_Y0038_PARAMS
   m_cTEncTop.setReWriteParamSetsFlag                              ( m_bReWriteParamSetsFlag );
-#endif
   m_cTEncTop.setGopList                                           ( m_GOPList );
   m_cTEncTop.setExtraRPSs                                         ( m_extraRPSs );
   for(Int i = 0; i < MAX_TLAYER; i++)
@@ -149,10 +143,8 @@ Void TAppEncTop::xInitLibCfg()
 
   m_cTEncTop.setQP                                                ( m_iQP );
 
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   m_cTEncTop.setIntraQPOffset                                     ( m_intraQPOffset );
   m_cTEncTop.setLambdaFromQPEnable                                ( m_lambdaFromQPEnable );
-#endif
   m_cTEncTop.setPad                                               ( m_aiPad );
 
   m_cTEncTop.setAccessUnitDelimiter                               ( m_AccessUnitDelimiter );
@@ -202,11 +194,7 @@ Void TAppEncTop::xInitLibCfg()
 
   //====== Tool list ========
   m_cTEncTop.setLumaLevelToDeltaQPControls                        ( m_lumaLevelToDeltaQPMapping );
-#if X0038_LAMBDA_FROM_QP_CAPABILITY
   m_cTEncTop.setDeltaQpRD( (m_costMode==COST_LOSSLESS_CODING) ? 0 : m_uiDeltaQpRD );
-#else
-  m_cTEncTop.setDeltaQpRD                                         ( m_uiDeltaQpRD  );
-#endif
   m_cTEncTop.setFastDeltaQp                                       ( m_bFastDeltaQP  );
   m_cTEncTop.setUseASR                                            ( m_bUseASR      );
   m_cTEncTop.setUseHADME                                          ( m_bUseHADME    );
@@ -288,11 +276,7 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setMaxNumOffsetsPerPic                               ( m_maxNumOffsetsPerPic);
 
   m_cTEncTop.setSaoCtuBoundary                                    ( m_saoCtuBoundary);
-#if ADD_RESET_ENCODER_DECISIONS_AFTER_IRAP
   m_cTEncTop.setResetEncoderStateAfterIRAP                        ( m_resetEncoderStateAfterIRAP );
-#else
-  m_cTEncTop.setSaoResetEncoderStateAfterIRAP                     ( m_saoResetEncoderStateAfterIRAP);
-#endif
   m_cTEncTop.setPCMInputBitDepthFlag                              ( m_bPCMInputBitDepthFlag);
   m_cTEncTop.setPCMFilterDisableFlag                              ( m_bPCMFilterDisableFlag);
 
@@ -362,7 +346,6 @@ Void TAppEncTop::xInitLibCfg()
   }
   m_cTEncTop.setKneeSEIEnabled                                    ( m_kneeSEIEnabled );
   m_cTEncTop.setKneeFunctionInformationSEI                        ( m_kneeFunctionInformationSEI );
-#if CCV_SEI_MESSAGE
   m_cTEncTop.setCcvSEIEnabled                                     (m_ccvSEIEnabled);
   m_cTEncTop.setCcvSEICancelFlag                                  (m_ccvSEICancelFlag);
   m_cTEncTop.setCcvSEIPersistenceFlag                             (m_ccvSEIPersistenceFlag);
@@ -381,8 +364,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setCcvSEIMinLuminanceValue                           (m_ccvSEIMinLuminanceValue);
   m_cTEncTop.setCcvSEIMaxLuminanceValue                           (m_ccvSEIMaxLuminanceValue);
   m_cTEncTop.setCcvSEIAvgLuminanceValue                           (m_ccvSEIAvgLuminanceValue);
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   m_cTEncTop.setErpSEIEnabled                                     ( m_erpSEIEnabled );           
   m_cTEncTop.setErpSEICancelFlag                                  ( m_erpSEICancelFlag );        
   m_cTEncTop.setErpSEIPersistenceFlag                             ( m_erpSEIPersistenceFlag );   
@@ -406,14 +387,10 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setOmniViewportSEITiltCentre                         ( m_omniViewportSEITiltCentre );       
   m_cTEncTop.setOmniViewportSEIHorRange                           ( m_omniViewportSEIHorRange );         
   m_cTEncTop.setOmniViewportSEIVerRange                           ( m_omniViewportSEIVerRange );         
-#endif
   m_cTEncTop.setGopBasedTemporalFilterEnabled                     ( m_gopBasedTemporalFilterEnabled );
-#if CMP_SEI_MESSAGE
   m_cTEncTop.setCmpSEIEnabled                                     (m_cmpSEIEnabled);
   m_cTEncTop.setCmpSEICmpCancelFlag                               (m_cmpSEICmpCancelFlag);
   m_cTEncTop.setCmpSEICmpPersistenceFlag                          (m_cmpSEICmpPersistenceFlag);
-#endif
-#if RWP_SEI_MESSAGE
   m_cTEncTop.setRwpSEIEnabled                                     (m_rwpSEIEnabled);
   m_cTEncTop.setRwpSEIRwpCancelFlag                               (m_rwpSEIRwpCancelFlag);
   m_cTEncTop.setRwpSEIRwpPersistenceFlag                          (m_rwpSEIRwpPersistenceFlag);
@@ -439,7 +416,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setRwpSEIRwpBottomGuardBandHeight                    (m_rwpSEIRwpBottomGuardBandHeight);
   m_cTEncTop.setRwpSEIRwpGuardBandNotUsedForPredFlag              (m_rwpSEIRwpGuardBandNotUsedForPredFlag);
   m_cTEncTop.setRwpSEIRwpGuardBandType                            (m_rwpSEIRwpGuardBandType);
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   m_cTEncTop.setSiiSEIEnabled                                     (m_siiSEIEnabled);
   m_cTEncTop.setSiiSEINumUnitsInShutterInterval                   (m_siiSEINumUnitsInShutterInterval);
@@ -468,7 +444,6 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setAmbientViewingEnvironmentSEIAmbientLightX         ((UShort)m_aveSEIAmbientLightX);
   m_cTEncTop.setAmbientViewingEnvironmentSEIAmbientLightY         ((UShort)m_aveSEIAmbientLightY);
 #endif
-#if FVI_SEI_MESSAGE
   if (m_fisheyeVIdeoInfoSEIEnabled)
   {
     m_cTEncTop.setFviSEIEnabled(m_fisheyeVideoInfoSEI);
@@ -477,7 +452,6 @@ Void TAppEncTop::xInitLibCfg()
   {
     m_cTEncTop.setFviSEIDisabled();
   }
-#endif
   m_cTEncTop.setColourRemapInfoSEIFileRoot                        ( m_colourRemapSEIFileRoot );
   m_cTEncTop.setMasteringDisplaySEI                               ( m_masteringDisplay );
   m_cTEncTop.setSEIAlternativeTransferCharacteristicsSEIEnable    ( m_preferredTransferCharacteristics>=0     );
@@ -485,12 +459,8 @@ Void TAppEncTop::xInitLibCfg()
   m_cTEncTop.setSEIGreenMetadataInfoSEIEnable                     ( m_greenMetadataType > 0 );
   m_cTEncTop.setSEIGreenMetadataType                              ( UChar(m_greenMetadataType) );
   m_cTEncTop.setSEIXSDMetricType                                  ( UChar(m_xsdMetricType) );
-#if RNSEI
   m_cTEncTop.setRegionalNestingSEIFileRoot                        ( m_regionalNestingSEIFileRoot );
-#endif
-#if AR_SEI_MESSAGE
   m_cTEncTop.setAnnotatedRegionSEIFileRoot                        (m_arSEIFileRoot);
-#endif
   m_cTEncTop.setTileUniformSpacingFlag                            ( m_tileUniformSpacingFlag );
   m_cTEncTop.setNumColumnsMinus1                                  ( m_numTileColumnsMinus1 );
   m_cTEncTop.setNumRowsMinus1                                     ( m_numTileRowsMinus1 );

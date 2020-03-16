@@ -93,32 +93,18 @@ public:
     CODED_REGION_COMPLETION              = 146, // TODO: add encoder command line control to create these messages
     ALTERNATIVE_TRANSFER_CHARACTERISTICS = 147,
     AMBIENT_VIEWING_ENVIRONMENT          = 148, // TODO: add encoder command line control to create these messages
-#if CCV_SEI_MESSAGE
     CONTENT_COLOUR_VOLUME                = 149, 
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
     EQUIRECTANGULAR_PROJECTION           = 150,
     SPHERE_ROTATION                      = 154,
     OMNI_VIEWPORT                        = 156,
-#endif
-#if CMP_SEI_MESSAGE
     CUBEMAP_PROJECTION                   = 151,
-#endif
-#if FVI_SEI_MESSAGE
     FISHEYE_VIDEO_INFO                   = 152,
-#endif
-#if RWP_SEI_MESSAGE
     REGION_WISE_PACKING                  = 155, 
-#endif
-#if RNSEI
     REGIONAL_NESTING                     = 157,
-#endif
 #if MCTS_EXTRACTION
     MCTS_EXTRACTION_INFO_SET             = 158,
 #endif
-#if AR_SEI_MESSAGE
     ANNOTATED_REGIONS                    = 202,
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
     SHUTTER_INTERVAL_INFO                = 203,
 #endif
@@ -776,7 +762,6 @@ public:
   std::vector<Int> m_kneeOutputKneePoint;
 };
 
-#if CCV_SEI_MESSAGE
 class SEIContentColourVolume : public SEI
 {
 public:
@@ -796,9 +781,7 @@ public:
   UInt    m_ccvMaxLuminanceValue;
   UInt    m_ccvAvgLuminanceValue;
 };
-#endif
 
-#if ERP_SR_OV_SEI_MESSAGE
 class SEIEquirectangularProjection : public SEI
 {
 public:
@@ -853,9 +836,7 @@ public:
   UChar m_omniViewportCntMinus1;
   std::vector<OmniViewport> m_omniViewportRegions;  
 };
-#endif
 
-#if AR_SEI_MESSAGE
 class SEIAnnotatedRegions : public SEI
 {
 public:
@@ -919,9 +900,7 @@ public:
   std::vector<std::pair<AnnotatedRegionObjectIndex, AnnotatedRegionObject> > m_annotatedRegions;
   std::vector<std::pair<AnnotatedRegionLabelIndex,  AnnotatedRegionLabel>  > m_annotatedLabels;
 };
-#endif
 
-#if CMP_SEI_MESSAGE 
 class SEICubemapProjection : public SEI
 {
 public:
@@ -931,9 +910,7 @@ public:
   Bool                  m_cmpCancelFlag;
   Bool                  m_cmpPersistenceFlag;
 };
-#endif
 
-#if RWP_SEI_MESSAGE 
 class SEIRegionWisePacking : public SEI
 {
 public:
@@ -965,9 +942,7 @@ public:
   std::vector<Bool>     m_rwpGuardBandNotUsedForPredFlag;
   std::vector<UChar>    m_rwpGuardBandType;
 };
-#endif
 
-#if FVI_SEI_MESSAGE
 class SEIFisheyeVideoInfo : public SEI
 {
 public:
@@ -976,7 +951,6 @@ public:
   virtual ~SEIFisheyeVideoInfo() {}
   TComSEIFisheyeVideoInfo values;
 };
-#endif
 
 #if SHUTTER_INTERVAL_SEI_MESSAGE
 class SEIShutterIntervalInfo : public SEI
@@ -1139,7 +1113,6 @@ public:
 #endif
 
 #endif
-#if RNSEI
 // Class that associates an SEI with one more regions
 class RegionalSEI
 {
@@ -1228,5 +1201,4 @@ private:
   RNSEIWindowVec m_regions;
   std::vector< SEIListOfIndices > m_rnSeiMessages;
 };
-#endif
 //! \}

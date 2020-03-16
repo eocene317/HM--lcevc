@@ -77,26 +77,14 @@ const std::vector<SEI::PayloadType> SEI::prefix_sei_messages({
   SEI::CODED_REGION_COMPLETION,
   SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS,
   SEI::AMBIENT_VIEWING_ENVIRONMENT
-#if CCV_SEI_MESSAGE
   , SEI::CONTENT_COLOUR_VOLUME
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
   , SEI::EQUIRECTANGULAR_PROJECTION
   , SEI::SPHERE_ROTATION
   , SEI::OMNI_VIEWPORT
-#endif
-#if CMP_SEI_MESSAGE
   , SEI::CUBEMAP_PROJECTION
-#endif
-#if RWP_SEI_MESSAGE
   , SEI::REGION_WISE_PACKING
-#endif
-#if FVI_SEI_MESSAGE
   , SEI::FISHEYE_VIDEO_INFO
-#endif
-#if RNSEI
   , SEI::REGIONAL_NESTING
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
   , SEI::SHUTTER_INTERVAL_INFO
 #endif
@@ -199,7 +187,6 @@ void SEIPictureTiming::copyTo (SEIPictureTiming& target)
   target.m_duCpbRemovalDelayMinus1 = m_duCpbRemovalDelayMinus1;
 }
 
-#if RNSEI
 std::ostream& operator<<(std::ostream  &os, RNSEIWindow const &region)
 {
   os << region.getRegionId() << " " << region.getWindowLeftOffset() <<
@@ -265,7 +252,6 @@ Void SEIRegionalNesting::addRegionalSEI(RegionalSEI *regSEI)
   SEIListOfIndices seiWithListOfIndices(listOfIndices, regSEI->dissociateSEIObject());
   addRegionalSEI(seiWithListOfIndices);
 }
-#endif
 
 // Static member
 const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
@@ -310,32 +296,18 @@ const TChar *SEI::getSEIMessageString(SEI::PayloadType payloadType)
     case SEI::CODED_REGION_COMPLETION:              return "Coded region completion";
     case SEI::ALTERNATIVE_TRANSFER_CHARACTERISTICS: return "Alternative transfer characteristics";
     case SEI::AMBIENT_VIEWING_ENVIRONMENT:          return "Ambient viewing environment";
-#if CCV_SEI_MESSAGE
     case SEI::CONTENT_COLOUR_VOLUME:                return "Content Colour Volume";
-#endif
-#if ERP_SR_OV_SEI_MESSAGE
     case SEI::EQUIRECTANGULAR_PROJECTION:           return "Equirectangular projection";
     case SEI::SPHERE_ROTATION:                      return "Sphere rotation";
     case SEI::OMNI_VIEWPORT:                        return "Omni viewport";
-#endif
-#if CMP_SEI_MESSAGE
     case SEI::CUBEMAP_PROJECTION:                  return "Cubemap projection";
-#endif
-#if RWP_SEI_MESSAGE
     case SEI::REGION_WISE_PACKING:                  return "Region wise packing information";
-#endif
-#if FVI_SEI_MESSAGE
     case SEI::FISHEYE_VIDEO_INFO:                   return "Fisheye video information";
-#endif
-#if RNSEI
     case SEI::REGIONAL_NESTING:                     return "Regional nesting";
-#endif
 #if MCTS_EXTRACTION
     case SEI::MCTS_EXTRACTION_INFO_SET:             return "MCTS extraction information";
 #endif
-#if AR_SEI_MESSAGE
     case SEI::ANNOTATED_REGIONS:                    return "Annotated Region";
-#endif
 #if SHUTTER_INTERVAL_SEI_MESSAGE
     case SEI::SHUTTER_INTERVAL_INFO:                return "Shutter interval information";
 #endif
